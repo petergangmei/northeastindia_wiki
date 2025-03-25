@@ -3,92 +3,263 @@
 {% block title %}Home | Northeast India Wiki{% endblock %}
 
 {% block content %}
+<!-- Main container -->
 <div class="container my-5">
-    <!-- Welcome Section -->
-    <div class="jumbotron bg-light p-5 rounded">
-        <h1 class="display-4">Welcome to Northeast India Wiki</h1>
-        <p class="lead">A collaborative platform to learn about the rich culture, history, and heritage of Northeast India.</p>
-        
-        {% if user.is_authenticated %}
-            <p>Hi, {{ user.username }}! Thank you for being part of our community.</p>
-            <a href="{% url 'app:profile' username=user.username %}" class="btn btn-primary">View Your Profile</a>
-        {% else %}
-            <p>Join our community to contribute your knowledge and learn more about Northeast India!</p>
-            <div class="mt-4">
-                <a href="{% url 'app:register' %}" class="btn btn-primary me-2">Sign Up</a>
-                <a href="{% url 'app:login' %}" class="btn btn-outline-primary">Log In</a>
-            </div>
-        {% endif %}
+    <!-- Wiki logo section -->
+    <div class="text-center mb-4">
+        <div class="d-inline-block bg-accent p-3 rounded-circle mb-3">
+            <i class="fas fa-book-open fa-3x text-white"></i>
+        </div>
+        <h1 class="display-5 mb-0">Northeast India Wiki</h1>
+        <p class="text-muted">The Free Encyclopedia of the Northeast</p>
     </div>
-    
-    <!-- Featured Content Section -->
-    <div class="row mt-5">
-        <div class="col-12">
-            <h2 class="border-bottom pb-2">Featured Content</h2>
-        </div>
-        
-        <!-- This section will be populated dynamically with actual content later -->
-        <div class="col-md-4 mb-4">
-            <div class="card h-100">
-                <img src="/static/images/placeholder.jpg" class="card-img-top" alt="Placeholder">
-                <div class="card-body">
-                    <h5 class="card-title">Discover Assam</h5>
-                    <p class="card-text">Explore the beautiful state of Assam, known for its tea gardens and wildlife.</p>
-                    <a href="#" class="btn btn-sm btn-primary">Read More</a>
+
+    <!-- Search Bar -->
+    <div class="row justify-content-center mb-5">
+        <div class="col-md-6">
+            <form class="d-flex input-group w-auto w-100">
+                <div class="input-group">
+                    <span class="input-group-text bg-secondary border-0 ps-3">
+                        <i class="fas fa-search text-light"></i>
+                    </span>
+                    <input type="search" class="form-control border-1 shadow-none" placeholder="Search Northeast India Wiki..." aria-label="Search">
+                    <button class="btn btn-link px-3 text-muted" type="button">
+                        <i class="fas fa-microphone"></i>
+                    </button>
                 </div>
-            </div>
+            </form>
         </div>
-        
-        <div class="col-md-4 mb-4">
-            <div class="card h-100">
-                <img src="/static/images/placeholder.jpg" class="card-img-top" alt="Placeholder">
-                <div class="card-body">
-                    <h5 class="card-title">Nagaland's Rich Culture</h5>
-                    <p class="card-text">Learn about the diverse tribes and cultural practices of Nagaland.</p>
-                    <a href="#" class="btn btn-sm btn-primary">Read More</a>
+    </div>
+
+    <!-- Article of the day -->
+    <div class="mb-5">
+        <h2 class="h4 mb-4">Article of the Day</h2>
+        <div class="card border-0 shadow-sm">
+            <div class="row g-0">
+                <div class="col-md-3">
+                    <img src="/static/images/placeholder.jpg" class="img-fluid rounded-start h-100" style="object-fit: cover;" alt="Article image">
                 </div>
-            </div>
-        </div>
-        
-        <div class="col-md-4 mb-4">
-            <div class="card h-100">
-                <img src="/static/images/placeholder.jpg" class="card-img-top" alt="Placeholder">
-                <div class="card-body">
-                    <h5 class="card-title">Manipur - The Jewel of India</h5>
-                    <p class="card-text">Discover the traditions, arts, and natural beauty of Manipur.</p>
-                    <a href="#" class="btn btn-sm btn-primary">Read More</a>
+                <div class="col-md-9">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <h3 class="card-title h5">Traditional Festivals of Northeast India</h3>
+                            <span class="text-muted small">
+                                <i class="far fa-eye me-1"></i> 23.4K
+                            </span>
+                        </div>
+                        <p class="card-text mb-2 small">
+                            <span class="text-muted">Last edited: February 24, 2023 </span> • <span class="text-muted">Category:</span> <a href="#" class="text-decoration-none">Cultural Heritage</a>
+                        </p>
+                        <p class="card-text">Northeast India is home to numerous vibrant festivals that showcase the region's rich cultural diversity. From Assam's Bihu celebrations to Nagaland's Hornbill Festival, these events feature traditional music, dance, cuisine, and rituals that have been preserved for generations...</p>
+                        <div class="d-flex justify-content-end">
+                            <a href="#" class="btn btn-sm btn-primary">Read More</a>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
-    
-    <!-- Recent Updates Section -->
-    <div class="row mt-5">
-        <div class="col-12">
-            <h2 class="border-bottom pb-2">Recent Updates</h2>
+
+    <!-- Trending section -->
+    <div class="mb-5">
+        <div class="d-flex align-items-center mb-4">
+            <h2 class="h4 mb-0 me-2">Trending</h2>
+            <i class="fas fa-chart-line text-accent"></i>
         </div>
         
-        <!-- This section will be populated dynamically with actual content later -->
-        <div class="col-md-6 mb-4">
-            <div class="card">
-                <div class="card-body">
-                    <h5 class="card-title">New Article: Traditional Cuisines</h5>
-                    <p class="card-text">A new comprehensive guide to the traditional cuisines of Northeast India has been added.</p>
-                    <p class="card-text"><small class="text-muted">Updated 3 days ago</small></p>
-                    <a href="#" class="btn btn-sm btn-outline-primary">View Article</a>
+        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-4 g-4">
+            <!-- Trending card 1 -->
+            <div class="col">
+                <div class="card h-100 border-0 shadow-sm">
+                    <div class="position-relative">
+                        <img src="/static/images/placeholder.jpg" class="card-img-top" alt="Bihu Festival">
+                        <div class="position-absolute top-0 end-0 bg-accent text-white m-2 px-2 py-1 rounded-pill small">
+                            <i class="far fa-eye me-1"></i> 21.4K
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <h5 class="card-title">Bihu Festival 2023</h5>
+                        <p class="card-text small">Learn about the latest celebrations of Assam's most important cultural festival.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Trending card 2 -->
+            <div class="col">
+                <div class="card h-100 border-0 shadow-sm">
+                    <div class="position-relative">
+                        <img src="/static/images/placeholder.jpg" class="card-img-top" alt="Ethereum">
+                        <div class="position-absolute top-0 end-0 bg-accent text-white m-2 px-2 py-1 rounded-pill small">
+                            <i class="far fa-eye me-1"></i> 19.2K
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <h5 class="card-title">Crypto in Northeast</h5>
+                        <p class="card-text small">How cryptocurrency adoption is changing the economic landscape in Northeast India.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Trending card 3 -->
+            <div class="col">
+                <div class="card h-100 border-0 shadow-sm">
+                    <div class="position-relative">
+                        <img src="/static/images/placeholder.jpg" class="card-img-top" alt="Famous Personalities">
+                        <div class="position-absolute top-0 end-0 bg-accent text-white m-2 px-2 py-1 rounded-pill small">
+                            <i class="far fa-eye me-1"></i> 10.6K
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <h5 class="card-title">Indigenous Communities</h5>
+                        <p class="card-text small">The latest research on indigenous communities in Northeast India.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Trending card 4 -->
+            <div class="col">
+                <div class="card h-100 border-0 shadow-sm">
+                    <div class="position-relative">
+                        <img src="/static/images/placeholder.jpg" class="card-img-top" alt="Billboard Music Awards">
+                        <div class="position-absolute top-0 end-0 bg-accent text-white m-2 px-2 py-1 rounded-pill small">
+                            <i class="far fa-eye me-1"></i> 7.5K
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <h5 class="card-title">Artists from Northeast</h5>
+                        <p class="card-text small">Recognition for artists from Northeast India at global music awards.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Thematic categories -->
+    <div class="mb-5">
+        <div class="d-flex align-items-center mb-4">
+            <h2 class="h4 mb-0 me-2">Categories</h2>
+            <i class="fas fa-bookmark text-secondary"></i>
+        </div>
+        
+        <div class="row row-cols-1 row-cols-md-2 g-4">
+            <!-- Technology category -->
+            <div class="col">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body d-flex align-items-center">
+                        <div class="me-3">
+                            <div class="bg-accent p-3 rounded-circle">
+                                <i class="fas fa-microchip fa-2x text-white"></i>
+                            </div>
+                        </div>
+                        <div>
+                            <h5 class="card-title mb-1">Technology</h5>
+                            <p class="card-text text-muted mb-2 small">Innovation, digital and technology in Northeast</p>
+                            <p class="mb-0"><strong>6790</strong> articles</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Science category -->
+            <div class="col">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body d-flex align-items-center">
+                        <div class="me-3">
+                            <div class="bg-secondary p-3 rounded-circle">
+                                <i class="fas fa-atom fa-2x text-white"></i>
+                            </div>
+                        </div>
+                        <div>
+                            <h5 class="card-title mb-1">Science</h5>
+                            <p class="card-text text-muted mb-2 small">Research, discoveries, and scientific knowledge</p>
+                            <p class="mb-0"><strong>2250</strong> articles</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Medicine category -->
+            <div class="col">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body d-flex align-items-center">
+                        <div class="me-3">
+                            <div class="bg-accent p-3 rounded-circle">
+                                <i class="fas fa-heartbeat fa-2x text-white"></i>
+                            </div>
+                        </div>
+                        <div>
+                            <h5 class="card-title mb-1">Medicine</h5>
+                            <p class="card-text text-muted mb-2 small">Traditional and modern medical practices</p>
+                            <p class="mb-0"><strong>1054</strong> articles</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Sports category -->
+            <div class="col">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body d-flex align-items-center">
+                        <div class="me-3">
+                            <div class="bg-secondary p-3 rounded-circle">
+                                <i class="fas fa-futbol fa-2x text-white"></i>
+                            </div>
+                        </div>
+                        <div>
+                            <h5 class="card-title mb-1">Sports</h5>
+                            <p class="card-text text-muted mb-2 small">Traditional games and modern sports</p>
+                            <p class="mb-0"><strong>20K</strong> articles</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Arts category -->
+            <div class="col">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body d-flex align-items-center">
+                        <div class="me-3">
+                            <div class="bg-accent p-3 rounded-circle">
+                                <i class="fas fa-palette fa-2x text-white"></i>
+                            </div>
+                        </div>
+                        <div>
+                            <h5 class="card-title mb-1">Arts</h5>
+                            <p class="card-text text-muted mb-2 small">Visual arts, music, dance, and crafts</p>
+                            <p class="mb-0"><strong>7800</strong> articles</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Politics category -->
+            <div class="col">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body d-flex align-items-center">
+                        <div class="me-3">
+                            <div class="bg-secondary p-3 rounded-circle">
+                                <i class="fas fa-landmark fa-2x text-white"></i>
+                            </div>
+                        </div>
+                        <div>
+                            <h5 class="card-title mb-1">Politics</h5>
+                            <p class="card-text text-muted mb-2 small">Governance, policy, and political history</p>
+                            <p class="mb-0"><strong>12K</strong> articles</p>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
         
-        <div class="col-md-6 mb-4">
-            <div class="card">
-                <div class="card-body">
-                    <h5 class="card-title">Updated: Festivals of Arunachal Pradesh</h5>
-                    <p class="card-text">The article on festivals celebrated in Arunachal Pradesh has been updated with new information.</p>
-                    <p class="card-text"><small class="text-muted">Updated 1 week ago</small></p>
-                    <a href="#" class="btn btn-sm btn-outline-primary">View Article</a>
-                </div>
-            </div>
+        <div class="text-center mt-4">
+            <a href="#" class="btn btn-outline-primary">View All Categories</a>
+        </div>
+    </div>
+
+    <!-- Wiki logo at the bottom -->
+    <div class="text-center mb-4">
+        <div class="d-inline-block bg-accent p-2 rounded-circle">
+            <i class="fas fa-book-open fa-2x text-white"></i>
         </div>
     </div>
 </div>

@@ -14,6 +14,9 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Form validation
     initializeFormValidation();
+
+    // Smooth scroll for anchor links
+    initializeSmoothScroll();
 });
 
 /**
@@ -39,13 +42,15 @@ function initializeMobileMenu() {
  * Initializes dropdown menu functionality for mobile devices
  */
 function initializeDropdowns() {
-    // For mobile: make dropdowns toggleable
-    if (window.innerWidth <= 768) {
-        const dropdownToggles = document.querySelectorAll('.dropdown-toggle');
-        
+    const dropdownToggles = document.querySelectorAll('.dropdown-toggle');
+    
+    // For desktop: Keep hover functionality from CSS
+    // For mobile: Add click toggle functionality
+    if (window.innerWidth <= 991) {
         dropdownToggles.forEach(toggle => {
             toggle.addEventListener('click', function(e) {
                 e.preventDefault();
+                
                 const parent = this.parentNode;
                 parent.classList.toggle('active');
                 
@@ -58,6 +63,18 @@ function initializeDropdowns() {
             });
         });
     }
+    
+    // Update dropdown behavior when window resizes
+    window.addEventListener('resize', function() {
+        if (window.innerWidth <= 991) {
+            // Mobile behavior already set above
+        } else {
+            // Remove click event listeners for desktop view
+            document.querySelectorAll('.dropdown.active').forEach(dropdown => {
+                dropdown.classList.remove('active');
+            });
+        }
+    });
 }
 
 /**
@@ -89,6 +106,37 @@ function initializeMessageDismissal() {
         });
         
         message.appendChild(dismissBtn);
+    });
+}
+
+/**
+ * Initializes smooth scrolling for anchor links
+ */
+function initializeSmoothScroll() {
+    document.querySelectorAll('a[href^="#"]:not([href="#"])').forEach(anchor => {
+        anchor.addEventListener('click', function(e) {
+            const targetId = this.getAttribute('href');
+            if (!targetId || targetId === '#') return;
+            
+            const targetElement = document.querySelector(targetId);
+            if (targetElement) {
+                e.preventDefault();
+                
+                // Close mobile menu if open
+                const mainNav = document.querySelector('.main-nav');
+                const menuToggle = document.querySelector('.menu-toggle');
+                if (mainNav && mainNav.classList.contains('active')) {
+                    mainNav.classList.remove('active');
+                    if (menuToggle) menuToggle.classList.remove('active');
+                }
+                
+                // Scroll to target
+                window.scrollTo({
+                    top: targetElement.offsetTop - 80, // Adjust for header height
+                    behavior: 'smooth'
+                });
+            }
+        });
     });
 }
 

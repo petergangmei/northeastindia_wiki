@@ -1,55 +1,362 @@
-<header class="site-header">
-    <div class="header-container">
-        <div class="logo">
-            <a href="{% url 'app:home' %}">
-                <h1>Northeast India Wiki</h1>
-            </a>
-        </div>
-        <nav class="main-nav">
-            <ul>
-                <li><a href="{% url 'app:home' %}">Home</a></li>
-                <li class="dropdown">
-                    <a href="#" class="dropdown-toggle">States</a>
-                    <ul class="dropdown-menu">
-                        <li><a href="#">Assam</a></li>
-                        <li><a href="#">Arunachal Pradesh</a></li>
-                        <li><a href="#">Manipur</a></li>
-                        <li><a href="#">Meghalaya</a></li>
-                        <li><a href="#">Mizoram</a></li>
-                        <li><a href="#">Nagaland</a></li>
-                        <li><a href="#">Sikkim</a></li>
-                        <li><a href="#">Tripura</a></li>
+<header class="navbar navbar-expand-lg navbar-light bg-secondary shadow-sm " style="max-height: 35px;">
+    <div class="container">
+        <!-- Logo -->
+        <a class="navbar-brand me-2" href="{% url 'app:home' %}">
+            <i class="fas fa-book-open me-2 text-white"></i><span class="text-white">Northeast India Wiki</span>
+        </a>
+
+        <!-- Mobile toggle button -->
+        <button class="navbar-toggler" type="button" data-mdb-toggle="collapse" data-mdb-target="#navbarMain"
+            aria-controls="navbarMain" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="fas fa-bars text-white"></i>
+        </button>
+
+        <!-- Main navigation -->
+        <div class="collapse navbar-collapse" id="navbarMain">
+            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                {% comment %} <li class="nav-item">
+                    <a class="nav-link text-white" href="{% url 'app:home' %}">Home</a>
+                </li> {% endcomment %}
+{% comment %}                 
+                <!-- States dropdown -->
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle text-white" href="#" id="statesDropdown" role="button"
+                        data-mdb-toggle="dropdown" aria-expanded="false">
+                        States
+                    </a>
+                    <ul class="dropdown-menu" aria-labelledby="statesDropdown">
+                        <li><a class="dropdown-item" href="#">Assam</a></li>
+                        <li><a class="dropdown-item" href="#">Arunachal Pradesh</a></li>
+                        <li><a class="dropdown-item" href="#">Manipur</a></li>
+                        <li><a class="dropdown-item" href="#">Meghalaya</a></li>
+                        <li><a class="dropdown-item" href="#">Mizoram</a></li>
+                        <li><a class="dropdown-item" href="#">Nagaland</a></li>
+                        <li><a class="dropdown-item" href="#">Sikkim</a></li>
+                        <li><a class="dropdown-item" href="#">Tripura</a></li>
                     </ul>
                 </li>
-                <li><a href="#">Cultural Heritage</a></li>
-                <li><a href="#">Famous Personalities</a></li>
-                <li><a href="#">History</a></li>
-                <li><a href="#">About</a></li>
+                
+                <li class="nav-item">
+                    <a class="nav-link text-white" href="#">Cultural Heritage</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link text-white" href="#">Famous Personalities</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link text-white" href="#">History</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link text-white" href="#">About</a>
+                </li> {% endcomment %}
             </ul>
-        </nav>
-        <div class="user-actions">
-            {% if user.is_authenticated %}
-                <div class="dropdown">
-                    <a href="#" class="dropdown-toggle">{{ user.username }}</a>
-                    <ul class="dropdown-menu">
-                        <li><a href="#">My Profile</a></li>
-                        <li><a href="#">My Contributions</a></li>
-                        {% if user.is_staff %}
-                            <li><a href="{% url 'admin:index' %}">Admin Panel</a></li>
-                        {% endif %}
-                        <li><a href="#">Log Out</a></li>
-                    </ul>
-                </div>
-            {% else %}
-                <a href="#" class="btn btn-primary">Sign In</a>
-                <a href="#" class="btn btn-outline">Register</a>
-            {% endif %}
-        </div>
-        <div class="search-bar">
-            <form action="#" method="get">
-                <input type="text" name="q" placeholder="Search Northeast India Wiki...">
-                <button type="submit"><i class="search-icon"></i></button>
-            </form>
+
+            <!-- Search form -->
+            {% comment %} <form class="d-flex input-group w-auto me-lg-3 my-3 my-lg-0">
+                <input type="search" class="form-control bg-light" placeholder="Search..." aria-label="Search">
+                <button class="btn btn-accent" type="button" data-mdb-ripple-color="dark">
+                    <i class="fas fa-search"></i>
+                </button>
+            </form> {% endcomment %}
+
+            <!-- User actions -->
+            <div class="d-flex align-items-center">
+                {% if user.is_authenticated %}
+                    <div class="dropdown">
+                        <a class="dropdown-toggle d-flex align-items-center hidden-arrow" href="#"
+                            id="userDropdown" role="button" data-mdb-toggle="dropdown" aria-expanded="false">
+                            {% if user.profile.avatar %}
+                                <img src="{{ user.profile.avatar.url }}" class="rounded-circle" height="35"
+                                    alt="{{ user.username }}" loading="lazy">
+                            {% else %}
+                                <div class="bg-accent rounded-circle d-flex justify-content-center align-items-center"
+                                    style="width: 35px; height: 35px;">
+                                    <span class="text-white">{{ user.username|first|upper }}</span>
+                                </div>
+                            {% endif %}
+                            <span class="ms-2 text-white d-none d-lg-inline">{{ user.username }}</span>
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                            <li><a class="dropdown-item" href="{% url 'app:profile' username=user.username %}">My Profile</a></li>
+                            <li><a class="dropdown-item" href="#">My Contributions</a></li>
+                            {% if user.is_staff %}
+                                <li><a class="dropdown-item" href="{% url 'admin:index' %}">Admin Panel</a></li>
+                            {% endif %}
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="{% url 'app:logout' %}">Log Out</a></li>
+                        </ul>
+                    </div>
+                {% else %}
+                    <a href="{% url 'app:login' %}" class=" text-white px-3 me-2">Sign In</a>
+                    <a href="{% url 'app:register' %}" class=" text-white btn-sm btn-rounded">Register</a>
+                {% endif %}
+            </div>
         </div>
     </div>
-</header> 
+</header>
+
+<style>
+    /* Header Style Improvements */
+    .site-header {
+        background-color: var(--primary-color);
+        color: var(--light-text);
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        position: sticky;
+        top: 0;
+        z-index: 1000;
+    }
+
+    .header-container {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        max-width: var(--container-xl);
+        margin: 0 auto;
+        padding: 0.75rem var(--spacing-md);
+    }
+
+    .logo a {
+        color: var(--light-text);
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+    }
+
+    .logo h1 {
+        margin: 0;
+        font-size: 1.5rem;
+        color: var(--light-text);
+        font-weight: 700;
+    }
+
+    .main-nav {
+        flex-grow: 1;
+        margin-left: 2rem;
+    }
+
+    .main-nav ul {
+        display: flex;
+        list-style: none;
+        margin: 0;
+        padding: 0;
+    }
+
+    .main-nav li {
+        position: relative;
+    }
+
+    .main-nav a {
+        color: var(--light-text);
+        text-decoration: none;
+        padding: 0.75rem 1rem;
+        display: block;
+        font-weight: 500;
+        transition: all 0.2s ease;
+    }
+
+    .main-nav a:hover, .main-nav a:focus {
+        background-color: rgba(255, 255, 255, 0.1);
+        border-radius: var(--border-radius-sm);
+    }
+
+    .dropdown-menu {
+        display: none;
+        position: absolute;
+        top: 100%;
+        left: 0;
+        background-color: white;
+        min-width: 220px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        border-radius: var(--border-radius-sm);
+        z-index: 1001;
+        padding: 0.5rem 0;
+        border: 1px solid rgba(0,0,0,0.08);
+    }
+
+    .dropdown-menu a {
+        color: var(--text-color);
+        padding: 0.6rem 1.25rem;
+        font-weight: normal;
+    }
+
+    .dropdown-menu a:hover, .dropdown-menu a:focus {
+        background-color: var(--light-color);
+        color: var(--primary-color);
+    }
+
+    .dropdown:hover .dropdown-menu {
+        display: block;
+    }
+
+    .search-bar {
+        margin: 0 1rem;
+        flex-grow: 1;
+        max-width: 400px;
+    }
+
+    .search-bar form {
+        display: flex;
+        height: 2.5rem;
+    }
+
+    .search-bar input {
+        flex: 1;
+        padding: 0.5rem 1rem;
+        border: none;
+        border-radius: 4px 0 0 4px;
+        font-size: 0.9rem;
+        box-shadow: inset 0 1px 2px rgba(0,0,0,0.05);
+    }
+
+    .search-bar button {
+        width: 40px;
+        background: var(--accent-color);
+        border: none;
+        border-radius: 0 4px 4px 0;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .search-icon {
+        display: inline-block;
+        width: 16px;
+        height: 16px;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23333333'%3E%3Cpath d='M15.5 14h-.79l-.28-.27a6.5 6.5 0 0 0 1.48-5.34c-.47-2.78-2.79-5-5.59-5.34a6.505 6.505 0 0 0-7.27 7.27c.34 2.8 2.56 5.12 5.34 5.59a6.5 6.5 0 0 0 5.34-1.48l.27.28v.79l4.25 4.25c.41.41 1.08.41 1.49 0 .41-.41.41-1.08 0-1.49L15.5 14zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: center;
+    }
+
+    .user-actions {
+        display: flex;
+        align-items: center;
+    }
+
+    .user-actions a {
+        margin-left: 0.5rem;
+    }
+
+    .user-toggle {
+        display: flex;
+        align-items: center;
+        padding: 0.5rem 0.75rem !important;
+        border-radius: 4px;
+        background-color: rgba(255, 255, 255, 0.1);
+    }
+
+    .avatar-mini {
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        object-fit: cover;
+        margin-right: 0.5rem;
+    }
+
+    .avatar-mini-text {
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        background-color: var(--secondary-color);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        margin-right: 0.5rem;
+        font-size: 0.9rem;
+    }
+
+    .username {
+        max-width: 120px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .menu-toggle {
+        display: none;
+        background: transparent;
+        border: none;
+        cursor: pointer;
+        padding: 0.5rem;
+        z-index: 1002;
+    }
+
+    .menu-toggle .line {
+        display: block;
+        width: 24px;
+        height: 3px;
+        background-color: white;
+        margin: 5px 0;
+        border-radius: 3px;
+        transition: all 0.3s ease;
+    }
+
+    @media (max-width: 1100px) {
+        .search-bar {
+            order: 3;
+            max-width: 100%;
+            margin: 0.75rem 0 0;
+            width: 100%;
+        }
+    }
+
+    @media (max-width: 991px) {
+        .menu-toggle {
+            display: block;
+            order: 3;
+        }
+        
+        .logo {
+            flex-grow: 1;
+        }
+        
+        .main-nav {
+            flex-basis: 100%;
+            margin-left: 0;
+            margin-top: 1rem;
+            display: none;
+            order: 4;
+        }
+        
+        .main-nav.active {
+            display: block;
+        }
+        
+        .main-nav ul {
+            flex-direction: column;
+        }
+        
+        .main-nav li {
+            margin: 0;
+        }
+        
+        .dropdown-menu {
+            position: static;
+            box-shadow: none;
+            padding-left: 1.5rem;
+            display: none;
+            border: none;
+        }
+        
+        .dropdown.active .dropdown-menu {
+            display: block;
+        }
+        
+        .menu-toggle.active .line:nth-child(1) {
+            transform: rotate(45deg) translate(5px, 6px);
+        }
+        
+        .menu-toggle.active .line:nth-child(2) {
+            opacity: 0;
+        }
+        
+        .menu-toggle.active .line:nth-child(3) {
+            transform: rotate(-45deg) translate(5px, -6px);
+        }
+        
+        .search-bar {
+            order: 5;
+        }
+    }
+</style> 
