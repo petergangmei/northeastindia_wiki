@@ -1,0 +1,346 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ tag.name }} - Articles | Northeast India Wiki{% endblock %}
+
+{% block extra_css %}
+<style>
+    .tag-header {
+        background-color: rgba(var(--mdb-primary-rgb), 0.05);
+        padding: 3rem 0;
+        margin-bottom: 2rem;
+        border-bottom: 1px solid rgba(var(--mdb-primary-rgb), 0.1);
+    }
+    
+    .tag-description {
+        max-width: 800px;
+        margin: 0 auto;
+    }
+    
+    .related-tags {
+        margin-top: 1.5rem;
+    }
+    
+    .related-tags .badge {
+        margin-right: 0.5rem;
+        margin-bottom: 0.5rem;
+        font-size: 0.85rem;
+        padding: 0.5rem 0.75rem;
+        transition: all 0.2s ease;
+    }
+    
+    .related-tags .badge:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+    
+    .article-card {
+        height: 100%;
+        transition: all 0.2s ease;
+        overflow: hidden;
+    }
+    
+    .article-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.1) !important;
+    }
+    
+    .card-img-top {
+        height: 180px;
+        object-fit: cover;
+    }
+    
+    .article-meta {
+        font-size: 0.85rem;
+        color: #6c757d;
+    }
+    
+    .article-tags {
+        margin-top: 0.75rem;
+    }
+    
+    .article-tags .badge {
+        margin-right: 0.3rem;
+        margin-bottom: 0.3rem;
+        font-size: 0.75rem;
+    }
+    
+    .article-excerpt {
+        margin-top: 0.75rem;
+        overflow: hidden;
+        display: -webkit-box;
+        -webkit-line-clamp: 3;
+        -webkit-box-orient: vertical;
+    }
+    
+    .filter-sidebar {
+        position: sticky;
+        top: 90px;
+    }
+    
+    .empty-state {
+        text-align: center;
+        padding: 3rem 0;
+    }
+    
+    .empty-state .icon {
+        font-size: 3rem;
+        color: var(--mdb-primary);
+        margin-bottom: 1rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Tag header section -->
+<section class="tag-header">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-10 mx-auto text-center">
+                <h1 class="display-5 mb-3">Articles tagged with "{{ tag.name }}"</h1>
+                
+                {% if tag.description %}
+                <div class="tag-description">
+                    <p class="lead mb-0">{{ tag.description }}</p>
+                </div>
+                {% endif %}
+                
+                {% if related_tags %}
+                <div class="related-tags">
+                    <h6 class="text-uppercase mb-3">Related Tags</h6>
+                    {% for related in related_tags %}
+                    <a href="{% url 'app:article_tag' slug=related.slug %}" class="badge bg-light text-dark text-decoration-none">
+                        {{ related.name }}
+                    </a>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</section>
+
+<div class="container my-5">
+    <div class="row">
+        <!-- Sidebar filters -->
+        <div class="col-lg-3 mb-4">
+            <div class="filter-sidebar">
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-header bg-light">
+                        <h5 class="mb-0">Filter Articles</h5>
+                    </div>
+                    <div class="card-body">
+                        <form method="get" action="">
+                            <!-- Sort options -->
+                            <div class="mb-3">
+                                <label for="sort" class="form-label">Sort By</label>
+                                <select class="form-select" id="sort" name="sort">
+                                    <option value="newest" {% if sort == 'newest' %}selected{% endif %}>Newest First</option>
+                                    <option value="oldest" {% if sort == 'oldest' %}selected{% endif %}>Oldest First</option>
+                                    <option value="az" {% if sort == 'az' %}selected{% endif %}>Alphabetical (A-Z)</option>
+                                    <option value="za" {% if sort == 'za' %}selected{% endif %}>Alphabetical (Z-A)</option>
+                                    <option value="popular" {% if sort == 'popular' %}selected{% endif %}>Most Popular</option>
+                                </select>
+                            </div>
+                            
+                            <!-- Category filter -->
+                            {% if categories %}
+                            <div class="mb-3">
+                                <label class="form-label">Categories</label>
+                                {% for category in categories %}
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" value="{{ category.id }}" 
+                                           id="category-{{ category.id }}" name="category" 
+                                           {% if category.id|stringformat:"i" in selected_categories %}checked{% endif %}>
+                                    <label class="form-check-label" for="category-{{ category.id }}">
+                                        {{ category.name }}
+                                    </label>
+                                </div>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                            
+                            <!-- Date range filter -->
+                            <div class="mb-3">
+                                <label class="form-label">Date Range</label>
+                                <div class="input-group mb-2">
+                                    <span class="input-group-text">From</span>
+                                    <input type="date" class="form-control" id="date_from" name="date_from" value="{{ date_from|default:'' }}">
+                                </div>
+                                <div class="input-group">
+                                    <span class="input-group-text">To</span>
+                                    <input type="date" class="form-control" id="date_to" name="date_to" value="{{ date_to|default:'' }}">
+                                </div>
+                            </div>
+                            
+                            <button type="submit" class="btn btn-primary w-100">Apply Filters</button>
+                            {% if is_filtered %}
+                            <a href="{% url 'app:article_tag' slug=tag.slug %}" class="btn btn-outline-secondary w-100 mt-2">Clear Filters</a>
+                            {% endif %}
+                        </form>
+                    </div>
+                </div>
+                
+                <!-- Tag stats card -->
+                <div class="card border-0 shadow-sm">
+                    <div class="card-header bg-light">
+                        <h5 class="mb-0">Tag Statistics</h5>
+                    </div>
+                    <div class="card-body">
+                        <ul class="list-group list-group-flush">
+                            <li class="list-group-item d-flex justify-content-between align-items-center px-0">
+                                Total Articles
+                                <span class="badge bg-primary rounded-pill">{{ total_articles }}</span>
+                            </li>
+                            <li class="list-group-item d-flex justify-content-between align-items-center px-0">
+                                Contributors
+                                <span class="badge bg-primary rounded-pill">{{ contributors_count }}</span>
+                            </li>
+                            <li class="list-group-item d-flex justify-content-between align-items-center px-0">
+                                Last Updated
+                                <span class="text-muted">{{ last_updated|date:"M d, Y" }}</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Articles list -->
+        <div class="col-lg-9">
+            {% if articles %}
+            <!-- Filter summary if any filters are applied -->
+            {% if is_filtered %}
+            <div class="alert alert-light mb-4">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <i class="fas fa-filter me-2"></i> Showing {{ articles.count }} filtered results
+                        {% if selected_categories_names %}
+                        <span class="ms-2 badge rounded-pill bg-light text-dark">
+                            Categories: {{ selected_categories_names|join:", " }}
+                        </span>
+                        {% endif %}
+                        {% if date_from or date_to %}
+                        <span class="ms-2 badge rounded-pill bg-light text-dark">
+                            Date: {% if date_from %}From {{ date_from }}{% endif %}
+                            {% if date_to %}To {{ date_to }}{% endif %}
+                        </span>
+                        {% endif %}
+                    </div>
+                    <a href="{% url 'app:article_tag' slug=tag.slug %}" class="btn btn-sm btn-outline-secondary">
+                        <i class="fas fa-times me-1"></i> Clear
+                    </a>
+                </div>
+            </div>
+            {% endif %}
+            
+            <div class="row row-cols-1 row-cols-md-2 g-4">
+                {% for article in articles %}
+                <div class="col">
+                    <div class="card h-100 article-card border-0 shadow-sm">
+                        {% if article.featured_image %}
+                        <img src="{{ article.featured_image.url }}" class="card-img-top" alt="{{ article.title }}">
+                        {% else %}
+                        <div class="bg-light card-img-top d-flex justify-content-center align-items-center">
+                            <i class="fas fa-image text-muted" style="font-size: 3rem;"></i>
+                        </div>
+                        {% endif %}
+                        <div class="card-body">
+                            <h5 class="card-title">
+                                <a href="{% url 'app:article_detail' slug=article.slug %}" class="text-decoration-none">
+                                    {{ article.title }}
+                                </a>
+                            </h5>
+                            <div class="article-meta">
+                                <span><i class="far fa-user me-1"></i> {{ article.author.username }}</span>
+                                <span class="ms-3"><i class="far fa-calendar-alt me-1"></i> {{ article.created_at|date:"M d, Y" }}</span>
+                                {% if article.read_time %}
+                                <span class="ms-3"><i class="far fa-clock me-1"></i> {{ article.read_time }} min read</span>
+                                {% endif %}
+                            </div>
+                            {% if article.tags.all %}
+                            <div class="article-tags">
+                                {% for tag in article.tags.all %}
+                                <a href="{% url 'app:article_tag' slug=tag.slug %}" class="badge bg-light text-dark text-decoration-none">
+                                    {{ tag.name }}
+                                </a>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                            {% if article.summary %}
+                            <p class="article-excerpt">{{ article.summary }}</p>
+                            {% endif %}
+                        </div>
+                        <div class="card-footer bg-transparent border-0">
+                            <a href="{% url 'app:article_detail' slug=article.slug %}" class="btn btn-sm btn-outline-primary">
+                                Read Article <i class="fas fa-arrow-right ms-1"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            
+            <!-- Pagination -->
+            {% if is_paginated %}
+            <nav aria-label="Page navigation" class="mt-5">
+                <ul class="pagination justify-content-center">
+                    {% if page_obj.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page=1{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" aria-label="First">
+                            <span aria-hidden="true">&laquo;&laquo;</span>
+                        </a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" aria-label="Previous">
+                            <span aria-hidden="true">&laquo;</span>
+                        </a>
+                    </li>
+                    {% endif %}
+                    
+                    {% for num in page_obj.paginator.page_range %}
+                    {% if page_obj.number == num %}
+                    <li class="page-item active"><a class="page-link" href="#">{{ num }}</a></li>
+                    {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ num }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
+                            {{ num }}
+                        </a>
+                    </li>
+                    {% endif %}
+                    {% endfor %}
+                    
+                    {% if page_obj.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" aria-label="Next">
+                            <span aria-hidden="true">&raquo;</span>
+                        </a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" aria-label="Last">
+                            <span aria-hidden="true">&raquo;&raquo;</span>
+                        </a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+            {% endif %}
+            
+            {% else %}
+            <!-- Empty state -->
+            <div class="empty-state">
+                <div class="icon">
+                    <i class="fas fa-tag"></i>
+                </div>
+                <h3>No Articles Found</h3>
+                <p class="text-muted mb-4">There are no articles tagged with "{{ tag.name }}" {% if is_filtered %}matching your filters{% endif %}.</p>
+                {% if is_filtered %}
+                <a href="{% url 'app:article_tag' slug=tag.slug %}" class="btn btn-primary">Clear Filters</a>
+                {% else %}
+                <a href="{% url 'app:article_create' %}" class="btn btn-primary">Create an Article</a>
+                {% endif %}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %} 

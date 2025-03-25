@@ -1,0 +1,283 @@
+{% extends 'base.html' %}
+
+{% block title %}Categories | Northeast India Wiki{% endblock %}
+
+{% block extra_css %}
+<style>
+    .category-card {
+        transition: all 0.3s ease;
+        border: none;
+        height: 100%;
+    }
+    
+    .category-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1) !important;
+    }
+    
+    .category-card .card-img-overlay {
+        background: linear-gradient(to bottom, rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.7));
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-end;
+    }
+    
+    .category-header {
+        background-color: rgba(var(--mdb-primary-rgb), 0.05);
+        padding: 3rem 0;
+        margin-bottom: 2rem;
+    }
+    
+    .category-img {
+        height: 180px;
+        object-fit: cover;
+    }
+    
+    .no-image-placeholder {
+        height: 180px;
+        background-color: #e9ecef;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #6c757d;
+    }
+    
+    .subcategory-list {
+        margin-top: 1rem;
+    }
+    
+    .subcategory-list .badge {
+        margin-right: 0.5rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    .category-stats {
+        margin-top: 1rem;
+        font-size: 0.9rem;
+    }
+    
+    .most-recent {
+        font-size: 0.85rem;
+        margin-top: 1rem;
+    }
+    
+    .most-recent a {
+        text-decoration: none;
+    }
+    
+    .most-recent a:hover {
+        text-decoration: underline;
+    }
+    
+    .featured-category {
+        position: relative;
+        overflow: hidden;
+        border-radius: 0.375rem;
+        margin-bottom: 2rem;
+    }
+    
+    .featured-category-image {
+        width: 100%;
+        height: 350px;
+        object-fit: cover;
+    }
+    
+    .featured-category-content {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        padding: 2rem;
+        background: linear-gradient(to top, rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0));
+        color: white;
+    }
+    
+    .featured-badge {
+        position: absolute;
+        top: 1rem;
+        right: 1rem;
+        z-index: 2;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Category header section -->
+<section class="category-header">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 mx-auto text-center">
+                <h1 class="display-5 mb-3">Article Categories</h1>
+                <p class="lead">Browse articles by category to discover content about specific topics related to Northeast India.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<div class="container my-5">
+    <!-- Featured category (if any) -->
+    {% if featured_category %}
+    <div class="featured-category shadow">
+        <span class="badge bg-primary featured-badge">Featured Category</span>
+        {% if featured_category.image %}
+        <img src="{{ featured_category.image.url }}" alt="{{ featured_category.name }}" class="featured-category-image">
+        {% else %}
+        <div class="featured-category-image bg-light d-flex align-items-center justify-content-center">
+            <i class="fas fa-folder-open" style="font-size: 4rem; color: #6c757d;"></i>
+        </div>
+        {% endif %}
+        <div class="featured-category-content">
+            <h2 class="h1 mb-3">{{ featured_category.name }}</h2>
+            <p class="lead mb-4">{{ featured_category.description }}</p>
+            <div class="mb-3">
+                <span class="badge bg-light text-dark">{{ featured_category.article_count }} Articles</span>
+                {% if featured_category.subcategories.count > 0 %}
+                <span class="badge bg-light text-dark ms-2">{{ featured_category.subcategories.count }} Subcategories</span>
+                {% endif %}
+            </div>
+            <a href="{% url 'app:article_category' slug=featured_category.slug %}" class="btn btn-light">
+                Explore Category <i class="fas fa-arrow-right ms-2"></i>
+            </a>
+        </div>
+    </div>
+    {% endif %}
+    
+    <!-- Main categories grid -->
+    <div class="row mb-5">
+        <div class="col-12">
+            <h2 class="h3 mb-4">Main Categories</h2>
+        </div>
+        
+        {% for category in main_categories %}
+        <div class="col-md-6 col-lg-4 mb-4">
+            <div class="card category-card shadow-sm h-100">
+                {% if category.image %}
+                <img src="{{ category.image.url }}" class="card-img-top category-img" alt="{{ category.name }}">
+                {% else %}
+                <div class="no-image-placeholder">
+                    <i class="fas fa-folder-open" style="font-size: 3rem;"></i>
+                </div>
+                {% endif %}
+                <div class="card-body">
+                    <h3 class="h5 card-title">
+                        <a href="{% url 'app:article_category' slug=category.slug %}" class="text-decoration-none">
+                            {{ category.name }}
+                        </a>
+                    </h3>
+                    {% if category.description %}
+                    <p class="card-text">{{ category.description|truncatechars:100 }}</p>
+                    {% endif %}
+                    
+                    <div class="category-stats d-flex justify-content-between">
+                        <span><i class="fas fa-newspaper me-1"></i> {{ category.article_count }} Articles</span>
+                        {% if category.subcategories.count > 0 %}
+                        <span><i class="fas fa-folder me-1"></i> {{ category.subcategories.count }} Subcategories</span>
+                        {% endif %}
+                    </div>
+                    
+                    {% if category.subcategories.count > 0 %}
+                    <div class="subcategory-list">
+                        <small class="text-muted d-block mb-2">Subcategories:</small>
+                        {% for subcategory in category.subcategories|slice:":3" %}
+                        <a href="{% url 'app:article_category' slug=subcategory.slug %}" class="badge bg-light text-dark text-decoration-none">
+                            {{ subcategory.name }}
+                        </a>
+                        {% endfor %}
+                        {% if category.subcategories.count > 3 %}
+                        <span class="badge bg-light text-dark">+{{ category.subcategories.count|add:"-3" }} more</span>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                    
+                    {% if category.latest_article %}
+                    <div class="most-recent">
+                        <small class="text-muted">Most recent article:</small>
+                        <a href="{% url 'app:article_detail' slug=category.latest_article.slug %}" class="d-block">
+                            {{ category.latest_article.title|truncatechars:50 }}
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="card-footer bg-transparent border-0">
+                    <a href="{% url 'app:article_category' slug=category.slug %}" class="btn btn-sm btn-outline-primary">View Category</a>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12">
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle me-2"></i> No categories have been created yet.
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    
+    <!-- Popular categories -->
+    {% if popular_categories %}
+    <div class="row mb-5">
+        <div class="col-12">
+            <h2 class="h3 mb-4">Popular Categories</h2>
+        </div>
+        
+        <div class="col-12">
+            <div class="row row-cols-2 row-cols-md-3 row-cols-lg-4 g-3">
+                {% for category in popular_categories %}
+                <div class="col">
+                    <div class="card h-100 shadow-sm">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center mb-3">
+                                <span class="text-primary me-2"><i class="fas fa-folder"></i></span>
+                                <h5 class="card-title mb-0">
+                                    <a href="{% url 'app:article_category' slug=category.slug %}" class="text-decoration-none">
+                                        {{ category.name }}
+                                    </a>
+                                </h5>
+                            </div>
+                            <div class="d-flex justify-content-between">
+                                <span class="badge bg-light text-dark">{{ category.article_count }} Articles</span>
+                                {% if category.view_count %}
+                                <span class="badge bg-light text-dark"><i class="fas fa-eye me-1"></i> {{ category.view_count }}</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    
+    <!-- Category tree -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-header bg-light">
+                    <h2 class="h3 mb-0">All Categories</h2>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        {% for letter_group in categories_by_letter %}
+                        {% if letter_group.categories %}
+                        <div class="col-md-6 col-lg-4 mb-4">
+                            <h3 class="h5 border-bottom pb-2 mb-3">{{ letter_group.letter }}</h3>
+                            <ul class="list-unstyled">
+                                {% for category in letter_group.categories %}
+                                <li class="mb-2">
+                                    <a href="{% url 'app:article_category' slug=category.slug %}" class="text-decoration-none">
+                                        {{ category.name }}
+                                    </a>
+                                    <span class="badge bg-light text-dark ms-1">{{ category.article_count }}</span>
+                                </li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                        {% endif %}
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

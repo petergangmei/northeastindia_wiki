@@ -1,0 +1,337 @@
+{% extends 'base.html' %}
+
+{% block title %}Compare Revisions - {{ article.title }} | Northeast India Wiki{% endblock %}
+
+{% block extra_css %}
+<style>
+    .diff-wrapper {
+        margin: 20px 0;
+        border: 1px solid #e0e0e0;
+        border-radius: 0.375rem;
+        overflow: hidden;
+    }
+    .diff-header {
+        background-color: #f8f9fa;
+        padding: 0.75rem 1rem;
+        border-bottom: 1px solid #e0e0e0;
+        font-weight: 500;
+    }
+    .diff-content {
+        padding: 1rem;
+        overflow-x: auto;
+    }
+    .diff-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-family: monospace;
+        white-space: pre-wrap;
+        line-height: 1.5;
+    }
+    .diff-table td {
+        padding: 2px 5px;
+        vertical-align: top;
+    }
+    .diff-line-num {
+        user-select: none;
+        text-align: right;
+        color: #6c757d;
+        width: 40px;
+        border-right: 1px solid #dee2e6;
+        padding-right: 10px;
+    }
+    .diff-added {
+        background-color: #e6ffec;
+    }
+    .diff-removed {
+        background-color: #ffebe9;
+    }
+    .diff-unchanged {
+        background-color: #ffffff;
+    }
+    .diff-marker {
+        width: 20px;
+        text-align: center;
+        user-select: none;
+        font-weight: bold;
+    }
+    .diff-marker-added {
+        color: #2da44e;
+    }
+    .diff-marker-removed {
+        color: #cf222e;
+    }
+    .revision-info {
+        background-color: rgba(var(--mdb-primary-rgb), 0.05);
+        border-radius: 0.375rem;
+        padding: 15px;
+        margin-bottom: 20px;
+    }
+    .comparison-nav {
+        margin-bottom: 1.5rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row">
+        <div class="col-lg-10 mx-auto">
+            
+            <!-- Comparison header -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-primary text-white">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h2 class="h4 mb-0">Comparing Revisions</h2>
+                        <div>
+                            <a href="{% url 'app:article_history' slug=article.slug %}" class="btn btn-sm btn-light">
+                                <i class="fas fa-history me-1"></i> Back to History
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <!-- Revision selection form -->
+                    <form method="get" class="row mb-4">
+                        <div class="col-md-5">
+                            <label for="from_revision" class="form-label">From Revision:</label>
+                            <select name="from_revision" id="from_revision" class="form-select">
+                                {% for rev in all_revisions %}
+                                <option value="{{ rev.id }}" {% if rev.id == from_revision.id %}selected{% endif %}>
+                                    #{{ rev.id }} - {{ rev.created_at|date:"Y-m-d H:i" }} by {{ rev.user.username }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-5">
+                            <label for="to_revision" class="form-label">To Revision:</label>
+                            <select name="to_revision" id="to_revision" class="form-select">
+                                {% for rev in all_revisions %}
+                                <option value="{{ rev.id }}" {% if rev.id == to_revision.id %}selected{% endif %}>
+                                    #{{ rev.id }} - {{ rev.created_at|date:"Y-m-d H:i" }} by {{ rev.user.username }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-2 d-flex align-items-end">
+                            <button type="submit" class="btn btn-primary w-100">Compare</button>
+                        </div>
+                    </form>
+                    
+                    <!-- Revision info cards -->
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <div class="revision-info">
+                                <h4 class="h5">From: Revision #{{ from_revision.id }}</h4>
+                                <p class="mb-1"><strong>Author:</strong> {{ from_revision.user.username }}</p>
+                                <p class="mb-1"><strong>Date:</strong> {{ from_revision.created_at|date:"F j, Y H:i" }}</p>
+                                {% if from_revision.comment %}
+                                <p class="mb-1"><strong>Comment:</strong> {{ from_revision.comment }}</p>
+                                {% endif %}
+                                <a href="{% url 'app:article_revision' slug=article.slug revision_id=from_revision.id %}" class="btn btn-sm btn-outline-primary mt-2">
+                                    View This Revision
+                                </a>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="revision-info">
+                                <h4 class="h5">To: Revision #{{ to_revision.id }}</h4>
+                                <p class="mb-1"><strong>Author:</strong> {{ to_revision.user.username }}</p>
+                                <p class="mb-1"><strong>Date:</strong> {{ to_revision.created_at|date:"F j, Y H:i" }}</p>
+                                {% if to_revision.comment %}
+                                <p class="mb-1"><strong>Comment:</strong> {{ to_revision.comment }}</p>
+                                {% endif %}
+                                <a href="{% url 'app:article_revision' slug=article.slug revision_id=to_revision.id %}" class="btn btn-sm btn-outline-primary mt-2">
+                                    View This Revision
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Tabs for different diffs -->
+                    <ul class="nav nav-tabs mb-3" id="diffTabs" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="content-diff-tab" data-bs-toggle="tab" data-bs-target="#content-diff" 
+                                    type="button" role="tab" aria-controls="content-diff" aria-selected="true">
+                                Content Changes
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="title-diff-tab" data-bs-toggle="tab" data-bs-target="#title-diff" 
+                                    type="button" role="tab" aria-controls="title-diff" aria-selected="false">
+                                Title Changes
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="metadata-diff-tab" data-bs-toggle="tab" data-bs-target="#metadata-diff" 
+                                    type="button" role="tab" aria-controls="metadata-diff" aria-selected="false">
+                                Metadata Changes
+                            </button>
+                        </li>
+                    </ul>
+                    
+                    <!-- Tab content -->
+                    <div class="tab-content" id="diffTabsContent">
+                        <!-- Content diff tab -->
+                        <div class="tab-pane fade show active" id="content-diff" role="tabpanel" aria-labelledby="content-diff-tab">
+                            {% if content_diff_lines %}
+                            <div class="diff-wrapper">
+                                <div class="diff-header">Content Changes</div>
+                                <div class="diff-content">
+                                    <table class="diff-table">
+                                        <tbody>
+                                            {% for line in content_diff_lines %}
+                                            <tr class="{% if line.type == 'added' %}diff-added{% elif line.type == 'removed' %}diff-removed{% else %}diff-unchanged{% endif %}">
+                                                <td class="diff-line-num">{{ line.line_num_old|default:'' }}</td>
+                                                <td class="diff-line-num">{{ line.line_num_new|default:'' }}</td>
+                                                <td class="diff-marker {% if line.type == 'added' %}diff-marker-added{% elif line.type == 'removed' %}diff-marker-removed{% endif %}">
+                                                    {% if line.type == 'added' %}+{% elif line.type == 'removed' %}-{% else %} {% endif %}
+                                                </td>
+                                                <td>{{ line.content }}</td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                            {% else %}
+                            <div class="alert alert-info">
+                                <i class="fas fa-info-circle me-2"></i> No content changes between these revisions.
+                            </div>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- Title diff tab -->
+                        <div class="tab-pane fade" id="title-diff" role="tabpanel" aria-labelledby="title-diff-tab">
+                            <div class="card">
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <h5>From:</h5>
+                                            <div class="p-3 border rounded bg-light">
+                                                {{ from_revision.title }}
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <h5>To:</h5>
+                                            <div class="p-3 border rounded bg-light">
+                                                {{ to_revision.title }}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Metadata diff tab -->
+                        <div class="tab-pane fade" id="metadata-diff" role="tabpanel" aria-labelledby="metadata-diff-tab">
+                            <div class="table-responsive">
+                                <table class="table table-bordered">
+                                    <thead>
+                                        <tr>
+                                            <th>Metadata</th>
+                                            <th>From: Revision #{{ from_revision.id }}</th>
+                                            <th>To: Revision #{{ to_revision.id }}</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <th>Categories</th>
+                                            <td>
+                                                {% for category in from_categories %}
+                                                <span class="badge bg-secondary me-1">{{ category.name }}</span>
+                                                {% empty %}
+                                                <em>None</em>
+                                                {% endfor %}
+                                            </td>
+                                            <td>
+                                                {% for category in to_categories %}
+                                                <span class="badge bg-secondary me-1">{{ category.name }}</span>
+                                                {% empty %}
+                                                <em>None</em>
+                                                {% endfor %}
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <th>Tags</th>
+                                            <td>
+                                                {% for tag in from_tags %}
+                                                <span class="badge bg-info me-1">{{ tag.name }}</span>
+                                                {% empty %}
+                                                <em>None</em>
+                                                {% endfor %}
+                                            </td>
+                                            <td>
+                                                {% for tag in to_tags %}
+                                                <span class="badge bg-info me-1">{{ tag.name }}</span>
+                                                {% empty %}
+                                                <em>None</em>
+                                                {% endfor %}
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <th>Summary</th>
+                                            <td>{{ from_revision.summary|default:"No summary provided" }}</td>
+                                            <td>{{ to_revision.summary|default:"No summary provided" }}</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Review Status</th>
+                                            <td>
+                                                <span class="badge 
+                                                      {% if from_revision.review_status == 'draft' %}bg-secondary{% endif %}
+                                                      {% if from_revision.review_status == 'pending' %}bg-warning{% endif %}
+                                                      {% if from_revision.review_status == 'approved' %}bg-success{% endif %}
+                                                      {% if from_revision.review_status == 'rejected' %}bg-danger{% endif %}
+                                                      {% if from_revision.review_status == 'featured' %}bg-primary{% endif %}">
+                                                    {{ from_revision.get_review_status_display }}
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <span class="badge 
+                                                      {% if to_revision.review_status == 'draft' %}bg-secondary{% endif %}
+                                                      {% if to_revision.review_status == 'pending' %}bg-warning{% endif %}
+                                                      {% if to_revision.review_status == 'approved' %}bg-success{% endif %}
+                                                      {% if to_revision.review_status == 'rejected' %}bg-danger{% endif %}
+                                                      {% if to_revision.review_status == 'featured' %}bg-primary{% endif %}">
+                                                    {{ to_revision.get_review_status_display }}
+                                                </span>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Ensure from revision is older than to revision
+    const fromSelect = document.getElementById('from_revision');
+    const toSelect = document.getElementById('to_revision');
+    
+    fromSelect.addEventListener('change', function() {
+        const fromValue = parseInt(this.value);
+        const toValue = parseInt(toSelect.value);
+        
+        if (fromValue > toValue) {
+            toSelect.value = fromValue;
+        }
+    });
+    
+    toSelect.addEventListener('change', function() {
+        const toValue = parseInt(this.value);
+        const fromValue = parseInt(fromSelect.value);
+        
+        if (toValue < fromValue) {
+            fromSelect.value = toValue;
+        }
+    });
+});
+</script>
+{% endblock %} 

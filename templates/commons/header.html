@@ -65,11 +65,11 @@
                         <a class="dropdown-toggle d-flex align-items-center hidden-arrow" href="#"
                             id="userDropdown" role="button" data-mdb-toggle="dropdown" aria-expanded="false">
                             {% if user.profile.avatar %}
-                                <img src="{{ user.profile.avatar.url }}" class="rounded-circle" height="35"
+                                <img src="{{ user.profile.avatar.url }}" class="rounded-circle" height="25"
                                     alt="{{ user.username }}" loading="lazy">
                             {% else %}
                                 <div class="bg-accent rounded-circle d-flex justify-content-center align-items-center"
-                                    style="width: 35px; height: 35px;">
+                                    style="width: 25px; height: 25px;">
                                     <span class="text-white">{{ user.username|first|upper }}</span>
                                 </div>
                             {% endif %}
@@ -82,7 +82,12 @@
                                 <li><a class="dropdown-item" href="{% url 'admin:index' %}">Admin Panel</a></li>
                             {% endif %}
                             <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item" href="{% url 'app:logout' %}">Log Out</a></li>
+                            <li>
+                                <form method="post" action="{% url 'app:logout' %}" style="display: inline;">
+                                    {% csrf_token %}
+                                    <button type="submit" class="dropdown-item">Log Out</button>
+                                </form>
+                            </li>
                         </ul>
                     </div>
                 {% else %}

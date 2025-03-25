@@ -1,0 +1,246 @@
+{% extends 'base.html' %}
+
+{% block title %}All Tags | Northeast India Wiki{% endblock %}
+
+{% block extra_css %}
+<style>
+    .tag-cloud {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        margin: 2rem 0;
+    }
+    .tag-item {
+        margin: 0.5rem;
+        transition: all 0.2s ease-in-out;
+    }
+    .tag-item:hover {
+        transform: translateY(-3px);
+    }
+    .tag-item a {
+        text-decoration: none;
+        color: inherit;
+        display: block;
+        padding: 0.5rem 1rem;
+        border-radius: 50px;
+    }
+    .tag-size-1 { font-size: 0.8rem; opacity: 0.7; }
+    .tag-size-2 { font-size: 1rem; opacity: 0.8; }
+    .tag-size-3 { font-size: 1.2rem; opacity: 0.9; }
+    .tag-size-4 { font-size: 1.4rem; }
+    .tag-size-5 { font-size: 1.6rem; font-weight: bold; }
+    
+    .tag-list {
+        column-count: 1;
+    }
+    @media (min-width: 576px) {
+        .tag-list {
+            column-count: 2;
+        }
+    }
+    @media (min-width: 992px) {
+        .tag-list {
+            column-count: 3;
+        }
+    }
+    
+    .tag-list-item {
+        break-inside: avoid;
+        margin-bottom: 1rem;
+    }
+    
+    .tag-card {
+        height: 100%;
+        transition: all 0.2s ease;
+    }
+    .tag-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.1) !important;
+    }
+    
+    .letter-heading {
+        border-bottom: 2px solid var(--mdb-primary);
+        padding-bottom: 0.5rem;
+        margin-bottom: 1.5rem;
+        margin-top: 2rem;
+    }
+    
+    .alphabet-nav {
+        position: sticky;
+        top: 70px;
+        background-color: white;
+        padding: 10px 0;
+        border-radius: 0.375rem;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        z-index: 10;
+    }
+    
+    .alphabet-nav .nav-link {
+        padding: 0.25rem 0.5rem;
+        font-weight: 500;
+    }
+    
+    .alphabet-nav .nav-link.disabled {
+        color: #adb5bd;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row mb-4">
+        <div class="col-lg-8 mx-auto text-center">
+            <h1 class="display-5 mb-4">Tags</h1>
+            <p class="lead text-muted">Browse all topics and tags available on Northeast India Wiki. You can view articles by tag or check the tag cloud for popular topics.</p>
+        </div>
+    </div>
+    
+    <div class="row mb-5">
+        <div class="col-lg-10 mx-auto">
+            <!-- Tag cloud visualization -->
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <h2 class="h4 mb-4 text-center">Tag Cloud</h2>
+                    <div class="tag-cloud">
+                        {% for tag in tags %}
+                        <div class="tag-item tag-size-{{ tag.size }}">
+                            <a href="{% url 'app:article_tag' slug=tag.slug %}" class="bg-{{ tag.color|default:'primary' }} text-white">
+                                {{ tag.name }} {% if tag.count %}<span class="badge bg-light text-dark">{{ tag.count }}</span>{% endif %}
+                            </a>
+                        </div>
+                        {% empty %}
+                        <p class="text-muted">No tags available yet.</p>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Alphabetical list of tags -->
+    <div class="row">
+        <div class="col-lg-10 mx-auto">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <h2 class="h4 mb-4 text-center">All Tags Alphabetically</h2>
+                    
+                    <!-- Alphabet navigation -->
+                    <div class="alphabet-nav mb-4">
+                        <nav class="nav nav-pills flex-row justify-content-center">
+                            {% for letter in alphabet %}
+                            <a class="nav-link {% if not letter.has_tags %}disabled{% endif %}" 
+                               href="#letter-{{ letter.letter }}" 
+                               {% if not letter.has_tags %}tabindex="-1" aria-disabled="true"{% endif %}>
+                                {{ letter.letter }}
+                            </a>
+                            {% endfor %}
+                        </nav>
+                    </div>
+                    
+                    <!-- Alphabetical sections -->
+                    {% for letter_group in tags_by_letter %}
+                    {% if letter_group.tags %}
+                    <h3 id="letter-{{ letter_group.letter }}" class="letter-heading">{{ letter_group.letter }}</h3>
+                    <div class="tag-list mb-5">
+                        {% for tag in letter_group.tags %}
+                        <div class="tag-list-item">
+                            <div class="card tag-card border-0 shadow-sm">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <h4 class="h5 mb-0">
+                                            <a href="{% url 'app:article_tag' slug=tag.slug %}" class="text-decoration-none">
+                                                {{ tag.name }}
+                                            </a>
+                                        </h4>
+                                        <span class="badge bg-primary rounded-pill">{{ tag.count }}</span>
+                                    </div>
+                                    {% if tag.description %}
+                                    <p class="small text-muted mt-2 mb-0">{{ tag.description }}</p>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                    {% endfor %}
+                    
+                    {% if not tags_by_letter %}
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i> No tags have been created yet.
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Popular tags section -->
+    <div class="row mt-5">
+        <div class="col-lg-10 mx-auto">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <h2 class="h4 mb-4 text-center">Popular Tags</h2>
+                    
+                    <div class="row row-cols-1 row-cols-md-3 g-4">
+                        {% for tag in popular_tags %}
+                        <div class="col">
+                            <div class="card h-100 tag-card border-0 shadow-sm">
+                                <div class="card-body">
+                                    <div class="d-flex align-items-center mb-3">
+                                        <span class="text-primary me-2"><i class="fas fa-tag"></i></span>
+                                        <h5 class="card-title mb-0">
+                                            <a href="{% url 'app:article_tag' slug=tag.slug %}" class="text-decoration-none">
+                                                {{ tag.name }}
+                                            </a>
+                                        </h5>
+                                    </div>
+                                    {% if tag.description %}
+                                    <p class="card-text small">{{ tag.description|truncatechars:100 }}</p>
+                                    {% endif %}
+                                </div>
+                                <div class="card-footer bg-transparent border-0">
+                                    <small class="text-muted">{{ tag.count }} articles</small>
+                                </div>
+                            </div>
+                        </div>
+                        {% empty %}
+                        <div class="col-12">
+                            <div class="alert alert-info">
+                                <i class="fas fa-info-circle me-2"></i> No popular tags yet.
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Smooth scrolling for alphabet navigation
+    document.querySelectorAll('.alphabet-nav a.nav-link').forEach(link => {
+        link.addEventListener('click', function(e) {
+            e.preventDefault();
+            const targetId = this.getAttribute('href');
+            const targetElement = document.querySelector(targetId);
+            
+            if (targetElement) {
+                const headerOffset = 100;
+                const elementPosition = targetElement.getBoundingClientRect().top;
+                const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+                
+                window.scrollTo({
+                    top: offsetPosition,
+                    behavior: 'smooth'
+                });
+            }
+        });
+    });
+});
+</script>
+{% endblock %} 

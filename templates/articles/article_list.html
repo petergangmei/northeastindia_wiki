@@ -1,0 +1,226 @@
+{% extends 'base.html' %}
+
+{% block title %}Articles | Northeast India Wiki{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row">
+        <!-- Main content area -->
+        <div class="col-lg-9">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="h2">Articles</h1>
+                {% if user.is_authenticated and user.profile.role != 'viewer' %}
+                <a href="{% url 'app:article_create' %}" class="btn btn-primary">
+                    <i class="fas fa-plus-circle me-1"></i> Create Article
+                </a>
+                {% endif %}
+            </div>
+            
+            <!-- Active filters -->
+            {% if category_slug or tag_slug or state_slug or query %}
+            <div class="bg-light p-3 rounded mb-4">
+                <div class="d-flex align-items-center">
+                    <h6 class="mb-0 me-3">Active Filters:</h6>
+                    <div class="d-flex flex-wrap">
+                        {% if category_slug %}
+                        <span class="badge bg-primary me-2 mb-2">
+                            Category: {{ category_slug }} 
+                            <a href="?{% if tag_slug %}tag={{ tag_slug }}&{% endif %}{% if state_slug %}state={{ state_slug }}&{% endif %}{% if query %}q={{ query }}{% endif %}" class="text-white ms-1">
+                                <i class="fas fa-times"></i>
+                            </a>
+                        </span>
+                        {% endif %}
+                        
+                        {% if tag_slug %}
+                        <span class="badge bg-info me-2 mb-2">
+                            Tag: {{ tag_slug }}
+                            <a href="?{% if category_slug %}category={{ category_slug }}&{% endif %}{% if state_slug %}state={{ state_slug }}&{% endif %}{% if query %}q={{ query }}{% endif %}" class="text-white ms-1">
+                                <i class="fas fa-times"></i>
+                            </a>
+                        </span>
+                        {% endif %}
+                        
+                        {% if state_slug %}
+                        <span class="badge bg-secondary me-2 mb-2">
+                            State: {{ state_slug }}
+                            <a href="?{% if category_slug %}category={{ category_slug }}&{% endif %}{% if tag_slug %}tag={{ tag_slug }}&{% endif %}{% if query %}q={{ query }}{% endif %}" class="text-white ms-1">
+                                <i class="fas fa-times"></i>
+                            </a>
+                        </span>
+                        {% endif %}
+                        
+                        {% if query %}
+                        <span class="badge bg-dark me-2 mb-2">
+                            Search: {{ query }}
+                            <a href="?{% if category_slug %}category={{ category_slug }}&{% endif %}{% if tag_slug %}tag={{ tag_slug }}&{% endif %}{% if state_slug %}state={{ state_slug }}{% endif %}" class="text-white ms-1">
+                                <i class="fas fa-times"></i>
+                            </a>
+                        </span>
+                        {% endif %}
+                        
+                        <a href="{% url 'app:article_list' %}" class="btn btn-sm btn-outline-secondary mb-2">
+                            Clear All
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+            
+            <!-- Search form -->
+            <div class="mb-4">
+                <form action="{% url 'app:article_list' %}" method="get" class="input-group">
+                    <input type="text" name="q" class="form-control" placeholder="Search articles..." value="{{ query|default:'' }}">
+                    <button class="btn btn-primary" type="submit">
+                        <i class="fas fa-search"></i>
+                    </button>
+                </form>
+            </div>
+            
+            <!-- Articles grid -->
+            {% if page_obj %}
+            <div class="row row-cols-1 row-cols-md-2 g-4">
+                {% for article in page_obj %}
+                <div class="col">
+                    <div class="card h-100 border-0 shadow-sm">
+                        {% if article.featured_image %}
+                        <img src="{{ article.featured_image.url }}" class="card-img-top" alt="{{ article.title }}">
+                        {% else %}
+                        <div class="card-img-top bg-light d-flex align-items-center justify-content-center" style="height: 160px;">
+                            <i class="fas fa-file-alt fa-3x text-secondary"></i>
+                        </div>
+                        {% endif %}
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <h5 class="card-title">{{ article.title }}</h5>
+                            </div>
+                            
+                            <p class="card-text text-muted small mb-2">
+                                <i class="far fa-user me-1"></i> {{ article.author.username }} &middot;
+                                <i class="far fa-calendar me-1"></i> {{ article.published_at|date:"M d, Y" }}
+                            </p>
+                            
+                            {% if article.excerpt %}
+                            <p class="card-text">{{ article.excerpt|truncatewords:20 }}</p>
+                            {% else %}
+                            <p class="card-text">{{ article.content|striptags|truncatewords:20 }}</p>
+                            {% endif %}
+                            
+                            <div class="mt-3">
+                                {% for category in article.categories.all %}
+                                <a href="{% url 'app:article_list' %}?category={{ category.slug }}" class="badge bg-primary text-decoration-none me-1">
+                                    {{ category.name }}
+                                </a>
+                                {% endfor %}
+                                
+                                {% for tag in article.tags.all|slice:":3" %}
+                                <a href="{% url 'app:article_list' %}?tag={{ tag.slug }}" class="badge bg-info text-decoration-none me-1">
+                                    {{ tag.name }}
+                                </a>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        <div class="card-footer bg-white border-top-0">
+                            <a href="{% url 'app:article_detail' slug=article.slug %}" class="btn btn-sm btn-outline-primary stretched-link">Read More</a>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            
+            <!-- Pagination -->
+            {% if page_obj.has_other_pages %}
+            <nav aria-label="Article pagination" class="mt-4">
+                <ul class="pagination justify-content-center">
+                    {% if page_obj.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if category_slug %}&category={{ category_slug }}{% endif %}{% if tag_slug %}&tag={{ tag_slug }}{% endif %}{% if state_slug %}&state={{ state_slug }}{% endif %}{% if query %}&q={{ query }}{% endif %}" aria-label="Previous">
+                            <span aria-hidden="true">&laquo;</span>
+                        </a>
+                    </li>
+                    {% else %}
+                    <li class="page-item disabled">
+                        <span class="page-link">&laquo;</span>
+                    </li>
+                    {% endif %}
+                    
+                    {% for i in page_obj.paginator.page_range %}
+                        {% if page_obj.number == i %}
+                        <li class="page-item active"><span class="page-link">{{ i }}</span></li>
+                        {% else %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ i }}{% if category_slug %}&category={{ category_slug }}{% endif %}{% if tag_slug %}&tag={{ tag_slug }}{% endif %}{% if state_slug %}&state={{ state_slug }}{% endif %}{% if query %}&q={{ query }}{% endif %}">{{ i }}</a>
+                        </li>
+                        {% endif %}
+                    {% endfor %}
+                    
+                    {% if page_obj.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if category_slug %}&category={{ category_slug }}{% endif %}{% if tag_slug %}&tag={{ tag_slug }}{% endif %}{% if state_slug %}&state={{ state_slug }}{% endif %}{% if query %}&q={{ query }}{% endif %}" aria-label="Next">
+                            <span aria-hidden="true">&raquo;</span>
+                        </a>
+                    </li>
+                    {% else %}
+                    <li class="page-item disabled">
+                        <span class="page-link">&raquo;</span>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+            {% endif %}
+            
+            {% else %}
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle me-2"></i> No articles found. Please try different search criteria.
+            </div>
+            {% endif %}
+        </div>
+        
+        <!-- Sidebar -->
+        <div class="col-lg-3">
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Categories</h5>
+                </div>
+                <div class="card-body">
+                    <ul class="list-group list-group-flush">
+                        {% for category in categories %}
+                        <li class="list-group-item border-0 px-0">
+                            <a href="{% url 'app:article_list' %}?category={{ category.slug }}" class="d-flex justify-content-between align-items-center">
+                                <span>{{ category.name }}</span>
+                                <span class="badge bg-primary rounded-pill">
+                                    {{ category.article_items.count }}
+                                </span>
+                            </a>
+                        </li>
+                        {% empty %}
+                        <li class="list-group-item border-0 px-0 text-muted">No categories available</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Filter by State</h5>
+                </div>
+                <div class="card-body">
+                    <ul class="list-group list-group-flush">
+                        {% for state in states %}
+                        <li class="list-group-item border-0 px-0">
+                            <a href="{% url 'app:article_list' %}?state={{ state.slug }}" class="d-flex justify-content-between align-items-center">
+                                <span>{{ state.name }}</span>
+                                <span class="badge bg-secondary rounded-pill">
+                                    {{ state.article_items.count }}
+                                </span>
+                            </a>
+                        </li>
+                        {% empty %}
+                        <li class="list-group-item border-0 px-0 text-muted">No states available</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

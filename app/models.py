@@ -3,6 +3,7 @@ from django.contrib.auth.models import User
 from django.utils.text import slugify
 from django.urls import reverse
 from django.utils import timezone
+from tinymce.models import HTMLField
 
 class TimeStampedModel(models.Model):
     """
@@ -45,7 +46,7 @@ class UserProfile(models.Model):
         return self.user.username
     
     def get_absolute_url(self):
-        return reverse('user-profile', kwargs={'username': self.user.username})
+        return reverse('app:profile', kwargs={'username': self.user.username})
 
 
 class Category(TimeStampedModel):
@@ -124,7 +125,7 @@ class ContentItem(TimeStampedModel):
     """
     title = models.CharField(max_length=255)
     slug = models.SlugField(max_length=280, unique=True)
-    content = models.TextField()
+    content = HTMLField()
     excerpt = models.TextField(blank=True, help_text="A short summary of the content")
     published = models.BooleanField(default=False)
     published_at = models.DateTimeField(null=True, blank=True)

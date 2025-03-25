@@ -29,8 +29,10 @@
                     </div>
                 </div>
                 
-                {% if user_profile.user == request.user %}
-                    <a href="{% url 'app:edit_profile' %}" class="btn btn-outline">Edit Profile</a>
+                {% if request.user == user_profile.user %}
+                <div class="text-center my-3">
+                    <a href="{% url 'app:profile-edit' %}" class="btn btn-outline">Edit Profile</a>
+                </div>
                 {% endif %}
             </div>
         </div>

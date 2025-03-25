@@ -1,0 +1,273 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ title }} | Northeast India Wiki{% endblock %}
+
+{% block extra_css %}
+{{ form.media }}
+<style>
+    .tox-statusbar__branding {
+        display: none !important;
+    }
+    .asteriskField {
+        color: red;
+        margin-left: 2px;
+    }
+    .category-select, .tag-select, .state-select {
+        min-height: 100px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row">
+        <div class="col-lg-9 mx-auto">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h2 class="h4 mb-0">{{ title }}</h2>
+                </div>
+                <div class="card-body">
+                    <form method="post" enctype="multipart/form-data" id="article-form">
+                        {% csrf_token %}
+                        
+                        {% if form.non_field_errors %}
+                        <div class="alert alert-danger">
+                            {% for error in form.non_field_errors %}
+                            {{ error }}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                        
+                        <!-- Title field -->
+                        <div class="mb-3">
+                            <label for="{{ form.title.id_for_label }}" class="form-label">Title <span class="asteriskField">*</span></label>
+                            {{ form.title }}
+                            {% if form.title.errors %}
+                            <div class="invalid-feedback d-block">
+                                {% for error in form.title.errors %}
+                                {{ error }}
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                            <div class="form-text">Choose a descriptive title for your article</div>
+                        </div>
+                        
+                        <!-- Content field (TinyMCE) -->
+                        <div class="mb-3">
+                            <label for="{{ form.content.id_for_label }}" class="form-label">Content <span class="asteriskField">*</span></label>
+                            {{ form.content }}
+                            {% if form.content.errors %}
+                            <div class="invalid-feedback d-block">
+                                {% for error in form.content.errors %}
+                                {{ error }}
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- Excerpt field -->
+                        <div class="mb-3">
+                            <label for="{{ form.excerpt.id_for_label }}" class="form-label">Excerpt</label>
+                            {{ form.excerpt }}
+                            {% if form.excerpt.errors %}
+                            <div class="invalid-feedback d-block">
+                                {% for error in form.excerpt.errors %}
+                                {{ error }}
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                            <div class="form-text">A brief summary of the article (appears in search results and previews)</div>
+                        </div>
+                        
+                        <div class="row">
+                            <!-- Categories field -->
+                            <div class="col-md-4 mb-3">
+                                <label for="{{ form.categories.id_for_label }}" class="form-label">Categories</label>
+                                {{ form.categories }}
+                                {% if form.categories.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.categories.errors %}
+                                    {{ error }}
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                                <div class="form-text">Hold Ctrl/Cmd to select multiple</div>
+                            </div>
+                            
+                            <!-- Tags field -->
+                            <div class="col-md-4 mb-3">
+                                <label for="{{ form.tags.id_for_label }}" class="form-label">Tags</label>
+                                {{ form.tags }}
+                                {% if form.tags.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.tags.errors %}
+                                    {{ error }}
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                                <div class="form-text">Hold Ctrl/Cmd to select multiple</div>
+                            </div>
+                            
+                            <!-- States field -->
+                            <div class="col-md-4 mb-3">
+                                <label for="{{ form.states.id_for_label }}" class="form-label">Related States</label>
+                                {{ form.states }}
+                                {% if form.states.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.states.errors %}
+                                    {{ error }}
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                                <div class="form-text">Hold Ctrl/Cmd to select multiple</div>
+                            </div>
+                        </div>
+                        
+                        <!-- Featured image field -->
+                        <div class="mb-3">
+                            <label for="{{ form.featured_image.id_for_label }}" class="form-label">Featured Image</label>
+                            {% if article.featured_image %}
+                            <div class="mb-2">
+                                <img src="{{ article.featured_image.url }}" alt="Featured image" class="img-thumbnail" style="max-height: 150px;">
+                            </div>
+                            {% endif %}
+                            {{ form.featured_image }}
+                            {% if form.featured_image.errors %}
+                            <div class="invalid-feedback d-block">
+                                {% for error in form.featured_image.errors %}
+                                {{ error }}
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                            <div class="form-text">Upload an image to be displayed at the top of the article (optional)</div>
+                        </div>
+                        
+                        <!-- Meta description field -->
+                        <div class="mb-3">
+                            <label for="{{ form.meta_description.id_for_label }}" class="form-label">Meta Description</label>
+                            {{ form.meta_description }}
+                            {% if form.meta_description.errors %}
+                            <div class="invalid-feedback d-block">
+                                {% for error in form.meta_description.errors %}
+                                {{ error }}
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                            <div class="form-text">A brief description for search engines (max 160 characters)</div>
+                        </div>
+                        
+                        <!-- References field -->
+                        <div class="mb-3">
+                            <label for="{{ form.references.id_for_label }}" class="form-label">References</label>
+                            {{ form.references }}
+                            {% if form.references.errors %}
+                            <div class="invalid-feedback d-block">
+                                {% for error in form.references.errors %}
+                                {{ error }}
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                            <div class="form-text">List your sources and references</div>
+                        </div>
+                        
+                        {% if article %}
+                        <!-- Revision comment field (for edits) -->
+                        <div class="mb-3">
+                            <label for="{{ form.revision_comment.id_for_label }}" class="form-label">Revision Comment</label>
+                            {{ form.revision_comment }}
+                            {% if form.revision_comment.errors %}
+                            <div class="invalid-feedback d-block">
+                                {% for error in form.revision_comment.errors %}
+                                {{ error }}
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                            <div class="form-text">{{ form.revision_comment.help_text }}</div>
+                        </div>
+                        
+                        <!-- Revision history -->
+                        {% if revisions %}
+                        <div class="recent-revisions mb-3">
+                            <h6>Recent Revisions</h6>
+                            <div class="table-responsive">
+                                <table class="table table-sm">
+                                    <thead>
+                                        <tr>
+                                            <th>Date</th>
+                                            <th>User</th>
+                                            <th>Comment</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for rev in revisions|slice:":5" %}
+                                        <tr>
+                                            <td>{{ rev.created_at|date:"M d, Y H:i" }}</td>
+                                            <td>{{ rev.user.username }}</td>
+                                            <td>{{ rev.comment }}</td>
+                                            <td>
+                                                <a href="{% url 'app:article-revision' slug=article.slug revision_id=rev.id %}" class="btn btn-sm btn-outline-secondary" target="_blank">
+                                                    View
+                                                </a>
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                            <a href="{% url 'app:article-history' slug=article.slug %}" class="btn btn-sm btn-link">
+                                View All Revisions
+                            </a>
+                        </div>
+                        {% endif %}
+                        {% endif %}
+                        
+                        <div class="form-group mt-4">
+                            <a href="{% if article %}{% url 'app:article-detail' slug=article.slug %}{% else %}{% url 'app:article-list' %}{% endif %}" class="btn btn-outline-secondary">
+                                Cancel
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                {% if article %}Update{% else %}Create{% endif %} Article
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Add Bootstrap classes to form elements
+    const formElements = document.querySelectorAll('#article-form input[type="text"], #article-form input[type="email"], #article-form input[type="url"], #article-form textarea, #article-form select');
+    formElements.forEach(function(element) {
+        if (!element.classList.contains('mce-textbox')) {
+            element.classList.add('form-control');
+        }
+    });
+    
+    const fileInputs = document.querySelectorAll('#article-form input[type="file"]');
+    fileInputs.forEach(function(element) {
+        element.classList.add('form-control');
+    });
+    
+    const multiSelects = document.querySelectorAll('#article-form select[multiple]');
+    multiSelects.forEach(function(element) {
+        element.classList.add('form-select');
+        
+        // Add specific class based on field name
+        if (element.name.includes('categories')) {
+            element.classList.add('category-select');
+        } else if (element.name.includes('tags')) {
+            element.classList.add('tag-select');
+        } else if (element.name.includes('states')) {
+            element.classList.add('state-select');
+        }
+    });
+});
+</script>
+{% endblock %} 

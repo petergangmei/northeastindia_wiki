@@ -1,0 +1,155 @@
+{% extends 'base.html' %}
+
+{% block title %}Revision History for {{ article.title }} | Northeast India Wiki{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row">
+        <div class="col-lg-10 mx-auto">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div class="d-flex gap-2 align-items-center mb-3">
+                            <h1 class="article-title mb-0">{{ article.title }} <small class="text-muted">History</small></h1>
+                            <a href="{% url 'app:article-detail' slug=article.slug %}" class="btn btn-sm btn-light">
+                                View Article
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    {% if revisions %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Date & Time</th>
+                                    <th>User</th>
+                                    <th>Comment</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for revision in revisions %}
+                                <tr>
+                                    <td>{{ revision.created_at|date:"F j, Y H:i" }}</td>
+                                    <td>{{ revision.user.username }}</td>
+                                    <td>{{ revision.comment|default:"No comment" }}</td>
+                                    <td>
+                                        <a href="{% url 'app:article-revision' slug=article.slug revision_id=revision.id %}" class="btn btn-sm btn-outline-primary">
+                                            View
+                                        </a>
+                                        {% if user.is_staff or user.profile.role == 'admin' or user.profile.role == 'editor' %}
+                                        <button class="btn btn-sm btn-outline-secondary restore-btn" 
+                                                data-revision-id="{{ revision.id }}"
+                                                data-bs-toggle="modal" 
+                                                data-bs-target="#restoreModal">
+                                            Restore
+                                        </button>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i> No revision history available for this article.
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Article info card -->
+            <div class="card border-0 shadow-sm mt-4">
+                <div class="card-header bg-light">
+                    <h3 class="h5 mb-0">Article Information</h3>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p><strong>Author:</strong> {{ article.author.username }}</p>
+                            <p><strong>Created:</strong> {{ article.created_at|date:"F j, Y" }}</p>
+                            <p><strong>Last Updated:</strong> {{ article.updated_at|date:"F j, Y" }}</p>
+                            {% if article.last_edited_by %}
+                            <p><strong>Last Edited By:</strong> {{ article.last_edited_by.username }}</p>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong>Status:</strong> 
+                                <span class="badge {% if article.published %}bg-success{% else %}bg-warning{% endif %}">
+                                    {% if article.published %}Published{% else %}Unpublished{% endif %}
+                                </span>
+                                <span class="badge 
+                                    {% if article.review_status == 'draft' %}bg-secondary{% endif %}
+                                    {% if article.review_status == 'pending' %}bg-warning{% endif %}
+                                    {% if article.review_status == 'approved' %}bg-success{% endif %}
+                                    {% if article.review_status == 'rejected' %}bg-danger{% endif %}
+                                    {% if article.review_status == 'featured' %}bg-primary{% endif %}">
+                                    {{ article.get_review_status_display }}
+                                </span>
+                            </p>
+                            {% if article.published_at %}
+                            <p><strong>Published Date:</strong> {{ article.published_at|date:"F j, Y" }}</p>
+                            {% endif %}
+                            <p><strong>Total Revisions:</strong> {{ revisions.count }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Restore Confirmation Modal -->
+{% if user.is_staff or user.profile.role == 'admin' or user.profile.role == 'editor' %}
+<div class="modal fade" id="restoreModal" tabindex="-1" aria-labelledby="restoreModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="restoreModalLabel">Confirm Restore</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to restore this revision? This will overwrite the current article content.</p>
+                <p class="text-danger">This action cannot be undone!</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <form id="restoreForm" method="post" action="#">
+                    {% csrf_token %}
+                    <input type="hidden" name="revision_id" id="restoreRevisionId">
+                    <button type="submit" class="btn btn-primary">Restore This Revision</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Set up restore button functionality
+    const restoreBtns = document.querySelectorAll('.restore-btn');
+    restoreBtns.forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            const revisionId = this.getAttribute('data-revision-id');
+            document.getElementById('restoreRevisionId').value = revisionId;
+            document.getElementById('restoreForm').action = "{% url 'app:article-edit' slug=article.slug %}";
+        });
+    });
+});
+
+function restoreRevision(id, content) {
+    if (confirm('Are you sure you want to restore this revision? This will create a new revision with this content.')) {
+        document.getElementById('revision_content').value = content;
+        document.getElementById('revision_comment').value = 'Restored from revision #' + id;
+        document.getElementById('restoreForm').action = "{% url 'app:article-edit' slug=article.slug %}";
+        document.getElementById('restoreForm').submit();
+    }
+}
+</script>
+{% endblock %}
+{% endblock %} 

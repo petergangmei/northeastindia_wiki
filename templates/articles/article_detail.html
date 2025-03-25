@@ -1,0 +1,201 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ article.title }} | Northeast India Wiki{% endblock %}
+
+{% block og_title %}{{ article.title }} | Northeast India Wiki{% endblock %}
+{% block og_description %}{{ article.meta_description|default:article.excerpt }}{% endblock %}
+{% if article.featured_image %}
+{% block og_image %}{{ article.featured_image.url }}{% endblock %}
+{% endif %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row">
+        <!-- Main content area -->
+        <div class="col-lg-9">
+            <!-- Article header -->
+            <div class="mb-4">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <div class="article-categories mb-3">
+                            {% for category in article.categories.all %}
+                            <a href="{% url 'app:article-list' %}?category={{ category.slug }}" class="badge bg-primary text-decoration-none me-1 mb-2">
+                                {{ category.name }}
+                            </a>
+                            {% endfor %}
+                        </div>
+                        
+                        <h1 class="mt-2">{{ article.title }}</h1>
+                    </div>
+                    
+                    {% if request.user.is_authenticated and request.user == article.author or user_profile.role == 'editor' or user_profile.role == 'admin' %}
+                    <div>
+                        <div class="d-flex mb-3">
+                            <a href="{% url 'app:article-edit' slug=article.slug %}" class="btn btn-sm btn-outline-primary">
+                                <i class="fas fa-edit"></i> Edit
+                            </a>
+                            <a href="{% url 'app:article-history' slug=article.slug %}" class="btn btn-sm btn-outline-secondary">
+                                <i class="fas fa-history"></i> History
+                            </a>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <div class="text-muted mb-3">
+                    <span><i class="far fa-user me-1"></i> By {{ article.author.username }}</span>
+                    <span class="mx-2">&middot;</span>
+                    <span><i class="far fa-calendar me-1"></i> {{ article.published_at|date:"F j, Y" }}</span>
+                    {% if article.last_edited_by %}
+                    <span class="mx-2">&middot;</span>
+                    <span><i class="far fa-edit me-1"></i> Last edited by {{ article.last_edited_by.username }} on {{ article.updated_at|date:"F j, Y" }}</span>
+                    {% endif %}
+                </div>
+                
+                {% if article.featured_image %}
+                <div class="mb-4">
+                    <img src="{{ article.featured_image.url }}" class="img-fluid rounded" alt="{{ article.title }}">
+                </div>
+                {% endif %}
+                
+                {% if article.excerpt %}
+                <div class="lead mb-4">
+                    {{ article.excerpt }}
+                </div>
+                {% endif %}
+            </div>
+            
+            <!-- Article content -->
+            <div class="article-content mb-5">
+                {{ article.content|safe }}
+            </div>
+            
+            <!-- References section -->
+            {% if article.references %}
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">References</h5>
+                </div>
+                <div class="card-body">
+                    {{ article.references|linebreaks }}
+                </div>
+            </div>
+            {% endif %}
+            
+            <!-- Tags -->
+            {% if article.tags.exists %}
+            <div class="article-tags mb-4">
+                <h6>Tags:</h6>
+                {% for tag in article.tags.all %}
+                <a href="{% url 'app:article-list' %}?tag={{ tag.slug }}" class="badge bg-secondary text-decoration-none me-1">
+                    {{ tag.name }}
+                </a>
+                {% endfor %}
+            </div>
+            {% endif %}
+            
+            <!-- States -->
+            {% if article.states.exists %}
+            <div class="article-states mb-4">
+                <h6>States:</h6>
+                {% for state in article.states.all %}
+                <a href="{% url 'app:article-list' %}?state={{ state.slug }}" class="badge bg-info text-decoration-none me-1">
+                    {{ state.name }}
+                </a>
+                {% endfor %}
+            </div>
+            {% endif %}
+            
+            <!-- Related articles -->
+            {% if related_articles %}
+            <div class="mb-4">
+                <h3 class="h5 mb-3">Related Articles</h3>
+                <div class="row row-cols-1 row-cols-md-3 g-3">
+                    {% for related in related_articles %}
+                    <div class="col">
+                        <div class="card h-100 border-0 shadow-sm">
+                            {% if related.featured_image %}
+                            <img src="{{ related.featured_image.url }}" class="card-img-top" alt="{{ related.title }}" style="height: 120px; object-fit: cover;">
+                            {% else %}
+                            <div class="card-img-top bg-light d-flex align-items-center justify-content-center" style="height: 120px;">
+                                <i class="fas fa-file-alt fa-2x text-secondary"></i>
+                            </div>
+                            {% endif %}
+                            <div class="card-body">
+                                <h5 class="card-title h6">{{ related.title }}</h5>
+                                <p class="card-text">{{ related.summary|truncatechars:100 }}</p>
+                                <a href="{% url 'app:article-detail' slug=related.slug %}" class="stretched-link"></a>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+        
+        <!-- Sidebar -->
+        <div class="col-lg-3">
+            <div class="card border-0 shadow-sm mb-4 sticky-top" style="top: 1rem;">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Table of Contents</h5>
+                </div>
+                <div class="card-body">
+                    <div id="toc" class="px-0"></div>
+                    <hr>
+                    <div class="d-flex justify-content-between">
+                        <a href="{% url 'app:article-list' %}" class="btn btn-sm btn-outline-primary">
+                            <i class="fas fa-arrow-left me-1"></i> All Articles
+                        </a>
+                        {% if user.is_authenticated %}
+                        <button class="btn btn-sm btn-outline-secondary" onclick="window.print()">
+                            <i class="fas fa-print me-1"></i> Print
+                        </button>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block extra_js %}
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Generate table of contents
+    const articleContent = document.querySelector('.article-content');
+    const toc = document.getElementById('toc');
+    const headings = articleContent.querySelectorAll('h1, h2, h3, h4, h5, h6');
+    
+    if (headings.length > 0) {
+      const tocList = document.createElement('ul');
+      tocList.className = 'list-unstyled';
+      
+      headings.forEach((heading, index) => {
+        // Add ID to heading if it doesn't have one
+        if (!heading.id) {
+          heading.id = 'heading-' + index;
+        }
+        
+        const listItem = document.createElement('li');
+        const link = document.createElement('a');
+        link.href = '#' + heading.id;
+        link.textContent = heading.textContent;
+        link.className = 'text-decoration-none d-block py-1';
+        
+        // Add padding based on heading level
+        const level = parseInt(heading.tagName.substring(1));
+        listItem.style.paddingLeft = (level - 1) * 12 + 'px';
+        
+        listItem.appendChild(link);
+        tocList.appendChild(listItem);
+      });
+      
+      toc.appendChild(tocList);
+    } else {
+      toc.innerHTML = '<p class="text-muted">No table of contents available</p>';
+    }
+  });
+</script>
+{% endblock %}
+{% endblock %} 

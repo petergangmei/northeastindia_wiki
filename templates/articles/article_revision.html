@@ -1,0 +1,300 @@
+{% extends 'base.html' %}
+
+{% block title %}Revision #{{ revision.id }} - {{ article.title }} | Northeast India Wiki{% endblock %}
+
+{% block extra_css %}
+<style>
+    .diff-wrapper {
+        margin: 20px 0;
+        border: 1px solid #e0e0e0;
+        border-radius: 0.375rem;
+        overflow: hidden;
+    }
+    .diff-header {
+        background-color: #f8f9fa;
+        padding: 0.75rem 1rem;
+        border-bottom: 1px solid #e0e0e0;
+        font-weight: 500;
+    }
+    .diff-content {
+        padding: 1rem;
+        overflow-x: auto;
+    }
+    .diff-line {
+        font-family: monospace;
+        white-space: pre-wrap;
+        margin-bottom: 2px;
+        line-height: 1.5;
+        padding: 2px 5px;
+    }
+    .diff-added {
+        background-color: #e6ffec;
+        border-left: 3px solid #2da44e;
+    }
+    .diff-removed {
+        background-color: #ffebe9;
+        border-left: 3px solid #cf222e;
+    }
+    .diff-unchanged {
+        background-color: #ffffff;
+        border-left: 3px solid transparent;
+    }
+    .revision-meta {
+        background-color: rgba(var(--mdb-primary-rgb), 0.05);
+        border-left: 3px solid var(--mdb-primary);
+        padding: 15px;
+        margin-bottom: 20px;
+        border-radius: 0 0.375rem 0.375rem 0;
+    }
+    .revision-content img {
+        max-width: 100%;
+        height: auto;
+    }
+    .revision-content table {
+        width: 100%;
+        margin-bottom: 1rem;
+        border-collapse: collapse;
+    }
+    .revision-content table, .revision-content th, .revision-content td {
+        border: 1px solid #dee2e6;
+    }
+    .revision-content th, .revision-content td {
+        padding: 0.75rem;
+    }
+    .revision-navigation {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 1.5rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row">
+        <div class="col-lg-10 mx-auto">
+            
+            <!-- Revision header -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-primary text-white">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h2 class="h4 mb-0">Viewing Revision #{{ revision.id }}</h2>
+                        <div>
+                            <div class="btn-toolbar mb-3" role="toolbar">
+                                <div class="btn-group me-2" role="group">
+                                    <a href="{% url 'app:article-history' slug=article.slug %}" class="btn btn-sm btn-light me-2">
+                                        <i class="fas fa-history"></i> All Revisions
+                                    </a>
+                                    <a href="{% url 'app:article-detail' slug=article.slug %}" class="btn btn-sm btn-light">
+                                        <i class="fas fa-eye"></i> View Article
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="revision-meta">
+                        <div class="row align-items-center">
+                            <div class="col-md-6">
+                                <p class="mb-1"><strong>Author:</strong> {{ revision.user.username }}</p>
+                                <p class="mb-1"><strong>Date:</strong> {{ revision.created_at|date:"F j, Y H:i" }}</p>
+                                {% if revision.comment %}
+                                <p class="mb-1"><strong>Comment:</strong> {{ revision.comment }}</p>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6 text-md-end">
+                                {% if user.is_staff or user.profile.role == 'admin' or user.profile.role == 'editor' %}
+                                <button class="btn btn-outline-primary restore-btn"
+                                        data-revision-id="{{ revision.id }}"
+                                        data-bs-toggle="modal" 
+                                        data-bs-target="#restoreModal">
+                                    <i class="fas fa-undo me-1"></i> Restore This Revision
+                                </button>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Revision navigation -->
+                    <div class="revision-navigation">
+                        {% if prev_revision %}
+                        <a href="{% url 'app:article-revision' slug=article.slug revision_id=prev_revision.id %}" class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-left me-1"></i> Previous Revision
+                        </a>
+                        {% else %}
+                        <span></span>
+                        {% endif %}
+                        
+                        {% if next_revision %}
+                        <a href="{% url 'app:article-revision' slug=article.slug revision_id=next_revision.id %}" class="btn btn-outline-secondary">
+                            Next Revision <i class="fas fa-arrow-right ms-1"></i>
+                        </a>
+                        {% else %}
+                        <span></span>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Tabs for different views -->
+                    <ul class="nav nav-tabs mb-3" id="revisionTabs" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="content-tab" data-bs-toggle="tab" data-bs-target="#content" 
+                                    type="button" role="tab" aria-controls="content" aria-selected="true">
+                                Content
+                            </button>
+                        </li>
+                        {% if diff_available %}
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="diff-tab" data-bs-toggle="tab" data-bs-target="#diff" 
+                                    type="button" role="tab" aria-controls="diff" aria-selected="false">
+                                Changes
+                            </button>
+                        </li>
+                        {% endif %}
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="metadata-tab" data-bs-toggle="tab" data-bs-target="#metadata" 
+                                    type="button" role="tab" aria-controls="metadata" aria-selected="false">
+                                Metadata
+                            </button>
+                        </li>
+                    </ul>
+                    
+                    <!-- Tab content -->
+                    <div class="tab-content" id="revisionTabsContent">
+                        <!-- Content tab -->
+                        <div class="tab-pane fade show active" id="content" role="tabpanel" aria-labelledby="content-tab">
+                            <h3 class="h2 mb-3">{{ revision.title }}</h3>
+                            <div class="revision-content">
+                                {{ revision.content_html|safe }}
+                            </div>
+                        </div>
+                        
+                        <!-- Diff tab -->
+                        {% if diff_available %}
+                        <div class="tab-pane fade" id="diff" role="tabpanel" aria-labelledby="diff-tab">
+                            <div class="diff-wrapper">
+                                <div class="diff-header">Changes from previous revision</div>
+                                <div class="diff-content">
+                                    {% for line in diff_lines %}
+                                    <div class="diff-line {% if line.type == 'added' %}diff-added{% elif line.type == 'removed' %}diff-removed{% else %}diff-unchanged{% endif %}">
+                                        {{ line.content }}
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+                        
+                        <!-- Metadata tab -->
+                        <div class="tab-pane fade" id="metadata" role="tabpanel" aria-labelledby="metadata-tab">
+                            <div class="table-responsive">
+                                <table class="table table-bordered">
+                                    <tbody>
+                                        <tr>
+                                            <th style="width: 200px;">Revision ID</th>
+                                            <td>{{ revision.id }}</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Title</th>
+                                            <td>{{ revision.title }}</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Categories</th>
+                                            <td>
+                                                {% for category in revision_categories %}
+                                                <span class="badge bg-secondary me-1">{{ category.name }}</span>
+                                                {% empty %}
+                                                <em>None</em>
+                                                {% endfor %}
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <th>Tags</th>
+                                            <td>
+                                                {% for tag in revision_tags %}
+                                                <span class="badge bg-info me-1">{{ tag.name }}</span>
+                                                {% empty %}
+                                                <em>None</em>
+                                                {% endfor %}
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <th>Summary</th>
+                                            <td>{{ revision.summary|default:"No summary provided" }}</td>
+                                        </tr>
+                                        <tr>
+                                            <th>Review Status</th>
+                                            <td>
+                                                <span class="badge 
+                                                      {% if revision.review_status == 'draft' %}bg-secondary{% endif %}
+                                                      {% if revision.review_status == 'pending' %}bg-warning{% endif %}
+                                                      {% if revision.review_status == 'approved' %}bg-success{% endif %}
+                                                      {% if revision.review_status == 'rejected' %}bg-danger{% endif %}
+                                                      {% if revision.review_status == 'featured' %}bg-primary{% endif %}">
+                                                    {{ revision.get_review_status_display }}
+                                                </span>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <th>Created</th>
+                                            <td>{{ revision.created_at|date:"F j, Y H:i:s" }}</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Restore Confirmation Modal -->
+{% if user.is_staff or user.profile.role == 'admin' or user.profile.role == 'editor' %}
+<div class="modal fade" id="restoreModal" tabindex="-1" aria-labelledby="restoreModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="restoreModalLabel">Confirm Restore</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to restore this revision? This will overwrite the current article content.</p>
+                <p class="text-danger">This action cannot be undone!</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <form method="post" action="{% url 'app:article-edit' slug=article.slug %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="revision_id" value="{{ revision.id }}">
+                    <button type="submit" class="btn btn-primary">Restore This Revision</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize tooltips
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl)
+    });
+
+    // Handle restore button click
+    document.getElementById('restoreBtn').addEventListener('click', function() {
+        if (confirm('Are you sure you want to restore this revision? This will replace the current article content.')) {
+            document.getElementById('revision_content').value = `{{ revision.content|escapejs }}`;
+            document.getElementById('revision_comment').value = 'Restored from revision #{{ revision.id }}';
+            document.getElementById('restoreForm').action = "{% url 'app:article-edit' slug=article.slug %}";
+            document.getElementById('restoreForm').submit();
+        }
+    });
+});
+</script>
+{% endblock %} 
