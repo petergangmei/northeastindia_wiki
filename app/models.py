@@ -197,6 +197,91 @@ class ArticleRevision(TimeStampedModel):
         return f"Revision of {self.article.title} at {self.created_at}"
 
 
+class PendingEdit(TimeStampedModel):
+    """
+    Stores pending edits for already approved articles
+    """
+    article = models.OneToOneField(Article, on_delete=models.CASCADE, related_name='pending_edit')
+    title = models.CharField(max_length=255, blank=True)
+    content = HTMLField()
+    excerpt = models.TextField(blank=True)
+    meta_description = models.CharField(max_length=160, blank=True)
+    references = models.TextField(blank=True)
+    featured_image = models.ImageField(upload_to='content/pending/', blank=True, null=True)
+    
+    # Relationships - stored as IDs to avoid M2M complexity
+    categories_ids = models.JSONField(default=list, blank=True)
+    tags_ids = models.JSONField(default=list, blank=True)
+    states_ids = models.JSONField(default=list, blank=True)
+    
+    # Edit metadata
+    editor = models.ForeignKey(User, on_delete=models.CASCADE, related_name='pending_edits')
+    revision_comment = models.CharField(max_length=255, blank=True, help_text="Brief explanation of the changes")
+    
+    def __str__(self):
+        return f"Pending edit for {self.article.title}"
+    
+    def apply_edit(self):
+        """Apply this pending edit to the article"""
+        # Store original values for reverting if needed
+        original_review_status = self.article.review_status
+        
+        # Update basic fields
+        if self.title:
+            self.article.title = self.title
+        self.article.content = self.content
+        self.article.excerpt = self.excerpt
+        self.article.meta_description = self.meta_description
+        self.article.references = self.references
+        
+        # Update featured image if provided
+        if self.featured_image:
+            # If there was a previous image, mark it for deletion or archive it
+            if self.article.featured_image:
+                pass  # Handle old image if needed
+            
+            # Set the new image
+            self.article.featured_image = self.featured_image
+        
+        # Update the article's last_edited_by
+        self.article.last_edited_by = self.editor
+        
+        # Set review status back to pending
+        self.article.review_status = 'pending'
+        
+        # Save the article
+        self.article.save()
+        
+        # Update M2M relationships if IDs are provided
+        if self.categories_ids:
+            self.article.categories.clear()
+            categories = Category.objects.filter(id__in=self.categories_ids)
+            self.article.categories.add(*categories)
+            
+        if self.tags_ids:
+            self.article.tags.clear()
+            tags = Tag.objects.filter(id__in=self.tags_ids)
+            self.article.tags.add(*tags)
+            
+        if self.states_ids:
+            self.article.states.clear()
+            states = State.objects.filter(id__in=self.states_ids)
+            self.article.states.add(*states)
+        
+        # Create a revision record
+        ArticleRevision.objects.create(
+            article=self.article,
+            user=self.editor,
+            content=self.content,
+            comment=self.revision_comment or "Applied pending edit"
+        )
+        
+        # Delete this pending edit
+        self.delete()
+        
+        return True
+
+
 class Personality(ContentItem):
     """
     Content type for notable personalities
@@ -318,6 +403,8 @@ class Contribution(TimeStampedModel):
     CONTRIBUTION_TYPES = (
         ('article_create', 'Created Article'),
         ('article_edit', 'Edited Article'),
+        ('article_published', 'Published Article'),
+        ('article_rejected', 'Rejected Article'),
         ('personality_create', 'Created Personality'),
         ('personality_edit', 'Edited Personality'),
         ('cultural_create', 'Created Cultural Element'),
@@ -332,6 +419,8 @@ class Contribution(TimeStampedModel):
     object_id = models.PositiveIntegerField(blank=True, null=True)
     points_earned = models.IntegerField(default=0)
     approved = models.BooleanField(default=False)
+    notes = models.TextField(blank=True)
+    approved_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='approved_contributions')
     
     def __str__(self):
         return f"{self.user.username} - {self.contribution_type} - {self.created_at}"

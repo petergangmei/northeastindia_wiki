@@ -78,6 +78,9 @@
                         <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
                             <li><a class="dropdown-item" href="{% url 'app:profile' username=user.username %}">My Profile</a></li>
                             <li><a class="dropdown-item" href="{% url 'app:user-contributions' %}">My Contributions</a></li>
+                            {% if user.profile.role == 'editor' or user.profile.role == 'admin' %}
+                                <li><a class="dropdown-item" href="{% url 'app:article-review-queue' %}">Review Queue</a></li>
+                            {% endif %}
                             {% if user.is_staff %}
                                 <li><a class="dropdown-item" href="{% url 'admin:index' %}">Admin Panel</a></li>
                             {% endif %}

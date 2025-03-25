@@ -18,7 +18,7 @@ from difflib import ndiff
 import bleach
 import string
 import random
-from .models import UserProfile, Contribution, Article, ArticleRevision, Category, Tag, State
+from .models import UserProfile, Contribution, Article, ArticleRevision, Category, Tag, State, PendingEdit
 from .forms import ArticleForm, CustomUserCreationForm
 
 def home(request):
@@ -239,40 +239,54 @@ def article_search_htmx(request):
 
 def article_detail(request, slug):
     """
-    Display the detailed view of an article
+    Display a single article
     """
-    # For published articles, or staff members
-    if request.user.is_staff:
-        article = get_object_or_404(Article, slug=slug)
-    else:
-        article = get_object_or_404(Article, slug=slug, published=True, review_status='approved')
+    article = get_object_or_404(Article, slug=slug)
     
-    # Get related articles based on categories and tags
-    related_articles = Article.objects.filter(
-        published=True,
-        review_status='approved'
-    ).exclude(id=article.id)
+    # Check if article is published or if the user is the author or has appropriate permissions
+    is_visible_to_user = article.published
+    has_edit_permission = False
+    has_review_permission = False
     
-    # Filter by the same categories
+    if request.user.is_authenticated:
+        user_profile = get_object_or_404(UserProfile, user=request.user)
+        is_author = article.author == request.user
+        is_editor_or_admin = user_profile.role in ['editor', 'admin'] or request.user.is_staff
+        
+        # Article is visible to authenticated users who are the author or editors/admins
+        is_visible_to_user = is_visible_to_user or is_author or is_editor_or_admin
+        
+        # Edit permission is for authors, editors, or admins
+        has_edit_permission = is_author or is_editor_or_admin
+        
+        # Review permission is for editors or admins only
+        has_review_permission = is_editor_or_admin
+    
+    if not is_visible_to_user:
+        raise Http404("Article not found or not published.")
+    
+    # Get the top 3 related articles (simple implementation: sharing categories)
+    related_articles = []
     if article.categories.exists():
-        related_articles = related_articles.filter(
-            categories__in=article.categories.all()
-        )
-    
-    # Or by the same tags if no category matches
-    if not related_articles.exists() and article.tags.exists():
         related_articles = Article.objects.filter(
-            tags__in=article.tags.all(),
-            published=True,
-            review_status='approved'
-        ).exclude(id=article.id)
+            categories__in=article.categories.all(),
+            published=True
+        ).exclude(id=article.id).distinct().order_by('-published_at')[:3]
     
-    # Limit to 3 related articles
-    related_articles = related_articles.distinct()[:3]
+    # Check if there's a pending edit for this article
+    has_pending_edit = False
+    try:
+        pending_edit = article.pending_edit
+        has_pending_edit = True
+    except:
+        pending_edit = None
     
     context = {
         'article': article,
         'related_articles': related_articles,
+        'has_edit_permission': has_edit_permission,
+        'has_review_permission': has_review_permission,
+        'has_pending_edit': has_pending_edit,
     }
     
     return render(request, 'articles/article_detail.html', context)
@@ -373,65 +387,112 @@ def article_edit(request, slug):
         messages.error(request, "You don't have permission to edit this article.")
         return redirect('app:article-detail', slug=article.slug)
     
+    # Check if there's already a pending edit for this article
+    pending_edit = None
+    try:
+        pending_edit = article.pending_edit
+    except:
+        pass
+    
     if request.method == 'POST':
         form = ArticleForm(request.POST, request.FILES, instance=article)
         if form.is_valid():
             # Keep track of original content for revision
             original_content = article.content
             
-            # Create but don't save the article instance yet
-            updated_article = form.save(commit=False)
-            
-            # Set last edited by
-            updated_article.last_edited_by = request.user
-            
-            # Clean HTML content
-            allowed_tags = [
-                'p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'strong', 'em', 
-                'u', 'a', 'img', 'blockquote', 'code', 'pre', 'ul', 'ol', 'li', 
-                'table', 'thead', 'tbody', 'tr', 'th', 'td', 'br', 'hr'
-            ]
-            allowed_attrs = {
-                'a': ['href', 'title', 'target'],
-                'img': ['src', 'alt', 'title', 'width', 'height'],
-            }
-            updated_article.content = bleach.clean(
-                updated_article.content, 
-                tags=allowed_tags, 
-                attributes=allowed_attrs,
-                strip=True
-            )
-            
-            # Set back to pending review if content changed
-            if original_content != updated_article.content and updated_article.review_status == 'approved':
-                updated_article.review_status = 'pending'
-            
-            # Save the article
-            updated_article.save()
-            
-            # Save the many-to-many fields
-            form.save_m2m()
-            
-            # Get the revision comment
-            revision_comment = form.cleaned_data.get('revision_comment', 'Updated article')
-            if not revision_comment:
-                revision_comment = 'Updated article'
-            
-            # Create revision if content changed
-            if original_content != updated_article.content:
-                ArticleRevision.objects.create(
-                    article=updated_article,
-                    user=request.user,
-                    content=updated_article.content,
-                    comment=revision_comment
+            # Different handling based on article status
+            if article.review_status == 'approved':
+                # For approved articles, create/update a pending edit instead of modifying the article directly
+                
+                # Get the revision comment
+                revision_comment = form.cleaned_data.get('revision_comment', 'Updated article')
+                if not revision_comment:
+                    revision_comment = 'Updated article'
+                
+                # Get values from the form
+                title = form.cleaned_data.get('title')
+                content = form.cleaned_data.get('content')
+                excerpt = form.cleaned_data.get('excerpt', '')
+                meta_description = form.cleaned_data.get('meta_description', '')
+                references = form.cleaned_data.get('references', '')
+                
+                # Clean HTML content
+                allowed_tags = [
+                    'p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'strong', 'em', 
+                    'u', 'a', 'img', 'blockquote', 'code', 'pre', 'ul', 'ol', 'li', 
+                    'table', 'thead', 'tbody', 'tr', 'th', 'td', 'br', 'hr'
+                ]
+                allowed_attrs = {
+                    'a': ['href', 'title', 'target'],
+                    'img': ['src', 'alt', 'title', 'width', 'height'],
+                }
+                cleaned_content = bleach.clean(
+                    content, 
+                    tags=allowed_tags, 
+                    attributes=allowed_attrs,
+                    strip=True
                 )
+                
+                # Get M2M fields as IDs
+                categories_ids = [cat.id for cat in form.cleaned_data.get('categories', [])]
+                tags_ids = [tag.id for tag in form.cleaned_data.get('tags', [])]
+                states_ids = [state.id for state in form.cleaned_data.get('states', [])]
+                
+                # Create or update the pending edit
+                if pending_edit:
+                    # Update existing pending edit
+                    pending_edit.title = title
+                    pending_edit.content = cleaned_content
+                    pending_edit.excerpt = excerpt
+                    pending_edit.meta_description = meta_description
+                    pending_edit.references = references
+                    pending_edit.categories_ids = categories_ids
+                    pending_edit.tags_ids = tags_ids
+                    pending_edit.states_ids = states_ids
+                    pending_edit.editor = request.user
+                    pending_edit.revision_comment = revision_comment
+                    
+                    # Handle featured image
+                    if 'featured_image' in request.FILES:
+                        pending_edit.featured_image = request.FILES['featured_image']
+                        
+                    pending_edit.save()
+                else:
+                    # Create new pending edit
+                    pending_edit = PendingEdit.objects.create(
+                        article=article,
+                        title=title,
+                        content=cleaned_content,
+                        excerpt=excerpt,
+                        meta_description=meta_description,
+                        references=references,
+                        editor=request.user,
+                        revision_comment=revision_comment,
+                        categories_ids=categories_ids,
+                        tags_ids=tags_ids,
+                        states_ids=states_ids
+                    )
+                    
+                    # Handle featured image
+                    if 'featured_image' in request.FILES:
+                        pending_edit.featured_image = request.FILES['featured_image']
+                        pending_edit.save()
+                
+                # Check if the user is submitting for review
+                submit_for_review = request.POST.get('submit_for_review') == 'true'
+                if submit_for_review:
+                    # Apply the pending edit and set the article to pending review
+                    pending_edit.apply_edit()
+                    messages.success(request, 'Article edit submitted for review!')
+                else:
+                    messages.success(request, 'Draft changes saved! Submit for review when ready.')
                 
                 # Record the contribution
                 Contribution.objects.create(
                     user=request.user,
                     contribution_type='article_edit',
                     content_type='article',
-                    object_id=updated_article.id,
+                    object_id=article.id,
                     points_earned=5,  # Adjust point value as needed
                     approved=True
                 )
@@ -440,11 +501,96 @@ def article_edit(request, slug):
                 user_profile.contribution_count += 1
                 user_profile.reputation_points += 5  # Adjust point value as needed
                 user_profile.save()
+                
+            else:
+                # For non-approved articles, update them directly
+                
+                # Create but don't save the article instance yet
+                updated_article = form.save(commit=False)
+                
+                # Set last edited by
+                updated_article.last_edited_by = request.user
+                
+                # Clean HTML content
+                allowed_tags = [
+                    'p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'strong', 'em', 
+                    'u', 'a', 'img', 'blockquote', 'code', 'pre', 'ul', 'ol', 'li', 
+                    'table', 'thead', 'tbody', 'tr', 'th', 'td', 'br', 'hr'
+                ]
+                allowed_attrs = {
+                    'a': ['href', 'title', 'target'],
+                    'img': ['src', 'alt', 'title', 'width', 'height'],
+                }
+                updated_article.content = bleach.clean(
+                    updated_article.content, 
+                    tags=allowed_tags, 
+                    attributes=allowed_attrs,
+                    strip=True
+                )
+                
+                # Check if the user is submitting for review
+                submit_for_review = request.POST.get('submit_for_review') == 'true'
+                if submit_for_review and updated_article.review_status in ['draft', 'rejected']:
+                    updated_article.review_status = 'pending'
+                
+                # Save the article
+                updated_article.save()
+                
+                # Save the many-to-many fields
+                form.save_m2m()
+                
+                # Get the revision comment
+                revision_comment = form.cleaned_data.get('revision_comment', 'Updated article')
+                if not revision_comment:
+                    revision_comment = 'Updated article'
+                
+                # Create revision if content changed
+                if original_content != updated_article.content:
+                    ArticleRevision.objects.create(
+                        article=updated_article,
+                        user=request.user,
+                        content=updated_article.content,
+                        comment=revision_comment
+                    )
+                    
+                    # Record the contribution
+                    Contribution.objects.create(
+                        user=request.user,
+                        contribution_type='article_edit',
+                        content_type='article',
+                        object_id=updated_article.id,
+                        points_earned=5,  # Adjust point value as needed
+                        approved=True
+                    )
+                    
+                    # Update user's contribution count
+                    user_profile.contribution_count += 1
+                    user_profile.reputation_points += 5  # Adjust point value as needed
+                    user_profile.save()
+                
+                messages.success(request, 'Article updated successfully!')
             
-            messages.success(request, 'Article updated successfully!')
-            return redirect('app:article-detail', slug=updated_article.slug)
+            return redirect('app:article-detail', slug=article.slug)
     else:
-        form = ArticleForm(instance=article)
+        # For GET requests, show the form with either the article data or pending edit data
+        if pending_edit and article.review_status == 'approved':
+            # If there's a pending edit, load it instead of the article
+            initial_data = {
+                'title': pending_edit.title or article.title,
+                'content': pending_edit.content,
+                'excerpt': pending_edit.excerpt,
+                'meta_description': pending_edit.meta_description,
+                'references': pending_edit.references,
+                'revision_comment': pending_edit.revision_comment,
+            }
+            
+            # Initialize the form with initial data
+            form = ArticleForm(instance=article, initial=initial_data)
+            
+            # We'll handle the m2m fields and featured image in the template
+        else:
+            # Just load the article as normal
+            form = ArticleForm(instance=article)
     
     # Get revision history
     revisions = ArticleRevision.objects.filter(article=article).order_by('-created_at')
@@ -453,6 +599,7 @@ def article_edit(request, slug):
         'form': form,
         'article': article,
         'revisions': revisions,
+        'pending_edit': pending_edit,
         'title': 'Edit Article',
     }
     
@@ -1154,7 +1301,8 @@ def article_review_action(request, slug):
             # Update article status
             article.review_status = 'approved'
             article.published = True
-            article.published_at = timezone.now()
+            if not article.published_at:
+                article.published_at = timezone.now()
             article.save()
             
             # Create a contribution record for the author
@@ -1185,24 +1333,52 @@ def article_review_action(request, slug):
             if not feedback:
                 messages.error(request, "Feedback is required when rejecting an article.")
                 return redirect('app:article-review', slug=slug)
+            
+            # Check if this is an edit of an already approved article
+            was_previously_approved = False
+            previous_revisions = ArticleRevision.objects.filter(article=article).order_by('-created_at')
+            if previous_revisions.count() > 1:
+                # Check if this article was previously approved
+                was_previously_approved = Article.objects.filter(id=article.id, review_status='approved').exists()
+            
+            if was_previously_approved:
+                # This is an edit to an already approved article that's being rejected
+                # Revert to the last approved version
+                article.review_status = 'approved'
+                article.save()
                 
-            # Update article status
-            article.review_status = 'rejected'
-            article.save()
-            
-            # Create a contribution record with the rejection reason
-            Contribution.objects.create(
-                user=article.author,
-                contribution_type='article_rejected',
-                content_type='article',
-                object_id=article.id,
-                notes=f"Article rejected. Reason: {feedback}",
-                points_earned=0,
-                approved=False,
-                approved_by=request.user
-            )
-            
-            messages.success(request, f'Article "{article.title}" has been rejected.')
+                # Create a contribution record with the rejection reason
+                Contribution.objects.create(
+                    user=article.last_edited_by or article.author,
+                    contribution_type='article_rejected',
+                    content_type='article',
+                    object_id=article.id,
+                    notes=f"Article edit rejected. Reason: {feedback}",
+                    points_earned=0,
+                    approved=False,
+                    approved_by=request.user
+                )
+                
+                messages.success(request, f'Edit to article "{article.title}" has been rejected. The previous approved version remains published.')
+            else:
+                # This is a new article that's being rejected
+                # Update article status
+                article.review_status = 'rejected'
+                article.save()
+                
+                # Create a contribution record with the rejection reason
+                Contribution.objects.create(
+                    user=article.author,
+                    contribution_type='article_rejected',
+                    content_type='article',
+                    object_id=article.id,
+                    notes=f"Article rejected. Reason: {feedback}",
+                    points_earned=0,
+                    approved=False,
+                    approved_by=request.user
+                )
+                
+                messages.success(request, f'Article "{article.title}" has been rejected.')
         
         else:
             messages.error(request, "Invalid action specified.")

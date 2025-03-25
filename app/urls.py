@@ -28,17 +28,19 @@ urlpatterns = [
     path('articles/search/', views.article_search, name='article-search'),
     path('articles/search-htmx/', views.article_search_htmx, name='article-search-htmx'),
     path('articles/create/', views.article_create, name='article-create'),
+    
+    # Article Review - Place review URLs before article detail to avoid URL conflicts
+    path('articles/review-queue/', views.article_review_queue, name='article-review-queue'),
+    path('articles/<slug:slug>/review/', views.article_review, name='article-review'),
+    path('articles/<slug:slug>/review/action/', views.article_review_action, name='article-review-action'),
+    
+    # Article detail and related URLs
     path('articles/<slug:slug>/', views.article_detail, name='article-detail'),
     path('articles/<slug:slug>/edit/', views.article_edit, name='article-edit'),
     path('articles/<slug:slug>/history/', views.article_history, name='article-history'),
     path('articles/<slug:slug>/revision/<int:revision_id>/', views.article_revision, name='article-revision'),
     path('articles/<slug:slug>/compare/', views.article_compare, name='article-compare'),
     path('articles/<slug:slug>/delete/', views.article_delete, name='article-delete'),
-    
-    # Article Review
-    path('articles/review-queue/', views.article_review_queue, name='article-review-queue'),
-    path('articles/<slug:slug>/review/', views.article_review, name='article-review'),
-    path('articles/<slug:slug>/review/action/', views.article_review_action, name='article-review-action'),
     
     # Category URLs
     path('categories/', views.category_list, name='categories'),
