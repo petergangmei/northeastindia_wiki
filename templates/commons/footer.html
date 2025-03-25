@@ -1,0 +1,58 @@
+<footer class="site-footer">
+    <div class="footer-container">
+        <div class="footer-section about">
+            <h3>About Northeast India Wiki</h3>
+            <p>A dedicated platform focused on showcasing the rich cultural heritage, history, and famous personalities of Northeast India.</p>
+        </div>
+        
+        <div class="footer-section quick-links">
+            <h3>Quick Links</h3>
+            <ul>
+                <li><a href="{% url 'app:home' %}">Home</a></li>
+                <li><a href="#">About Us</a></li>
+                <li><a href="#">Contact</a></li>
+                <li><a href="#">Contribute</a></li>
+                <li><a href="#">Code of Conduct</a></li>
+                <li><a href="#">Privacy Policy</a></li>
+            </ul>
+        </div>
+        
+        <div class="footer-section categories"> 
+            <h3>Categories</h3>
+            <ul>
+                <li><a href="#">States</a></li>
+                <li><a href="#">Cultural Heritage</a></li>
+                <li><a href="#">Famous Personalities</a></li>
+                <li><a href="#">History</a></li>
+                <li><a href="#">Festivals</a></li>
+                <li><a href="#">Traditions</a></li>
+            </ul>
+        </div>
+        
+        <div class="footer-section connect">
+            <h3>Connect With Us</h3>
+            <div class="social-icons">
+                <a href="#" class="social-icon facebook">Facebook</a>
+                <a href="#" class="social-icon twitter">Twitter</a>
+                <a href="#" class="social-icon instagram">Instagram</a>
+                <a href="#" class="social-icon youtube">YouTube</a>
+            </div>
+            <div class="newsletter">
+                <h4>Subscribe to Our Newsletter</h4>
+                <form action="#" method="post">
+                    <input type="email" name="email" placeholder="Your email address">
+                    <button type="submit" class="btn btn-primary">Subscribe</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="footer-bottom">
+        <div class="copyright">
+            &copy; {% now "Y" %} Northeast India Wiki. All rights reserved.
+        </div>
+        <div class="attribution">
+            Built with community contributions. Inspired by Wikipedia.
+        </div>
+    </div>
+</footer> 

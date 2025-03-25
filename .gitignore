@@ -16,3 +16,4 @@ __pycache__/
 *.db6
 *.db7
 .env
+steps.md

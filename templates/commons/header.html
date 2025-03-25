@@ -1,0 +1,55 @@
+<header class="site-header">
+    <div class="header-container">
+        <div class="logo">
+            <a href="{% url 'app:home' %}">
+                <h1>Northeast India Wiki</h1>
+            </a>
+        </div>
+        <nav class="main-nav">
+            <ul>
+                <li><a href="{% url 'app:home' %}">Home</a></li>
+                <li class="dropdown">
+                    <a href="#" class="dropdown-toggle">States</a>
+                    <ul class="dropdown-menu">
+                        <li><a href="#">Assam</a></li>
+                        <li><a href="#">Arunachal Pradesh</a></li>
+                        <li><a href="#">Manipur</a></li>
+                        <li><a href="#">Meghalaya</a></li>
+                        <li><a href="#">Mizoram</a></li>
+                        <li><a href="#">Nagaland</a></li>
+                        <li><a href="#">Sikkim</a></li>
+                        <li><a href="#">Tripura</a></li>
+                    </ul>
+                </li>
+                <li><a href="#">Cultural Heritage</a></li>
+                <li><a href="#">Famous Personalities</a></li>
+                <li><a href="#">History</a></li>
+                <li><a href="#">About</a></li>
+            </ul>
+        </nav>
+        <div class="user-actions">
+            {% if user.is_authenticated %}
+                <div class="dropdown">
+                    <a href="#" class="dropdown-toggle">{{ user.username }}</a>
+                    <ul class="dropdown-menu">
+                        <li><a href="#">My Profile</a></li>
+                        <li><a href="#">My Contributions</a></li>
+                        {% if user.is_staff %}
+                            <li><a href="{% url 'admin:index' %}">Admin Panel</a></li>
+                        {% endif %}
+                        <li><a href="#">Log Out</a></li>
+                    </ul>
+                </div>
+            {% else %}
+                <a href="#" class="btn btn-primary">Sign In</a>
+                <a href="#" class="btn btn-outline">Register</a>
+            {% endif %}
+        </div>
+        <div class="search-bar">
+            <form action="#" method="get">
+                <input type="text" name="q" placeholder="Search Northeast India Wiki...">
+                <button type="submit"><i class="search-icon"></i></button>
+            </form>
+        </div>
+    </div>
+</header> 

@@ -1,12 +1,53 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>core</title>
+    <meta name="description" content="Northeast India Wiki - A comprehensive resource on the cultural heritage, history, and personalities of Northeast India">
+    
+    <!-- Open Graph / Social Media Meta Tags -->
+    <meta property="og:title" content="{% block og_title %}Northeast India Wiki{% endblock %}">
+    <meta property="og:description" content="{% block og_description %}A comprehensive resource on the cultural heritage, history, and personalities of Northeast India{% endblock %}">
+    <meta property="og:image" content="{% block og_image %}{% static 'images/northeast-india-logo.jpg' %}{% endblock %}">
+    <meta property="og:url" content="{{ request.build_absolute_uri }}">
+    <meta property="og:type" content="website">
+    
+    <title>{% block title %}Northeast India Wiki{% endblock %}</title>
+    
+    <!-- CSS -->
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/normalize.css' %}">
+    <link rel="stylesheet" href="{% static 'css/main.css' %}">
+    {% block extra_css %}{% endblock %}
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="{% static 'images/favicon.png' %}">
 </head>
 <body>
-{% block content %}
-{% endblock content %}
+    <!-- Header -->
+    {% include 'commons/header.html' %}
+    
+    <!-- Main Content -->
+    <main class="site-content">
+        {% if messages %}
+            <div class="message-container">
+                {% for message in messages %}
+                    <div class="message {% if message.tags %}{{ message.tags }}{% endif %}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+        
+        {% block content %}{% endblock content %}
+    </main>
+    
+    <!-- Footer -->
+    {% include 'commons/footer.html' %}
+    
+    <!-- JavaScript -->
+    <script src="{% static 'js/main.js' %}"></script>
+    {% block extra_js %}{% endblock %}
 </body>
 </html>

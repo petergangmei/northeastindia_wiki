@@ -1,0 +1,257 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ user_profile.user.username }} - Profile{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="profile-container">
+        <div class="profile-header">
+            <div class="profile-avatar">
+                {% if user_profile.avatar %}
+                    <img src="{{ user_profile.avatar.url }}" alt="{{ user_profile.user.username }}'s avatar">
+                {% else %}
+                    <div class="default-avatar">{{ user_profile.user.username|first|upper }}</div>
+                {% endif %}
+            </div>
+            
+            <div class="profile-info">
+                <h1 class="profile-username">{{ user_profile.user.username }}</h1>
+                <p class="profile-role">{{ user_profile.get_role_display }}</p>
+                
+                <div class="profile-stats">
+                    <div class="stat-item">
+                        <span class="stat-value">{{ user_profile.contribution_count }}</span>
+                        <span class="stat-label">Contributions</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-value">{{ user_profile.reputation_points }}</span>
+                        <span class="stat-label">Reputation</span>
+                    </div>
+                </div>
+                
+                {% if user_profile.user == request.user %}
+                    <a href="{% url 'app:edit_profile' %}" class="btn btn-outline">Edit Profile</a>
+                {% endif %}
+            </div>
+        </div>
+        
+        <div class="profile-content">
+            <div class="profile-section">
+                <h2>About</h2>
+                <div class="profile-bio">
+                    {% if user_profile.bio %}
+                        {{ user_profile.bio|linebreaks }}
+                    {% else %}
+                        <p class="text-muted">No bio provided.</p>
+                    {% endif %}
+                </div>
+                
+                {% if user_profile.location or user_profile.website %}
+                    <div class="profile-details">
+                        {% if user_profile.location %}
+                            <div class="detail-item">
+                                <span class="detail-label">Location:</span>
+                                <span class="detail-value">{{ user_profile.location }}</span>
+                            </div>
+                        {% endif %}
+                        
+                        {% if user_profile.website %}
+                            <div class="detail-item">
+                                <span class="detail-label">Website:</span>
+                                <a href="{{ user_profile.website }}" target="_blank" rel="noopener noreferrer">{{ user_profile.website }}</a>
+                            </div>
+                        {% endif %}
+                    </div>
+                {% endif %}
+            </div>
+            
+            <div class="profile-section">
+                <h2>Recent Contributions</h2>
+                {% if contributions %}
+                    <ul class="contribution-list">
+                        {% for contribution in contributions %}
+                            <li class="contribution-item">
+                                <div class="contribution-type">{{ contribution.get_contribution_type_display }}</div>
+                                <div class="contribution-details">
+                                    <a href="#">{{ contribution.title }}</a>
+                                    <span class="contribution-date">{{ contribution.created_at|date:"M d, Y" }}</span>
+                                </div>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <p class="text-muted">No contributions yet.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .profile-container {
+        background-color: white;
+        border-radius: var(--border-radius-md);
+        box-shadow: var(--box-shadow-sm);
+        margin: 2rem auto;
+        padding: 0;
+        overflow: hidden;
+    }
+    
+    .profile-header {
+        display: flex;
+        align-items: center;
+        padding: 2rem;
+        background-color: var(--primary-color);
+        color: white;
+    }
+    
+    .profile-avatar {
+        width: 150px;
+        height: 150px;
+        border-radius: 50%;
+        overflow: hidden;
+        margin-right: 2rem;
+        border: 5px solid rgba(255, 255, 255, 0.2);
+    }
+    
+    .profile-avatar img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+    
+    .default-avatar {
+        width: 100%;
+        height: 100%;
+        background-color: var(--secondary-color);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 4rem;
+        font-weight: bold;
+    }
+    
+    .profile-info {
+        flex: 1;
+    }
+    
+    .profile-username {
+        font-size: 2.5rem;
+        margin: 0 0 0.5rem;
+        color: white;
+    }
+    
+    .profile-role {
+        font-size: 1.2rem;
+        margin: 0 0 1rem;
+        opacity: 0.8;
+    }
+    
+    .profile-stats {
+        display: flex;
+        margin-bottom: 1.5rem;
+    }
+    
+    .profile-stats .stat-item {
+        margin-right: 2rem;
+    }
+    
+    .profile-stats .stat-value {
+        font-size: 1.5rem;
+        font-weight: bold;
+        display: block;
+    }
+    
+    .profile-stats .stat-label {
+        font-size: 0.9rem;
+        opacity: 0.7;
+    }
+    
+    .profile-content {
+        padding: 2rem;
+    }
+    
+    .profile-section {
+        margin-bottom: 3rem;
+    }
+    
+    .profile-section h2 {
+        font-size: 1.5rem;
+        margin-bottom: 1rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 1px solid var(--border-color);
+    }
+    
+    .profile-details {
+        display: flex;
+        flex-wrap: wrap;
+        margin-top: 1rem;
+    }
+    
+    .detail-item {
+        margin-right: 2rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    .detail-label {
+        font-weight: bold;
+        margin-right: 0.5rem;
+    }
+    
+    .contribution-list {
+        list-style: none;
+        padding: 0;
+    }
+    
+    .contribution-item {
+        display: flex;
+        align-items: center;
+        padding: 1rem 0;
+        border-bottom: 1px solid var(--border-color);
+    }
+    
+    .contribution-item:last-child {
+        border-bottom: none;
+    }
+    
+    .contribution-type {
+        background-color: var(--primary-color);
+        color: white;
+        padding: 0.25rem 0.5rem;
+        border-radius: var(--border-radius-sm);
+        font-size: 0.8rem;
+        width: 150px;
+        text-align: center;
+        margin-right: 1rem;
+    }
+    
+    .contribution-details {
+        flex: 1;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .contribution-date {
+        color: #757575;
+        font-size: 0.9rem;
+    }
+    
+    @media (max-width: 768px) {
+        .profile-header {
+            flex-direction: column;
+            text-align: center;
+        }
+        
+        .profile-avatar {
+            margin-right: 0;
+            margin-bottom: 1.5rem;
+        }
+        
+        .profile-stats {
+            justify-content: center;
+        }
+    }
+</style>
+{% endblock %} 

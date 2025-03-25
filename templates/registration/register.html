@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+
+{% block title %}Register - Northeast India Wiki{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="form-container">
+        <h1 class="form-title">Create an Account</h1>
+        
+        <form method="post" data-validate="true">
+            {% csrf_token %}
+            
+            <div class="form-group">
+                <label for="id_username" class="form-label">Username</label>
+                <input type="text" name="username" id="id_username" class="form-control" required>
+                <small class="form-text">Required. 150 characters or fewer. Letters, digits and @/./+/-/_ only.</small>
+            </div>
+            
+            <div class="form-group">
+                <label for="id_email" class="form-label">Email</label>
+                <input type="email" name="email" id="id_email" class="form-control" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="id_password1" class="form-label">Password</label>
+                <input type="password" name="password1" id="id_password1" class="form-control" required>
+                <small class="form-text">
+                    Your password must contain at least 8 characters, can't be entirely numeric, 
+                    and can't be a commonly used password.
+                </small>
+            </div>
+            
+            <div class="form-group">
+                <label for="id_password2" class="form-label">Confirm Password</label>
+                <input type="password" name="password2" id="id_password2" class="form-control" required>
+                <small class="form-text">Enter the same password as above, for verification.</small>
+            </div>
+            
+            <div class="form-group">
+                <div class="checkbox">
+                    <input type="checkbox" name="agree_terms" id="id_agree_terms" required>
+                    <label for="id_agree_terms">
+                        I have read and agree to the <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a>
+                    </label>
+                </div>
+            </div>
+            
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary">Register</button>
+            </div>
+        </form>
+        
+        <div class="text-center mt-3">
+            <p>Already have an account? <a href="{% url 'app:login' %}">Login</a></p>
+        </div>
+    </div>
+</div>
+{% endblock %} 

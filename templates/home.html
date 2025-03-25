@@ -1,54 +1,95 @@
 {% extends 'base.html' %}
+
+{% block title %}Home | Northeast India Wiki{% endblock %}
+
 {% block content %}
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 20px;
-            background-color: #f4f4f9;
-            color: #333;
-        }
-        h1 {
-            color: #4A90E2;
-        }
-        h2 {
-            color: #333;
-        }
-        ul {
-            list-style-type: none;
-            padding: 0;
-        }
-        li {
-            background: #fff;
-            margin: 10px 0;
-            padding: 15px;
-            border-radius: 5px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        }
-        a {
-            color: #4A90E2;
-            text-decoration: none;
-        }
-        a:hover {
-            text-decoration: underline;
-        }
-        .container {
-            max-width: 800px;
-            margin: auto;
-        }
-    </style>
-    <div class="container">
-        <h1>Welcome to core!</h1>
-        <p>Congratulations! You have successfully set up your Django project using <strong>EasyDjango</strong>.</p>
-        <h2>What to Do Next:</h2>
-        <ul>
-            <li>Explore the <strong>views.py</strong> file in your app directory (<code>app/views.py</code>) to customize your application logic.</li>
-            <li>Modify the <strong>urls.py</strong> file in your app (<code>app/urls.py</code>) to define your app's URL patterns.</li>
-            <li>Edit the <strong>base.html</strong> file in the <code>templates</code> directory to change your site’s layout and design.</li>
-            <li>Visit the <strong>admin panel</strong> by navigating to <code>/admin</code> after running the development server.</li>
-            <li>Check the official <a href="https://www.djangoproject.com/">Django documentation</a> for more advanced features and customization options.</li>
-        </ul>
-        <h2>Need Help?</h2>
-        <p>If you have any questions or need assistance, feel free to reach out at <a href="mailto:elghaithheni@gmail.com">elghaithheni@gmail.com</a>.</p>
+<div class="container my-5">
+    <!-- Welcome Section -->
+    <div class="jumbotron bg-light p-5 rounded">
+        <h1 class="display-4">Welcome to Northeast India Wiki</h1>
+        <p class="lead">A collaborative platform to learn about the rich culture, history, and heritage of Northeast India.</p>
+        
+        {% if user.is_authenticated %}
+            <p>Hi, {{ user.username }}! Thank you for being part of our community.</p>
+            <a href="{% url 'app:profile' username=user.username %}" class="btn btn-primary">View Your Profile</a>
+        {% else %}
+            <p>Join our community to contribute your knowledge and learn more about Northeast India!</p>
+            <div class="mt-4">
+                <a href="{% url 'app:register' %}" class="btn btn-primary me-2">Sign Up</a>
+                <a href="{% url 'app:login' %}" class="btn btn-outline-primary">Log In</a>
+            </div>
+        {% endif %}
     </div>
-{% endblock content %}
+    
+    <!-- Featured Content Section -->
+    <div class="row mt-5">
+        <div class="col-12">
+            <h2 class="border-bottom pb-2">Featured Content</h2>
+        </div>
+        
+        <!-- This section will be populated dynamically with actual content later -->
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                <img src="/static/images/placeholder.jpg" class="card-img-top" alt="Placeholder">
+                <div class="card-body">
+                    <h5 class="card-title">Discover Assam</h5>
+                    <p class="card-text">Explore the beautiful state of Assam, known for its tea gardens and wildlife.</p>
+                    <a href="#" class="btn btn-sm btn-primary">Read More</a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                <img src="/static/images/placeholder.jpg" class="card-img-top" alt="Placeholder">
+                <div class="card-body">
+                    <h5 class="card-title">Nagaland's Rich Culture</h5>
+                    <p class="card-text">Learn about the diverse tribes and cultural practices of Nagaland.</p>
+                    <a href="#" class="btn btn-sm btn-primary">Read More</a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                <img src="/static/images/placeholder.jpg" class="card-img-top" alt="Placeholder">
+                <div class="card-body">
+                    <h5 class="card-title">Manipur - The Jewel of India</h5>
+                    <p class="card-text">Discover the traditions, arts, and natural beauty of Manipur.</p>
+                    <a href="#" class="btn btn-sm btn-primary">Read More</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Recent Updates Section -->
+    <div class="row mt-5">
+        <div class="col-12">
+            <h2 class="border-bottom pb-2">Recent Updates</h2>
+        </div>
+        
+        <!-- This section will be populated dynamically with actual content later -->
+        <div class="col-md-6 mb-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">New Article: Traditional Cuisines</h5>
+                    <p class="card-text">A new comprehensive guide to the traditional cuisines of Northeast India has been added.</p>
+                    <p class="card-text"><small class="text-muted">Updated 3 days ago</small></p>
+                    <a href="#" class="btn btn-sm btn-outline-primary">View Article</a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6 mb-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Updated: Festivals of Arunachal Pradesh</h5>
+                    <p class="card-text">The article on festivals celebrated in Arunachal Pradesh has been updated with new information.</p>
+                    <p class="card-text"><small class="text-muted">Updated 1 week ago</small></p>
+                    <a href="#" class="btn btn-sm btn-outline-primary">View Article</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
