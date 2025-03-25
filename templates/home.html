@@ -94,7 +94,6 @@
     <div class="mb-5">
         <div class="d-flex align-items-center mb-4">
             <h2 class="h4 mb-0 me-2">Latest Articles</h2>
-            <i class="fas fa-clock text-accent"></i>
         </div>
         
         <div class="row row-cols-1 row-cols-md-2 row-cols-lg-4 g-4">
@@ -103,16 +102,7 @@
                     <div class="col">
                         <div class="card h-100 border-0 shadow-sm">
                             <div class="card-body">
-                                <div class="d-flex justify-content-between mb-2">
-                                    <span class="badge bg-accent rounded-pill">
-                                        <i class="far fa-clock me-1"></i> New
-                                    </span>
-                                    {% if article.categories.all %}
-                                        <span class="badge bg-secondary rounded-pill">
-                                            {{ article.categories.all.0.name }}
-                                        </span>
-                                    {% endif %}
-                                </div>
+                               
                                 <h5 class="card-title">{{ article.title|truncatechars:40 }}</h5>
                                 <p class="card-text small">{{ article.excerpt|default:article.content|striptags|truncatewords:15 }}</p>
                                 <div class="mt-auto">
