@@ -1,4 +1,3 @@
-# northeastindia_wiki
 # northeastindia.wiki
 
 northeastindia.wiki is an open-source platform dedicated to showcasing the rich cultural heritage, history, and notable personalities of Northeast India. Inspired by Wikipedia, this platform aims to become a comprehensive resource while encouraging user contributions with a structured review process.
@@ -60,16 +59,23 @@ northeastindia.wiki is an open-source platform dedicated to showcasing the rich 
    ```
 4. **Run Migrations:**
    ```bash
-   python manage.py migrate
+   python manage.py migrate --settings=core.settings.dev
    ```
 5. **Create a Superuser:**
    ```bash
-   python manage.py createsuperuser
+   python manage.py createsuperuser --settings=core.settings.dev
    ```
 6. **Start the Development Server:**
    ```bash
-   python manage.py runserver
+   python manage.py runserver --settings=core.settings.dev
    ```
+   Note: The project uses a split settings structure:
+   - `core/settings/common.py` - Base settings shared across all environments
+   - `core/settings/dev.py` - Development environment settings
+   - `core/settings/prod.py` - Production environment settings
+   
+   By default, `manage.py` uses the development settings.
+   
 7. Visit `http://localhost:8000` in your browser.
 
 ## 📋 Contribution Guidelines
