@@ -1,0 +1,461 @@
+{% extends 'base.html' %}
+
+{% block title %}My Contributions | Northeast India Wiki{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <div class="row">
+        <!-- User sidebar -->
+        <div class="col-lg-3 mb-4">
+            <div class="card border-0 shadow-4 rounded-5 mb-4">
+                <div class="card-body p-4 text-center">
+                    {% if user.profile.avatar %}
+                        <img src="{{ user.profile.avatar.url }}" class="rounded-circle mb-3" 
+                             width="100" height="100" alt="{{ user.username }}" 
+                             style="object-fit: cover;">
+                    {% else %}
+                        <div class="bg-primary rounded-circle d-flex justify-content-center align-items-center mx-auto mb-3"
+                             style="width: 100px; height: 100px;">
+                            <span class="text-white display-6">{{ user.username|first|upper }}</span>
+                        </div>
+                    {% endif %}
+                    
+                    <h5 class="mb-1">{{ user.username }}</h5>
+                    <p class="text-muted mb-3">{{ user.profile.role|title }}</p>
+                    
+                    <div class="d-flex justify-content-center mb-3">
+                        <div class="px-3 border-end">
+                            <h6 class="mb-0">{{ contributions_count }}</h6>
+                            <small class="text-muted">Contributions</small>
+                        </div>
+                        <div class="px-3">
+                            <h6 class="mb-0">{{ user.profile.reputation_points }}</h6>
+                            <small class="text-muted">Points</small>
+                        </div>
+                    </div>
+                    
+                    <a href="{% url 'app:profile' username=user.username %}" class="btn btn-outline-primary btn-sm rounded-pill">
+                        <i class="fas fa-user me-1"></i> View Profile
+                    </a>
+                </div>
+            </div>
+            
+            <div class="card border-0 shadow-4 rounded-5">
+                <div class="card-header bg-primary text-white rounded-top">
+                    <h5 class="mb-0 fw-bold">Actions</h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="list-group list-group-flush rounded-bottom">
+                        <a href="{% url 'app:article-create' %}" class="list-group-item list-group-item-action border-0 py-3 px-4 ripple">
+                            <i class="fas fa-plus-circle me-2 text-primary"></i> Create New Article
+                        </a>
+                        <a href="{% url 'app:profile-edit' %}" class="list-group-item list-group-item-action border-0 py-3 px-4 ripple">
+                            <i class="fas fa-cog me-2 text-primary"></i> Edit Profile
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Main content -->
+        <div class="col-lg-9">
+            <div class="card border-0 shadow-4 rounded-5">
+                <div class="card-header bg-white py-3">
+                    <h4 class="mb-0 fw-bold text-primary">My Contributions</h4>
+                </div>
+                
+                <!-- Tabs navigation -->
+                <ul class="nav nav-tabs nav-fill mb-0" id="contribution-tabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="articles-tab" data-mdb-toggle="tab" 
+                                data-mdb-target="#articles-content" type="button" role="tab" 
+                                aria-controls="articles-content" aria-selected="true">
+                            <i class="fas fa-file-alt me-2"></i> My Articles
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="edits-tab" data-mdb-toggle="tab" 
+                                data-mdb-target="#edits-content" type="button" role="tab" 
+                                aria-controls="edits-content" aria-selected="false">
+                            <i class="fas fa-edit me-2"></i> Recent Edits
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="drafts-tab" data-mdb-toggle="tab" 
+                                data-mdb-target="#drafts-content" type="button" role="tab" 
+                                aria-controls="drafts-content" aria-selected="false">
+                            <i class="fas fa-save me-2"></i> Drafts
+                        </button>
+                    </li>
+                </ul>
+                
+                <!-- Tabs content -->
+                <div class="tab-content p-4" id="contribution-content">
+                    <!-- Articles tab -->
+                    <div class="tab-pane fade show active" id="articles-content" role="tabpanel" aria-labelledby="articles-tab">
+                        {% if user_articles %}
+                            <div class="table-responsive">
+                                <table class="table table-hover align-middle">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th scope="col">Title</th>
+                                            <th scope="col">Status</th>
+                                            <th scope="col">Created</th>
+                                            <th scope="col">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for article in user_articles %}
+                                        <tr>
+                                            <td>
+                                                <a href="{% url 'app:article-detail' slug=article.slug %}" class="fw-bold text-decoration-none">
+                                                    {{ article.title }}
+                                                </a>
+                                            </td>
+                                            <td>
+                                                {% if article.published and article.review_status == 'approved' %}
+                                                <span class="badge bg-success rounded-pill">Published</span>
+                                                {% elif article.review_status == 'pending' %}
+                                                <span class="badge bg-warning rounded-pill">Pending Review</span>
+                                                {% elif article.review_status == 'draft' %}
+                                                <span class="badge bg-secondary rounded-pill">Draft</span>
+                                                {% elif article.review_status == 'rejected' %}
+                                                <span class="badge bg-danger rounded-pill">Rejected</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>{{ article.created_at|date:"M d, Y" }}</td>
+                                            <td>
+                                                <div class="btn-group">
+                                                    <a href="{% url 'app:article-edit' slug=article.slug %}" class="btn btn-sm btn-outline-primary">
+                                                        <i class="fas fa-edit"></i>
+                                                    </a>
+                                                    <a href="{% url 'app:article-history' slug=article.slug %}" class="btn btn-sm btn-outline-secondary">
+                                                        <i class="fas fa-history"></i>
+                                                    </a>
+                                                    <button type="button" class="btn btn-sm btn-outline-danger"
+                                                            data-mdb-toggle="modal" data-mdb-target="#deleteModal{{ article.id }}">
+                                                        <i class="fas fa-trash"></i>
+                                                    </button>
+                                                </div>
+                                                
+                                                <!-- Delete Modal -->
+                                                <div class="modal fade" id="deleteModal{{ article.id }}" tabindex="-1" aria-labelledby="deleteModalLabel{{ article.id }}" aria-hidden="true">
+                                                    <div class="modal-dialog">
+                                                        <div class="modal-content">
+                                                            <div class="modal-header">
+                                                                <h5 class="modal-title" id="deleteModalLabel{{ article.id }}">Confirm Deletion</h5>
+                                                                <button type="button" class="btn-close" data-mdb-dismiss="modal" aria-label="Close"></button>
+                                                            </div>
+                                                            <div class="modal-body">
+                                                                <p>Are you sure you want to delete the article <strong>{{ article.title }}</strong>?</p>
+                                                                <p class="text-danger"><small>This action cannot be undone.</small></p>
+                                                            </div>
+                                                            <div class="modal-footer">
+                                                                <button type="button" class="btn btn-outline-secondary" data-mdb-dismiss="modal">Cancel</button>
+                                                                <form action="{% url 'app:article-delete' slug=article.slug %}" method="post">
+                                                                    {% csrf_token %}
+                                                                    <button type="submit" class="btn btn-danger">Delete Article</button>
+                                                                </form>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                            
+                            <!-- Pagination for articles -->
+                            {% if articles_page_obj.has_other_pages %}
+                            <nav aria-label="Articles pagination" class="mt-4">
+                                <ul class="pagination pagination-circle justify-content-center">
+                                    {% if articles_page_obj.has_previous %}
+                                    <li class="page-item">
+                                        <a class="page-link" href="?tab=articles&page={{ articles_page_obj.previous_page_number }}" aria-label="Previous">
+                                            <span aria-hidden="true">&laquo;</span>
+                                        </a>
+                                    </li>
+                                    {% else %}
+                                    <li class="page-item disabled">
+                                        <span class="page-link">&laquo;</span>
+                                    </li>
+                                    {% endif %}
+                                    
+                                    {% for i in articles_page_obj.paginator.page_range %}
+                                        {% if articles_page_obj.number == i %}
+                                        <li class="page-item active"><span class="page-link">{{ i }}</span></li>
+                                        {% else %}
+                                        <li class="page-item">
+                                            <a class="page-link" href="?tab=articles&page={{ i }}">{{ i }}</a>
+                                        </li>
+                                        {% endif %}
+                                    {% endfor %}
+                                    
+                                    {% if articles_page_obj.has_next %}
+                                    <li class="page-item">
+                                        <a class="page-link" href="?tab=articles&page={{ articles_page_obj.next_page_number }}" aria-label="Next">
+                                            <span aria-hidden="true">&raquo;</span>
+                                        </a>
+                                    </li>
+                                    {% else %}
+                                    <li class="page-item disabled">
+                                        <span class="page-link">&raquo;</span>
+                                    </li>
+                                    {% endif %}
+                                </ul>
+                            </nav>
+                            {% endif %}
+                        {% else %}
+                            <div class="text-center p-5">
+                                <div class="mb-3">
+                                    <i class="fas fa-file-alt fa-4x text-muted"></i>
+                                </div>
+                                <h5 class="fw-bold">No Articles Yet</h5>
+                                <p class="text-muted">You haven't created any articles yet.</p>
+                                <a href="{% url 'app:article-create' %}" class="btn btn-primary rounded-pill mt-2">
+                                    <i class="fas fa-plus-circle me-2"></i> Create Your First Article
+                                </a>
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Edits tab -->
+                    <div class="tab-pane fade" id="edits-content" role="tabpanel" aria-labelledby="edits-tab">
+                        {% if recent_edits %}
+                            <div class="list-group list-group-light">
+                                {% for revision in recent_edits %}
+                                <div class="list-group-item border-0 mb-3 rounded-5 shadow-2">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <h6 class="mb-1">
+                                                <a href="{% url 'app:article-detail' slug=revision.article.slug %}" class="text-reset fw-bold">
+                                                    {{ revision.article.title }}
+                                                </a>
+                                            </h6>
+                                            <p class="mb-1 small text-muted">
+                                                <i class="far fa-clock me-1"></i> {{ revision.created_at|date:"M d, Y g:i A" }}
+                                            </p>
+                                            {% if revision.comment %}
+                                            <p class="mb-0 mt-2 ps-2 border-start border-3 border-info">
+                                                {{ revision.comment }}
+                                            </p>
+                                            {% endif %}
+                                        </div>
+                                        <div>
+                                            <a href="{% url 'app:article-revision' slug=revision.article.slug revision_id=revision.id %}" 
+                                               class="btn btn-sm btn-outline-primary rounded-pill">
+                                                <i class="fas fa-eye me-1"></i> View Changes
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                            
+                            <!-- Pagination for edits -->
+                            {% if edits_page_obj.has_other_pages %}
+                            <nav aria-label="Edits pagination" class="mt-4">
+                                <ul class="pagination pagination-circle justify-content-center">
+                                    {% if edits_page_obj.has_previous %}
+                                    <li class="page-item">
+                                        <a class="page-link" href="?tab=edits&page={{ edits_page_obj.previous_page_number }}" aria-label="Previous">
+                                            <span aria-hidden="true">&laquo;</span>
+                                        </a>
+                                    </li>
+                                    {% else %}
+                                    <li class="page-item disabled">
+                                        <span class="page-link">&laquo;</span>
+                                    </li>
+                                    {% endif %}
+                                    
+                                    {% for i in edits_page_obj.paginator.page_range %}
+                                        {% if edits_page_obj.number == i %}
+                                        <li class="page-item active"><span class="page-link">{{ i }}</span></li>
+                                        {% else %}
+                                        <li class="page-item">
+                                            <a class="page-link" href="?tab=edits&page={{ i }}">{{ i }}</a>
+                                        </li>
+                                        {% endif %}
+                                    {% endfor %}
+                                    
+                                    {% if edits_page_obj.has_next %}
+                                    <li class="page-item">
+                                        <a class="page-link" href="?tab=edits&page={{ edits_page_obj.next_page_number }}" aria-label="Next">
+                                            <span aria-hidden="true">&raquo;</span>
+                                        </a>
+                                    </li>
+                                    {% else %}
+                                    <li class="page-item disabled">
+                                        <span class="page-link">&raquo;</span>
+                                    </li>
+                                    {% endif %}
+                                </ul>
+                            </nav>
+                            {% endif %}
+                        {% else %}
+                            <div class="text-center p-5">
+                                <div class="mb-3">
+                                    <i class="fas fa-edit fa-4x text-muted"></i>
+                                </div>
+                                <h5 class="fw-bold">No Recent Edits</h5>
+                                <p class="text-muted">You haven't made any edits to articles yet.</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Drafts tab -->
+                    <div class="tab-pane fade" id="drafts-content" role="tabpanel" aria-labelledby="drafts-tab">
+                        {% if drafts %}
+                            <div class="row row-cols-1 row-cols-md-2 g-4">
+                                {% for draft in drafts %}
+                                <div class="col">
+                                    <div class="card h-100 border-0 shadow-2 rounded-5 hover-shadow transition-all">
+                                        <div class="card-body">
+                                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                                <h5 class="card-title fw-bold">{{ draft.title }}</h5>
+                                                <span class="badge bg-secondary rounded-pill">Draft</span>
+                                            </div>
+                                            
+                                            <p class="card-text text-muted small mb-2">
+                                                <i class="far fa-calendar me-1"></i> Started {{ draft.created_at|date:"M d, Y" }}
+                                                {% if draft.updated_at != draft.created_at %}
+                                                <br><i class="fas fa-pencil-alt me-1"></i> Updated {{ draft.updated_at|date:"M d, Y" }}
+                                                {% endif %}
+                                            </p>
+                                            
+                                            {% if draft.excerpt %}
+                                            <p class="card-text">{{ draft.excerpt|truncatewords:10 }}</p>
+                                            {% else %}
+                                            <p class="card-text">{{ draft.content|striptags|truncatewords:10 }}</p>
+                                            {% endif %}
+                                        </div>
+                                        <div class="card-footer bg-white border-0 rounded-bottom pt-0">
+                                            <div class="d-flex justify-content-between">
+                                                <a href="{% url 'app:article-edit' slug=draft.slug %}" class="btn btn-sm btn-primary rounded-pill">
+                                                    <i class="fas fa-edit me-1"></i> Continue Editing
+                                                </a>
+                                                <button type="button" class="btn btn-sm btn-outline-danger rounded-pill"
+                                                        data-mdb-toggle="modal" data-mdb-target="#deleteDraftModal{{ draft.id }}">
+                                                    <i class="fas fa-trash me-1"></i> Delete
+                                                </button>
+                                            </div>
+                                            
+                                            <!-- Delete Draft Modal -->
+                                            <div class="modal fade" id="deleteDraftModal{{ draft.id }}" tabindex="-1" 
+                                                 aria-labelledby="deleteDraftModalLabel{{ draft.id }}" aria-hidden="true">
+                                                <div class="modal-dialog">
+                                                    <div class="modal-content">
+                                                        <div class="modal-header">
+                                                            <h5 class="modal-title" id="deleteDraftModalLabel{{ draft.id }}">Confirm Deletion</h5>
+                                                            <button type="button" class="btn-close" data-mdb-dismiss="modal" aria-label="Close"></button>
+                                                        </div>
+                                                        <div class="modal-body">
+                                                            <p>Are you sure you want to delete the draft <strong>{{ draft.title }}</strong>?</p>
+                                                            <p class="text-danger"><small>This action cannot be undone.</small></p>
+                                                        </div>
+                                                        <div class="modal-footer">
+                                                            <button type="button" class="btn btn-outline-secondary" data-mdb-dismiss="modal">Cancel</button>
+                                                            <form action="{% url 'app:article-delete' slug=draft.slug %}" method="post">
+                                                                {% csrf_token %}
+                                                                <button type="submit" class="btn btn-danger">Delete Draft</button>
+                                                            </form>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                            
+                            <!-- Pagination for drafts -->
+                            {% if drafts_page_obj.has_other_pages %}
+                            <nav aria-label="Drafts pagination" class="mt-4">
+                                <ul class="pagination pagination-circle justify-content-center">
+                                    {% if drafts_page_obj.has_previous %}
+                                    <li class="page-item">
+                                        <a class="page-link" href="?tab=drafts&page={{ drafts_page_obj.previous_page_number }}" aria-label="Previous">
+                                            <span aria-hidden="true">&laquo;</span>
+                                        </a>
+                                    </li>
+                                    {% else %}
+                                    <li class="page-item disabled">
+                                        <span class="page-link">&laquo;</span>
+                                    </li>
+                                    {% endif %}
+                                    
+                                    {% for i in drafts_page_obj.paginator.page_range %}
+                                        {% if drafts_page_obj.number == i %}
+                                        <li class="page-item active"><span class="page-link">{{ i }}</span></li>
+                                        {% else %}
+                                        <li class="page-item">
+                                            <a class="page-link" href="?tab=drafts&page={{ i }}">{{ i }}</a>
+                                        </li>
+                                        {% endif %}
+                                    {% endfor %}
+                                    
+                                    {% if drafts_page_obj.has_next %}
+                                    <li class="page-item">
+                                        <a class="page-link" href="?tab=drafts&page={{ drafts_page_obj.next_page_number }}" aria-label="Next">
+                                            <span aria-hidden="true">&raquo;</span>
+                                        </a>
+                                    </li>
+                                    {% else %}
+                                    <li class="page-item disabled">
+                                        <span class="page-link">&raquo;</span>
+                                    </li>
+                                    {% endif %}
+                                </ul>
+                            </nav>
+                            {% endif %}
+                        {% else %}
+                            <div class="text-center p-5">
+                                <div class="mb-3">
+                                    <i class="fas fa-save fa-4x text-muted"></i>
+                                </div>
+                                <h5 class="fw-bold">No Drafts</h5>
+                                <p class="text-muted">You don't have any draft articles.</p>
+                                <a href="{% url 'app:article-create' %}" class="btn btn-primary rounded-pill mt-2">
+                                    <i class="fas fa-plus-circle me-2"></i> Create New Article
+                                </a>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Active tab handling script -->
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Get the current tab from query params or default to articles
+        const urlParams = new URLSearchParams(window.location.search);
+        const tab = urlParams.get('tab') || 'articles';
+        
+        // Activate the correct tab
+        const tabEl = document.getElementById(`${tab}-tab`);
+        if (tabEl) {
+            const tabInstance = new mdb.Tab(tabEl);
+            tabInstance.show();
+        }
+        
+        // Update URL when tab changes
+        const tabs = document.querySelectorAll('[data-mdb-toggle="tab"]');
+        tabs.forEach(tab => {
+            tab.addEventListener('shown.mdb.tab', function (event) {
+                const tabId = event.target.id.replace('-tab', '');
+                const url = new URL(window.location);
+                url.searchParams.set('tab', tabId);
+                window.history.replaceState({}, '', url);
+            });
+        });
+    });
+</script>
+{% endblock %}
+{% endblock %} 

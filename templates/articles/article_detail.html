@@ -8,8 +8,6 @@
 {% block og_image %}
     {% if article.featured_image and article.featured_image.name and article.featured_image.name != '' %}
         {{ article.featured_image.url }}
-    {% else %}
-        /static/images/default-og-image.jpg
     {% endif %}
 {% endblock %}
 
@@ -59,7 +57,7 @@
                 
                 {% if article.featured_image and article.featured_image.name and article.featured_image.name != '' %}
                 <div class="mb-4">
-                    <img src="{{ article.featured_image.url }}" class="img-fluid rounded" alt="{{ article.title }}">
+                    <img src="{{ article.featured_image.url }}" class="img rounded" alt="{{ article.title }}" style="width: 300px; height: 300px; object-fit: cover;"    >
                 </div>
                 {% endif %}
                 

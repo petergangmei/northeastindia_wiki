@@ -21,6 +21,7 @@ urlpatterns = [
     # User profile URLs - edit_profile must come before profile/<str:username>/
     path('profile/edit/', views.edit_profile, name='profile-edit'),
     path('profile/<str:username>/', views.profile, name='profile'),
+    path('contributions/', views.user_contributions, name='user-contributions'),
     
     # Article URLs
     path('articles/', views.article_list, name='article-list'),
@@ -32,6 +33,12 @@ urlpatterns = [
     path('articles/<slug:slug>/history/', views.article_history, name='article-history'),
     path('articles/<slug:slug>/revision/<int:revision_id>/', views.article_revision, name='article-revision'),
     path('articles/<slug:slug>/compare/', views.article_compare, name='article-compare'),
+    path('articles/<slug:slug>/delete/', views.article_delete, name='article-delete'),
+    
+    # Article Review
+    path('articles/review-queue/', views.article_review_queue, name='article-review-queue'),
+    path('articles/<slug:slug>/review/', views.article_review, name='article-review'),
+    path('articles/<slug:slug>/review/action/', views.article_review_action, name='article-review-action'),
     
     # Category URLs
     path('categories/', views.category_list, name='categories'),

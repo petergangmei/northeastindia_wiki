@@ -77,7 +77,7 @@
                         </a>
                         <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
                             <li><a class="dropdown-item" href="{% url 'app:profile' username=user.username %}">My Profile</a></li>
-                            <li><a class="dropdown-item" href="#">My Contributions</a></li>
+                            <li><a class="dropdown-item" href="{% url 'app:user-contributions' %}">My Contributions</a></li>
                             {% if user.is_staff %}
                                 <li><a class="dropdown-item" href="{% url 'admin:index' %}">Admin Panel</a></li>
                             {% endif %}

@@ -1,0 +1,304 @@
+{% extends 'base.html' %}
+
+{% block title %}Review: {{ article.title }} | Northeast India Wiki{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <!-- Article Review Header -->
+    <div class="card border-0 shadow-4 rounded-5 mb-4">
+        <div class="card-header bg-primary text-white py-3 rounded-top">
+            <div class="d-flex justify-content-between align-items-center">
+                <h4 class="mb-0 fw-bold">Article Review</h4>
+                <span class="badge bg-warning rounded-pill px-3 py-2">Pending Review</span>
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-8">
+                    <h2 class="mb-3">{{ article.title }}</h2>
+                    <div class="d-flex align-items-center mb-3">
+                        <img src="{% if article.author.profile.avatar %}{{ article.author.profile.avatar.url }}{% else %}https://via.placeholder.com/40{% endif %}" 
+                             class="rounded-circle me-2" 
+                             width="40" height="40" 
+                             alt="{{ article.author.username }}" 
+                             style="object-fit: cover;">
+                        <div>
+                            <div class="fw-bold">{{ article.author.username }}</div>
+                            <div class="text-muted small">{{ article.author.profile.role|title }}</div>
+                        </div>
+                        <div class="ms-4 text-muted small">
+                            <i class="far fa-calendar me-1"></i> Submitted: {{ article.created_at|date:"M d, Y" }}
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a href="{% url 'app:article-review-queue' %}" class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-left me-1"></i> Back to Queue
+                        </a>
+                        
+                        <button type="button" class="btn btn-success" data-mdb-toggle="modal" data-mdb-target="#approveModal">
+                            <i class="fas fa-check-circle me-1"></i> Approve
+                        </button>
+                        
+                        <button type="button" class="btn btn-danger" data-mdb-toggle="modal" data-mdb-target="#rejectModal">
+                            <i class="fas fa-times-circle me-1"></i> Reject
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row">
+        <!-- Article Content -->
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-4 rounded-5 mb-4">
+                <div class="card-header bg-light py-3">
+                    <h5 class="mb-0 fw-bold">Article Content</h5>
+                </div>
+                <div class="card-body">
+                    {% if article.featured_image %}
+                    <div class="mb-4 text-center">
+                        <img src="{{ article.featured_image.url }}" class="img-fluid rounded" alt="{{ article.title }}">
+                        {% if article.image_caption %}
+                        <figcaption class="text-center text-muted small mt-2">{{ article.image_caption }}</figcaption>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                    
+                    {% if article.excerpt %}
+                    <div class="lead mb-4 fw-bold">
+                        {{ article.excerpt }}
+                    </div>
+                    {% endif %}
+                    
+                    <div class="article-content">
+                        {{ article.content|safe }}
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Sidebar -->
+        <div class="col-lg-4">
+            <!-- Article Metadata -->
+            <div class="card border-0 shadow-4 rounded-5 mb-4">
+                <div class="card-header bg-light py-3">
+                    <h5 class="mb-0 fw-bold">Article Metadata</h5>
+                </div>
+                <div class="card-body">
+                    <ul class="list-group list-group-light">
+                        <li class="list-group-item d-flex justify-content-between align-items-center border-0">
+                            <span>Status:</span>
+                            <span class="badge bg-warning rounded-pill">Pending Review</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center border-0">
+                            <span>Author:</span>
+                            <a href="{% url 'app:profile' username=article.author.username %}" class="text-decoration-none">
+                                {{ article.author.username }}
+                            </a>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center border-0">
+                            <span>Created:</span>
+                            <span>{{ article.created_at|date:"M d, Y" }}</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center border-0">
+                            <span>Last Updated:</span>
+                            <span>{{ article.updated_at|date:"M d, Y" }}</span>
+                        </li>
+                        {% if article.last_edited_by %}
+                        <li class="list-group-item d-flex justify-content-between align-items-center border-0">
+                            <span>Last Edited By:</span>
+                            <a href="{% url 'app:profile' username=article.last_edited_by.username %}" class="text-decoration-none">
+                                {{ article.last_edited_by.username }}
+                            </a>
+                        </li>
+                        {% endif %}
+                        <li class="list-group-item d-flex justify-content-between align-items-center border-0">
+                            <span>Word Count:</span>
+                            <span>{{ article.content|striptags|wordcount }}</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            
+            <!-- Categories & Tags -->
+            <div class="card border-0 shadow-4 rounded-5 mb-4">
+                <div class="card-header bg-light py-3">
+                    <h5 class="mb-0 fw-bold">Categories & Tags</h5>
+                </div>
+                <div class="card-body">
+                    <h6 class="fw-bold mb-2">Categories:</h6>
+                    <div class="mb-3">
+                        {% for category in article.categories.all %}
+                        <span class="badge bg-primary bg-gradient rounded-pill me-1 mb-1 px-3 py-2">
+                            {{ category.name }}
+                        </span>
+                        {% empty %}
+                        <span class="text-muted fst-italic">No categories assigned</span>
+                        {% endfor %}
+                    </div>
+                    
+                    <h6 class="fw-bold mb-2">Tags:</h6>
+                    <div>
+                        {% for tag in article.tags.all %}
+                        <span class="badge bg-info bg-gradient rounded-pill me-1 mb-1 px-3 py-2">
+                            {{ tag.name }}
+                        </span>
+                        {% empty %}
+                        <span class="text-muted fst-italic">No tags assigned</span>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Revision History -->
+            {% if revisions %}
+            <div class="card border-0 shadow-4 rounded-5 mb-4">
+                <div class="card-header bg-light py-3">
+                    <h5 class="mb-0 fw-bold">Revision History</h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="list-group list-group-light">
+                        {% for revision in revisions %}
+                        <div class="list-group-item border-0 p-3">
+                            <div class="d-flex w-100 justify-content-between">
+                                <h6 class="mb-1">
+                                    <a href="{% url 'app:article-revision' slug=article.slug revision_id=revision.id %}" class="text-decoration-none">
+                                        {{ revision.created_at|date:"M d, Y" }}
+                                    </a>
+                                </h6>
+                                <small class="text-muted">{{ revision.created_at|time:"g:i A" }}</small>
+                            </div>
+                            <p class="mb-1 small text-muted">
+                                <a href="{% url 'app:profile' username=revision.user.username %}" class="text-decoration-none">
+                                    {{ revision.user.username }}
+                                </a>
+                                {% if revision.comment %}
+                                - {{ revision.comment }}
+                                {% endif %}
+                            </p>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Approve Modal -->
+<div class="modal fade" id="approveModal" tabindex="-1" aria-labelledby="approveModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="approveModalLabel">Approve Article</h5>
+                <button type="button" class="btn-close" data-mdb-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form action="{% url 'app:article-review-action' slug=article.slug %}" method="post">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <h6>{{ article.title }}</h6>
+                    <p>Are you sure you want to approve this article? It will be published immediately.</p>
+                    
+                    <div class="form-outline mb-3">
+                        <textarea class="form-control" name="feedback" id="feedback" rows="3"></textarea>
+                        <label class="form-label" for="feedback">Feedback for author (optional)</label>
+                    </div>
+                    
+                    <input type="hidden" name="action" value="approve">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-mdb-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-success">
+                        <i class="fas fa-check me-1"></i> Approve
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Reject Modal -->
+<div class="modal fade" id="rejectModal" tabindex="-1" aria-labelledby="rejectModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="rejectModalLabel">Reject Article</h5>
+                <button type="button" class="btn-close" data-mdb-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form action="{% url 'app:article-review-action' slug=article.slug %}" method="post">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <h6>{{ article.title }}</h6>
+                    <p>Are you sure you want to reject this article? The author will be notified.</p>
+                    
+                    <div class="form-outline mb-3">
+                        <textarea class="form-control" name="feedback" id="rejectionFeedback" rows="3" required></textarea>
+                        <label class="form-label" for="rejectionFeedback">Reason for rejection (required)</label>
+                    </div>
+                    
+                    <input type="hidden" name="action" value="reject">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-mdb-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-danger">
+                        <i class="fas fa-times me-1"></i> Reject
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{% block extra_css %}
+<style>
+    .article-content h1, .article-content h2, .article-content h3,
+    .article-content h4, .article-content h5, .article-content h6 {
+        margin-top: 1.5rem;
+        margin-bottom: 1rem;
+        font-weight: 600;
+    }
+    
+    .article-content img {
+        max-width: 100%;
+        height: auto;
+        display: block;
+        margin: 1.5rem auto;
+        border-radius: 0.375rem;
+    }
+    
+    .article-content blockquote {
+        border-left: 5px solid #e0e0e0;
+        padding-left: 1rem;
+        margin-left: 0;
+        font-style: italic;
+        color: #6c757d;
+    }
+    
+    .article-content pre {
+        background-color: #f8f9fa;
+        padding: 1rem;
+        border-radius: 0.375rem;
+        overflow-x: auto;
+    }
+    
+    .article-content table {
+        width: 100%;
+        margin-bottom: 1rem;
+        border-collapse: collapse;
+    }
+    
+    .article-content th, .article-content td {
+        padding: 0.5rem;
+        border: 1px solid #dee2e6;
+    }
+    
+    .article-content th {
+        background-color: #f8f9fa;
+    }
+</style>
+{% endblock %}
+{% endblock %} 

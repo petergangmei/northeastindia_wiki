@@ -1,0 +1,316 @@
+{% extends 'base.html' %}
+
+{% block title %}Article Review Queue | Northeast India Wiki{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <div class="row">
+        <!-- Main content -->
+        <div class="col-lg-12">
+            <div class="card border-0 shadow-4 rounded-5 mb-4">
+                <div class="card-header bg-primary text-white py-3 rounded-top d-flex justify-content-between align-items-center">
+                    <h4 class="mb-0 fw-bold">Article Review Queue</h4>
+                    <span class="badge bg-light text-primary rounded-pill px-3 py-2">
+                        {{ pending_articles.count }} Pending Articles
+                    </span>
+                </div>
+                
+                <div class="card-body p-0">
+                    {% if pending_articles %}
+                        <!-- Filter and Sort Options -->
+                        <div class="p-4 border-bottom">
+                            <div class="row align-items-center">
+                                <div class="col-md-6">
+                                    <form method="get" class="d-flex">
+                                        <div class="input-group shadow-0">
+                                            <input type="search" name="q" class="form-control rounded-start" 
+                                                   placeholder="Search pending articles..." 
+                                                   value="{{ request.GET.q|default:'' }}">
+                                            <button class="btn btn-primary rounded-end" type="submit">
+                                                <i class="fas fa-search"></i>
+                                            </button>
+                                        </div>
+                                    </form>
+                                </div>
+                                <div class="col-md-6 text-md-end mt-3 mt-md-0">
+                                    <div class="btn-group">
+                                        <a href="?sort=newest" class="btn btn-outline-primary {% if sort == 'newest' or not sort %}active{% endif %}">
+                                            Newest
+                                        </a>
+                                        <a href="?sort=oldest" class="btn btn-outline-primary {% if sort == 'oldest' %}active{% endif %}">
+                                            Oldest
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Pending Articles List -->
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th scope="col" style="width: 40%">Title</th>
+                                        <th scope="col">Author</th>
+                                        <th scope="col">Submitted</th>
+                                        <th scope="col">Categories</th>
+                                        <th scope="col">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for article in pending_articles %}
+                                    <tr>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                {% if article.featured_image %}
+                                                <div class="me-3">
+                                                    <img src="{{ article.featured_image.url }}" class="rounded" 
+                                                         style="width: 50px; height: 50px; object-fit: cover;" 
+                                                         alt="{{ article.title }}">
+                                                </div>
+                                                {% endif %}
+                                                <div>
+                                                    <h6 class="mb-0">
+                                                        <a href="{% url 'app:article-detail' slug=article.slug %}" class="text-decoration-none text-reset">
+                                                            {{ article.title }}
+                                                        </a>
+                                                    </h6>
+                                                    <p class="text-muted small mb-0">
+                                                        {{ article.excerpt|default:article.content|striptags|truncatechars:80 }}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <a href="{% url 'app:profile' username=article.author.username %}" class="text-decoration-none">
+                                                {{ article.author.username }}
+                                            </a>
+                                        </td>
+                                        <td>
+                                            <span class="text-muted small">
+                                                {{ article.created_at|date:"M d, Y" }}
+                                                <br>
+                                                {{ article.created_at|time:"g:i A" }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            {% for category in article.categories.all|slice:":2" %}
+                                            <span class="badge bg-primary bg-gradient rounded-pill me-1">
+                                                {{ category.name }}
+                                            </span>
+                                            {% endfor %}
+                                            {% if article.categories.count > 2 %}
+                                            <span class="badge bg-light text-dark rounded-pill">
+                                                +{{ article.categories.count|add:"-2" }}
+                                            </span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <div class="btn-group">
+                                                <a href="{% url 'app:article-review' slug=article.slug %}" 
+                                                   class="btn btn-sm btn-primary">
+                                                    <i class="fas fa-search me-1"></i> Review
+                                                </a>
+                                                <button type="button" 
+                                                        class="btn btn-sm btn-success" 
+                                                        data-mdb-toggle="modal" 
+                                                        data-mdb-target="#approveModal{{ article.id }}">
+                                                    <i class="fas fa-check"></i>
+                                                </button>
+                                                <button type="button" 
+                                                        class="btn btn-sm btn-danger" 
+                                                        data-mdb-toggle="modal" 
+                                                        data-mdb-target="#rejectModal{{ article.id }}">
+                                                    <i class="fas fa-times"></i>
+                                                </button>
+                                            </div>
+                                            
+                                            <!-- Approve Modal -->
+                                            <div class="modal fade" id="approveModal{{ article.id }}" tabindex="-1" 
+                                                 aria-labelledby="approveModalLabel{{ article.id }}" aria-hidden="true">
+                                                <div class="modal-dialog">
+                                                    <div class="modal-content">
+                                                        <div class="modal-header">
+                                                            <h5 class="modal-title" id="approveModalLabel{{ article.id }}">
+                                                                Approve Article
+                                                            </h5>
+                                                            <button type="button" class="btn-close" 
+                                                                    data-mdb-dismiss="modal" aria-label="Close"></button>
+                                                        </div>
+                                                        <form action="{% url 'app:article-review-action' slug=article.slug %}" method="post">
+                                                            {% csrf_token %}
+                                                            <div class="modal-body">
+                                                                <h6>{{ article.title }}</h6>
+                                                                <p>Are you sure you want to approve this article? It will be published immediately.</p>
+                                                                
+                                                                <div class="form-outline mb-3">
+                                                                    <textarea class="form-control" name="feedback" id="feedback{{ article.id }}" rows="3"></textarea>
+                                                                    <label class="form-label" for="feedback{{ article.id }}">
+                                                                        Feedback for author (optional)
+                                                                    </label>
+                                                                </div>
+                                                                
+                                                                <input type="hidden" name="action" value="approve">
+                                                            </div>
+                                                            <div class="modal-footer">
+                                                                <button type="button" class="btn btn-outline-secondary" 
+                                                                        data-mdb-dismiss="modal">Cancel</button>
+                                                                <button type="submit" class="btn btn-success">
+                                                                    <i class="fas fa-check me-1"></i> Approve
+                                                                </button>
+                                                            </div>
+                                                        </form>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            
+                                            <!-- Reject Modal -->
+                                            <div class="modal fade" id="rejectModal{{ article.id }}" tabindex="-1" 
+                                                 aria-labelledby="rejectModalLabel{{ article.id }}" aria-hidden="true">
+                                                <div class="modal-dialog">
+                                                    <div class="modal-content">
+                                                        <div class="modal-header">
+                                                            <h5 class="modal-title" id="rejectModalLabel{{ article.id }}">
+                                                                Reject Article
+                                                            </h5>
+                                                            <button type="button" class="btn-close" 
+                                                                    data-mdb-dismiss="modal" aria-label="Close"></button>
+                                                        </div>
+                                                        <form action="{% url 'app:article-review-action' slug=article.slug %}" method="post">
+                                                            {% csrf_token %}
+                                                            <div class="modal-body">
+                                                                <h6>{{ article.title }}</h6>
+                                                                <p>Are you sure you want to reject this article? The author will be notified.</p>
+                                                                
+                                                                <div class="form-outline mb-3">
+                                                                    <textarea class="form-control" name="feedback" id="rejectionFeedback{{ article.id }}" rows="3" required></textarea>
+                                                                    <label class="form-label" for="rejectionFeedback{{ article.id }}">
+                                                                        Reason for rejection (required)
+                                                                    </label>
+                                                                </div>
+                                                                
+                                                                <input type="hidden" name="action" value="reject">
+                                                            </div>
+                                                            <div class="modal-footer">
+                                                                <button type="button" class="btn btn-outline-secondary" 
+                                                                        data-mdb-dismiss="modal">Cancel</button>
+                                                                <button type="submit" class="btn btn-danger">
+                                                                    <i class="fas fa-times me-1"></i> Reject
+                                                                </button>
+                                                            </div>
+                                                        </form>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <!-- Pagination -->
+                        {% if page_obj.has_other_pages %}
+                        <div class="p-4">
+                            <nav aria-label="Article pagination">
+                                <ul class="pagination pagination-circle justify-content-center mb-0">
+                                    {% if page_obj.has_previous %}
+                                    <li class="page-item">
+                                        <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if sort %}&sort={{ sort }}{% endif %}{% if query %}&q={{ query }}{% endif %}" aria-label="Previous">
+                                            <span aria-hidden="true">&laquo;</span>
+                                        </a>
+                                    </li>
+                                    {% else %}
+                                    <li class="page-item disabled">
+                                        <span class="page-link">&laquo;</span>
+                                    </li>
+                                    {% endif %}
+                                    
+                                    {% for i in page_obj.paginator.page_range %}
+                                        {% if page_obj.number == i %}
+                                        <li class="page-item active"><span class="page-link">{{ i }}</span></li>
+                                        {% else %}
+                                        <li class="page-item">
+                                            <a class="page-link" href="?page={{ i }}{% if sort %}&sort={{ sort }}{% endif %}{% if query %}&q={{ query }}{% endif %}">{{ i }}</a>
+                                        </li>
+                                        {% endif %}
+                                    {% endfor %}
+                                    
+                                    {% if page_obj.has_next %}
+                                    <li class="page-item">
+                                        <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if sort %}&sort={{ sort }}{% endif %}{% if query %}&q={{ query }}{% endif %}" aria-label="Next">
+                                            <span aria-hidden="true">&raquo;</span>
+                                        </a>
+                                    </li>
+                                    {% else %}
+                                    <li class="page-item disabled">
+                                        <span class="page-link">&raquo;</span>
+                                    </li>
+                                    {% endif %}
+                                </ul>
+                            </nav>
+                        </div>
+                        {% endif %}
+                    {% else %}
+                        <div class="text-center p-5">
+                            <div class="mb-3">
+                                <i class="fas fa-check-circle fa-4x text-success"></i>
+                            </div>
+                            <h5 class="fw-bold">No Pending Articles</h5>
+                            <p class="text-muted">All articles have been reviewed. Check back later for new submissions.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Review Stats Card -->
+            <div class="row row-cols-1 row-cols-md-4 g-4">
+                <div class="col">
+                    <div class="card border-0 shadow-2 rounded-5 h-100">
+                        <div class="card-body text-center">
+                            <div class="mb-3">
+                                <i class="fas fa-clock fa-3x text-warning"></i>
+                            </div>
+                            <h5 class="fw-bold">{{ pending_count }}</h5>
+                            <p class="text-muted mb-0">Pending</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col">
+                    <div class="card border-0 shadow-2 rounded-5 h-100">
+                        <div class="card-body text-center">
+                            <div class="mb-3">
+                                <i class="fas fa-check-circle fa-3x text-success"></i>
+                            </div>
+                            <h5 class="fw-bold">{{ approved_count }}</h5>
+                            <p class="text-muted mb-0">Approved</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col">
+                    <div class="card border-0 shadow-2 rounded-5 h-100">
+                        <div class="card-body text-center">
+                            <div class="mb-3">
+                                <i class="fas fa-times-circle fa-3x text-danger"></i>
+                            </div>
+                            <h5 class="fw-bold">{{ rejected_count }}</h5>
+                            <p class="text-muted mb-0">Rejected</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col">
+                    <div class="card border-0 shadow-2 rounded-5 h-100">
+                        <div class="card-body text-center">
+                            <div class="mb-3">
+                                <i class="fas fa-pen fa-3x text-primary"></i>
+                            </div>
+                            <h5 class="fw-bold">{{ draft_count }}</h5>
+                            <p class="text-muted mb-0">Drafts</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

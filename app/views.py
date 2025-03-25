@@ -313,6 +313,11 @@ def article_create(request):
                 strip=True
             )
             
+            # Check if the user is submitting for review
+            submit_for_review = request.POST.get('submit_for_review') == 'true'
+            if submit_for_review:
+                article.review_status = 'pending'
+            
             # Save the article
             article.save()
             
@@ -961,3 +966,249 @@ def password_reset_complete(request):
     Custom password reset complete view
     """
     return render(request, 'registration/password_reset_complete.html')
+
+@login_required
+def user_contributions(request):
+    """
+    Display the user's contributions including articles, drafts, and recent edits
+    """
+    user = request.user
+    active_tab = request.GET.get('tab', 'articles')
+    
+    # Get all articles created by the user
+    user_articles = Article.objects.filter(author=user).order_by('-created_at')
+    
+    # Get only draft articles
+    drafts = user_articles.filter(review_status='draft').order_by('-updated_at')
+    
+    # Get recent article revisions by the user
+    recent_edits = ArticleRevision.objects.filter(user=user).order_by('-created_at')
+    
+    # Calculate total contributions
+    contributions_count = user_articles.count() + recent_edits.count()
+    
+    # Pagination for articles tab
+    articles_paginator = Paginator(user_articles, 10)
+    articles_page_number = request.GET.get('page', 1)
+    articles_page_obj = articles_paginator.get_page(articles_page_number)
+    
+    # Pagination for edits tab
+    edits_paginator = Paginator(recent_edits, 10)
+    edits_page_number = request.GET.get('page', 1) if active_tab == 'edits' else 1
+    edits_page_obj = edits_paginator.get_page(edits_page_number)
+    
+    # Pagination for drafts tab
+    drafts_paginator = Paginator(drafts, 10)
+    drafts_page_number = request.GET.get('page', 1) if active_tab == 'drafts' else 1
+    drafts_page_obj = drafts_paginator.get_page(drafts_page_number)
+    
+    context = {
+        'user_articles': articles_page_obj,
+        'recent_edits': edits_page_obj,
+        'drafts': drafts_page_obj,
+        'articles_page_obj': articles_page_obj,
+        'edits_page_obj': edits_page_obj,
+        'drafts_page_obj': drafts_page_obj,
+        'contributions_count': contributions_count
+    }
+    
+    return render(request, 'users/contributions.html', context)
+
+@login_required
+def article_delete(request, slug):
+    """
+    Handle article deletion
+    """
+    article = get_object_or_404(Article, slug=slug)
+    
+    # Check if user has permission to delete (author, editor, or admin)
+    user_profile = get_object_or_404(UserProfile, user=request.user)
+    if request.user != article.author and user_profile.role not in ['editor', 'admin'] and not request.user.is_staff:
+        messages.error(request, "You don't have permission to delete this article.")
+        return redirect('app:article-detail', slug=article.slug)
+    
+    if request.method == 'POST':
+        article_title = article.title
+        
+        # Delete the article
+        article.delete()
+        
+        # Update user's stats if they were the author
+        if request.user == article.author:
+            user_profile.contribution_count = max(0, user_profile.contribution_count - 1)
+            user_profile.save()
+        
+        messages.success(request, f'Article "{article_title}" has been deleted.')
+        return redirect('app:user-contributions')
+    
+    # If not POST, redirect to article detail
+    return redirect('app:article-detail', slug=slug)
+
+@login_required
+def article_review_queue(request):
+    """
+    Display a queue of articles that need review
+    """
+    # Check if user has permission (editor or admin)
+    user_profile = get_object_or_404(UserProfile, user=request.user)
+    if user_profile.role not in ['editor', 'admin'] and not request.user.is_staff:
+        messages.error(request, "You don't have permission to access the review queue.")
+        return redirect('app:home')
+    
+    # Get search query
+    query = request.GET.get('q')
+    
+    # Get sort parameter
+    sort = request.GET.get('sort', 'newest')
+    
+    # Get all pending articles
+    pending_articles = Article.objects.filter(review_status='pending')
+    
+    # Apply search if provided
+    if query:
+        pending_articles = pending_articles.filter(
+            Q(title__icontains=query) | 
+            Q(content__icontains=query) | 
+            Q(excerpt__icontains=query) |
+            Q(author__username__icontains=query)
+        )
+    
+    # Apply sorting
+    if sort == 'oldest':
+        pending_articles = pending_articles.order_by('created_at')
+    else:  # Default to newest
+        pending_articles = pending_articles.order_by('-created_at')
+    
+    # Get counts for dashboard stats
+    pending_count = Article.objects.filter(review_status='pending').count()
+    approved_count = Article.objects.filter(review_status='approved', published=True).count()
+    rejected_count = Article.objects.filter(review_status='rejected').count()
+    draft_count = Article.objects.filter(review_status='draft').count()
+    
+    # Pagination
+    paginator = Paginator(pending_articles, 10)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    
+    context = {
+        'pending_articles': page_obj,
+        'page_obj': page_obj,
+        'sort': sort,
+        'query': query,
+        'pending_count': pending_count,
+        'approved_count': approved_count,
+        'rejected_count': rejected_count,
+        'draft_count': draft_count,
+    }
+    
+    return render(request, 'articles/review_queue.html', context)
+
+@login_required
+def article_review(request, slug):
+    """
+    Review a specific article
+    """
+    # Check if user has permission (editor or admin)
+    user_profile = get_object_or_404(UserProfile, user=request.user)
+    if user_profile.role not in ['editor', 'admin'] and not request.user.is_staff:
+        messages.error(request, "You don't have permission to review articles.")
+        return redirect('app:article-detail', slug=slug)
+    
+    # Get the article
+    article = get_object_or_404(Article, slug=slug)
+    
+    # Get revision history
+    revisions = ArticleRevision.objects.filter(article=article).order_by('-created_at')
+    
+    context = {
+        'article': article,
+        'revisions': revisions,
+    }
+    
+    return render(request, 'articles/article_review.html', context)
+
+@login_required
+def article_review_action(request, slug):
+    """
+    Handle article review actions (approve or reject)
+    """
+    # Check if user has permission (editor or admin)
+    user_profile = get_object_or_404(UserProfile, user=request.user)
+    if user_profile.role not in ['editor', 'admin'] and not request.user.is_staff:
+        messages.error(request, "You don't have permission to review articles.")
+        return redirect('app:article-detail', slug=slug)
+    
+    # Get the article
+    article = get_object_or_404(Article, slug=slug)
+    
+    # Check if the article is pending review
+    if article.review_status != 'pending':
+        messages.warning(request, "This article is not pending review.")
+        return redirect('app:article-review-queue')
+    
+    if request.method == 'POST':
+        action = request.POST.get('action')
+        feedback = request.POST.get('feedback', '')
+        
+        if action == 'approve':
+            # Update article status
+            article.review_status = 'approved'
+            article.published = True
+            article.published_at = timezone.now()
+            article.save()
+            
+            # Create a contribution record for the author
+            if feedback:
+                contribution_note = f"Article approved with feedback: {feedback}"
+            else:
+                contribution_note = "Article approved"
+                
+            Contribution.objects.create(
+                user=article.author,
+                contribution_type='article_published',
+                content_type='article',
+                object_id=article.id,
+                notes=contribution_note,
+                points_earned=20,  # Adjust point value as needed
+                approved=True,
+                approved_by=request.user
+            )
+            
+            # Update author's reputation points
+            author_profile = UserProfile.objects.get(user=article.author)
+            author_profile.reputation_points += 20  # Adjust point value as needed
+            author_profile.save()
+            
+            messages.success(request, f'Article "{article.title}" has been approved and published.')
+            
+        elif action == 'reject':
+            if not feedback:
+                messages.error(request, "Feedback is required when rejecting an article.")
+                return redirect('app:article-review', slug=slug)
+                
+            # Update article status
+            article.review_status = 'rejected'
+            article.save()
+            
+            # Create a contribution record with the rejection reason
+            Contribution.objects.create(
+                user=article.author,
+                contribution_type='article_rejected',
+                content_type='article',
+                object_id=article.id,
+                notes=f"Article rejected. Reason: {feedback}",
+                points_earned=0,
+                approved=False,
+                approved_by=request.user
+            )
+            
+            messages.success(request, f'Article "{article.title}" has been rejected.')
+        
+        else:
+            messages.error(request, "Invalid action specified.")
+            return redirect('app:article-review', slug=slug)
+        
+        return redirect('app:article-review-queue')
+    
+    # If not POST, redirect to review page
+    return redirect('app:article-review', slug=slug)
