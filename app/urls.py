@@ -24,6 +24,7 @@ urlpatterns = [
     
     # Article URLs
     path('articles/', views.article_list, name='article-list'),
+    path('articles/search/', views.article_search, name='article-search'),
     path('articles/create/', views.article_create, name='article-create'),
     path('articles/<slug:slug>/', views.article_detail, name='article-detail'),
     path('articles/<slug:slug>/edit/', views.article_edit, name='article-edit'),

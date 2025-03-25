@@ -178,6 +178,41 @@ def article_list(request):
     
     return render(request, 'articles/article_list.html', context)
 
+def article_search(request):
+    """
+    Handle article search with enhanced UI
+    """
+    query = request.GET.get('q', '')
+    articles = Article.objects.filter(published=True, review_status='approved')
+    
+    if query:
+        # Search in title, content and excerpt
+        articles = articles.filter(
+            Q(title__icontains=query) | 
+            Q(content__icontains=query) | 
+            Q(excerpt__icontains=query)
+        )
+    
+    # Pagination
+    paginator = Paginator(articles, 12)  # 12 articles per page
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    
+    # Get categories and states for sidebar
+    categories = Category.objects.all()
+    states = State.objects.all()
+    tags = Tag.objects.all()[:12]  # Get top 12 tags
+    
+    context = {
+        'page_obj': page_obj,
+        'categories': categories,
+        'states': states,
+        'tags': tags,
+        'query': query,
+    }
+    
+    return render(request, 'articles/article_search.html', context)
+
 def article_detail(request, slug):
     """
     Display the detailed view of an article
