@@ -18,8 +18,29 @@ from difflib import ndiff
 import bleach
 import string
 import random
-from .models import UserProfile, Contribution, Article, ArticleRevision, Category, Tag, State, PendingEdit
+from .models import UserProfile, Contribution, Article, ArticleRevision, Category, Tag, State, PendingEdit, Notification
 from .forms import ArticleForm, CustomUserCreationForm
+
+# Notification utility functions
+def create_notification(user, notification_type, message, content_type='', object_id=None):
+    """
+    Creates a notification for a user.
+    
+    Args:
+        user: The user to notify
+        notification_type: Type of notification (from Notification.NOTIFICATION_TYPES)
+        message: The notification message
+        content_type: Optional content type (e.g., 'article')
+        object_id: Optional ID of the related object
+    """
+    notification = Notification.objects.create(
+        user=user,
+        notification_type=notification_type,
+        message=message,
+        content_type=content_type,
+        object_id=object_id
+    )
+    return notification
 
 def home(request):
     """
@@ -1327,6 +1348,18 @@ def article_review_action(request, slug):
             author_profile.reputation_points += 20  # Adjust point value as needed
             author_profile.save()
             
+            # Create notification for author
+            notification_message = f"Your article '{article.title}' has been approved and published."
+            if feedback:
+                notification_message += f" Reviewer feedback: {feedback}"
+            create_notification(
+                user=article.author,
+                notification_type='approval',
+                message=notification_message,
+                content_type='article',
+                object_id=article.id
+            )
+            
             messages.success(request, f'Article "{article.title}" has been approved and published.')
             
         elif action == 'reject':
@@ -1359,6 +1392,17 @@ def article_review_action(request, slug):
                     approved_by=request.user
                 )
                 
+                # Create notification for editor
+                user_to_notify = article.last_edited_by or article.author
+                notification_message = f"Your edit to article '{article.title}' has been rejected. Reason: {feedback}"
+                create_notification(
+                    user=user_to_notify,
+                    notification_type='rejection',
+                    message=notification_message,
+                    content_type='article',
+                    object_id=article.id
+                )
+                
                 messages.success(request, f'Edit to article "{article.title}" has been rejected. The previous approved version remains published.')
             else:
                 # This is a new article that's being rejected
@@ -1378,6 +1422,16 @@ def article_review_action(request, slug):
                     approved_by=request.user
                 )
                 
+                # Create notification for author
+                notification_message = f"Your article '{article.title}' has been rejected. Reason: {feedback}"
+                create_notification(
+                    user=article.author,
+                    notification_type='rejection',
+                    message=notification_message,
+                    content_type='article',
+                    object_id=article.id
+                )
+                
                 messages.success(request, f'Article "{article.title}" has been rejected.')
         
         else:
@@ -1388,3 +1442,91 @@ def article_review_action(request, slug):
     
     # If not POST, redirect to review page
     return redirect('app:article-review', slug=slug)
+
+# Notification Views
+@login_required
+def notification_list(request):
+    """
+    View all user notifications
+    """
+    notifications = Notification.objects.filter(user=request.user).order_by('-created_at')
+    
+    # Enhance notifications with additional context for articles
+    for notification in notifications:
+        if notification.content_type == 'article' and notification.object_id:
+            try:
+                article = Article.objects.get(id=notification.object_id)
+                notification.article_slug = article.slug
+            except Article.DoesNotExist:
+                notification.article_slug = None
+    
+    # Pagination
+    paginator = Paginator(notifications, 15)  # 15 notifications per page
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    
+    context = {
+        'page_obj': page_obj,
+        'unread_count': notifications.filter(read=False).count(),
+    }
+    
+    return render(request, 'notifications/notification_list.html', context)
+
+@login_required
+def mark_notification_read(request, notification_id):
+    """
+    Mark a notification as read
+    """
+    notification = get_object_or_404(Notification, id=notification_id, user=request.user)
+    notification.read = True
+    notification.save()
+    
+    # Check if the request is AJAX
+    if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+        return HttpResponse('OK')
+    
+    # If not AJAX, redirect back to notifications list
+    return redirect('app:notification-list')
+
+@login_required
+def mark_all_notifications_read(request):
+    """
+    Mark all notifications as read
+    """
+    Notification.objects.filter(user=request.user, read=False).update(read=True)
+    
+    # Check if the request is AJAX
+    if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+        return HttpResponse('OK')
+    
+    # If not AJAX, redirect back to notifications list
+    return redirect('app:notification-list')
+
+@login_required
+def delete_notification(request, notification_id):
+    """
+    Delete a notification
+    """
+    notification = get_object_or_404(Notification, id=notification_id, user=request.user)
+    notification.delete()
+    
+    # Check if the request is AJAX
+    if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+        return HttpResponse('OK')
+    
+    # If not AJAX, redirect back to notifications list
+    return redirect('app:notification-list')
+
+@login_required
+def delete_all_notifications(request):
+    """
+    Delete all read notifications
+    """
+    Notification.objects.filter(user=request.user, read=True).delete()
+    
+    # Check if the request is AJAX
+    if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+        return HttpResponse('OK')
+    
+    # If not AJAX, redirect back to notifications list
+    return redirect('app:notification-list')

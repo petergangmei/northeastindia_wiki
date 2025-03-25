@@ -61,6 +61,73 @@
             <!-- User actions -->
             <div class="d-flex align-items-center">
                 {% if user.is_authenticated %}
+                    <!-- Notifications Dropdown -->
+                    <div class="dropdown me-3">
+                        <a class="text-white position-relative" href="#" id="notificationsDropdown" role="button" data-mdb-toggle="dropdown" aria-expanded="false">
+                            <i class="fas fa-bell fa-lg"></i>
+                            {% if unread_notification_count > 0 %}
+                                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                                    {{ unread_notification_count }}
+                                    <span class="visually-hidden">unread notifications</span>
+                                </span>
+                            {% endif %}
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end notification-dropdown custom-notification-dropdown" aria-labelledby="notificationsDropdown" style="width: 300px; max-height: 400px; overflow-y: auto;">
+                            <li>
+                                <h6 class="dropdown-header d-flex justify-content-between">
+                                    Notifications
+                                    {% if unread_notification_count > 0 %}
+                                        <a href="{% url 'app:mark-all-notifications-read' %}" class="text-primary ms-2 text-decoration-none small">
+                                            Mark all as read
+                                        </a>
+                                    {% endif %}
+                                </h6>
+                            </li>
+                            
+                            {% if recent_notifications %}
+                                {% for notification in recent_notifications %}
+                                    <li>
+                                        <a class="dropdown-item notification-item {% if not notification.read %}bg-light{% endif %}" href="{% url 'app:mark-notification-read' notification_id=notification.id %}">
+                                            <div class="d-flex align-items-center">
+                                                <div class="flex-shrink-0">
+                                                    {% if notification.notification_type == 'approval' %}
+                                                        <i class="fas fa-check-circle text-success"></i>
+                                                    {% elif notification.notification_type == 'rejection' %}
+                                                        <i class="fas fa-times-circle text-danger"></i>
+                                                    {% elif notification.notification_type == 'comment' %}
+                                                        <i class="fas fa-comment text-primary"></i>
+                                                    {% elif notification.notification_type == 'mention' %}
+                                                        <i class="fas fa-at text-primary"></i>
+                                                    {% elif notification.notification_type == 'review' %}
+                                                        <i class="fas fa-eye text-warning"></i>
+                                                    {% else %}
+                                                        <i class="fas fa-bell text-secondary"></i>
+                                                    {% endif %}
+                                                </div>
+                                                <div class="ms-3">
+                                                    <p class="mb-1 small">{{ notification.message|truncatechars:100 }}</p>
+                                                    <p class="text-muted mb-0 x-small">{{ notification.created_at|timesince }} ago</p>
+                                                </div>
+                                            </div>
+                                        </a>
+                                    </li>
+                                {% endfor %}
+                                <li><hr class="dropdown-divider"></li>
+                                <li>
+                                    <a class="dropdown-item text-center" href="{% url 'app:notification-list' %}">
+                                        View all notifications
+                                    </a>
+                                </li>
+                            {% else %}
+                                <li>
+                                    <span class="dropdown-item-text text-center py-3">
+                                        No notifications
+                                    </span>
+                                </li>
+                            {% endif %}
+                        </ul>
+                    </div>
+                    
                     <div class="dropdown">
                         <a class="dropdown-toggle d-flex align-items-center hidden-arrow" href="#"
                             id="userDropdown" role="button" data-mdb-toggle="dropdown" aria-expanded="false">
@@ -298,6 +365,23 @@
         margin: 5px 0;
         border-radius: 3px;
         transition: all 0.3s ease;
+    }
+
+    /* Notification dropdown positioning */
+    .custom-notification-dropdown {
+        right: auto !important;
+        left: -250px !important;
+    }
+
+    /* Add responsive behavior for notifications dropdown */
+    @media (max-width: 767px) {
+        .custom-notification-dropdown {
+            left: auto !important;
+            right: 0 !important;
+            position: fixed !important;
+            top: 40px !important;
+            width: 280px !important;
+        }
     }
 
     @media (max-width: 1100px) {

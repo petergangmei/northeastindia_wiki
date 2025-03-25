@@ -23,6 +23,13 @@ urlpatterns = [
     path('profile/<str:username>/', views.profile, name='profile'),
     path('contributions/', views.user_contributions, name='user-contributions'),
     
+    # Notification URLs
+    path('notifications/', views.notification_list, name='notification-list'),
+    path('notifications/<int:notification_id>/mark-read/', views.mark_notification_read, name='mark-notification-read'),
+    path('notifications/mark-all-read/', views.mark_all_notifications_read, name='mark-all-notifications-read'),
+    path('notifications/<int:notification_id>/delete/', views.delete_notification, name='delete-notification'),
+    path('notifications/delete-all-read/', views.delete_all_notifications, name='delete-all-notifications'),
+    
     # Article URLs
     path('articles/', views.article_list, name='article-list'),
     path('articles/search/', views.article_search, name='article-search'),
