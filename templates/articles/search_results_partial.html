@@ -1,0 +1,56 @@
+{% if articles %}
+<div class="card border-0 shadow-4 rounded-5 mb-4 mt-3">
+    <div class="card-header bg-primary text-white rounded-top d-flex justify-content-between align-items-center d-none">
+        <h5 class="mb-0 fw-bold">Search Results for "{{ query }}"</h5>
+        <span class="badge rounded-pill bg-light text-primary">{{ articles.count }} results</span>
+    </div>
+    <div class="card-body p-0">
+        <div class="list-group list-group-flush">
+            {% for article in articles|slice:":5" %}
+            <a href="{% url 'app:article-detail' slug=article.slug %}" 
+               class="list-group-item list-group-item-action border-0 py-3 px-4 ripple">
+                <div class="d-flex w-100 justify-content-between align-items-center">
+                    <div>
+                        <h6 class="mb-1 fw-bold">{{ article.title }}</h6>
+                        <p class="mb-1 text-muted small">
+                            {% if article.excerpt %}
+                            {{ article.excerpt|truncatechars:100 }}
+                            {% else %}
+                            {{ article.content|striptags|truncatechars:100 }}
+                            {% endif %}
+                        </p>
+                       
+                    </div>
+                    {% if article.featured_image %}
+                    <div class="ms-3 flex-shrink-0">
+                        <img src="{{ article.featured_image.url }}" alt="{{ article.title }}" 
+                             class="rounded" style="width: 60px; height: 60px; object-fit: cover;">
+                    </div>
+                    {% endif %}
+                </div>
+            </a>
+            {% endfor %}
+        </div>
+        
+        {% if articles.count > 5 %}
+        <div class="card-footer bg-light border-0 rounded-bottom text-center">
+            <a href="{% url 'app:article-search' %}?q={{ query }}" class="btn btn-sm btn-outline-primary rounded-pill">
+                View All Results <i class="fas fa-arrow-right ms-1"></i>
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% else %}
+{% if query %}
+<div class="alert alert-light border-start border-5 border-primary shadow-1-strong mt-3">
+    <div class="d-flex align-items-center">
+        <i class="fas fa-info-circle text-primary fa-2x me-3"></i>
+        <div>
+            <h5 class="fw-bold mb-1">No results found</h5>
+            <p class="mb-0">No articles matching "{{ query }}" found. Try different search terms.</p>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endif %} 

@@ -213,6 +213,30 @@ def article_search(request):
     
     return render(request, 'articles/article_search.html', context)
 
+def article_search_htmx(request):
+    """
+    HTMX endpoint for live article search on the home page
+    """
+    query = request.GET.get('q', '')
+    articles = None
+    
+    if query:
+        # Search in title, content and excerpt
+        articles = Article.objects.filter(
+            Q(title__icontains=query) | 
+            Q(content__icontains=query) | 
+            Q(excerpt__icontains=query),
+            published=True, 
+            review_status='approved'
+        )[:10]  # Limit to top 10 results for performance
+    
+    context = {
+        'articles': articles,
+        'query': query,
+    }
+    
+    return render(request, 'articles/search_results_partial.html', context)
+
 def article_detail(request, slug):
     """
     Display the detailed view of an article
