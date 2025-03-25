@@ -17,14 +17,14 @@
     <!-- Search Bar -->
     <div class="row justify-content-center mb-5">
         <div class="col-md-6">
-            <form class="d-flex input-group w-auto w-100">
+            <form action="{% url 'app:article-list' %}" method="get" class="d-flex input-group w-auto w-100">
                 <div class="input-group">
                     <span class="input-group-text bg-secondary border-0 ps-3">
                         <i class="fas fa-search text-light"></i>
                     </span>
-                    <input type="search" class="form-control border-1 shadow-none" placeholder="Search Northeast India Wiki..." aria-label="Search">
-                    <button class="btn btn-link px-3 text-muted" type="button">
-                        <i class="fas fa-microphone"></i>
+                    <input type="search" name="q" class="form-control border-1 shadow-none" placeholder="Search Northeast India Wiki..." aria-label="Search">
+                    <button class="btn btn-primary px-3" type="submit">
+                        Search
                     </button>
                 </div>
             </form>

@@ -4,9 +4,14 @@
 
 {% block og_title %}{{ article.title }} | Northeast India Wiki{% endblock %}
 {% block og_description %}{{ article.meta_description|default:article.excerpt }}{% endblock %}
-{% if article.featured_image %}
-{% block og_image %}{{ article.featured_image.url }}{% endblock %}
-{% endif %}
+
+{% block og_image %}
+    {% if article.featured_image and article.featured_image.name and article.featured_image.name != '' %}
+        {{ article.featured_image.url }}
+    {% else %}
+        /static/images/default-og-image.jpg
+    {% endif %}
+{% endblock %}
 
 {% block content %}
 <div class="container my-5">
@@ -52,7 +57,7 @@
                     {% endif %}
                 </div>
                 
-                {% if article.featured_image %}
+                {% if article.featured_image and article.featured_image.name and article.featured_image.name != '' %}
                 <div class="mb-4">
                     <img src="{{ article.featured_image.url }}" class="img-fluid rounded" alt="{{ article.title }}">
                 </div>
@@ -114,7 +119,7 @@
                     {% for related in related_articles %}
                     <div class="col">
                         <div class="card h-100 border-0 shadow-sm">
-                            {% if related.featured_image %}
+                            {% if related.featured_image and related.featured_image.name and related.featured_image.name != '' %}
                             <img src="{{ related.featured_image.url }}" class="card-img-top" alt="{{ related.title }}" style="height: 120px; object-fit: cover;">
                             {% else %}
                             <div class="card-img-top bg-light d-flex align-items-center justify-content-center" style="height: 120px;">
@@ -123,7 +128,7 @@
                             {% endif %}
                             <div class="card-body">
                                 <h5 class="card-title h6">{{ related.title }}</h5>
-                                <p class="card-text">{{ related.summary|truncatechars:100 }}</p>
+                                <p class="card-text">{{ related.excerpt|truncatechars:100 }}</p>
                                 <a href="{% url 'app:article-detail' slug=related.slug %}" class="stretched-link"></a>
                             </div>
                         </div>

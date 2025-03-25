@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import login, authenticate, logout
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.forms import UserCreationForm, AuthenticationForm, PasswordResetForm, SetPasswordForm
+from django.contrib.auth.forms import AuthenticationForm, PasswordResetForm, SetPasswordForm
 from django.contrib import messages
 from django.contrib.auth.models import User
 from django.core.paginator import Paginator
@@ -19,7 +19,7 @@ import bleach
 import string
 import random
 from .models import UserProfile, Contribution, Article, ArticleRevision, Category, Tag, State
-from .forms import ArticleForm
+from .forms import ArticleForm, CustomUserCreationForm
 
 def home(request):
     """
@@ -68,7 +68,7 @@ def register(request):
     User registration view
     """
     if request.method == 'POST':
-        form = UserCreationForm(request.POST)
+        form = CustomUserCreationForm(request.POST)
         if form.is_valid():
             user = form.save()
             # Create user profile
@@ -78,7 +78,7 @@ def register(request):
             messages.success(request, 'Account created successfully!')
             return redirect('app:home')
     else:
-        form = UserCreationForm()
+        form = CustomUserCreationForm()
     
     return render(request, 'registration/register.html', {'form': form})
 

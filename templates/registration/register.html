@@ -3,55 +3,107 @@
 {% block title %}Register - Northeast India Wiki{% endblock %}
 
 {% block content %}
-<div class="container">
-    <div class="form-container">
-        <h1 class="form-title">Create an Account</h1>
-        
-        <form method="post" data-validate="true">
-            {% csrf_token %}
-            
-            <div class="form-group">
-                <label for="id_username" class="form-label">Username</label>
-                <input type="text" name="username" id="id_username" class="form-control" required>
-                <small class="form-text">Required. 150 characters or fewer. Letters, digits and @/./+/-/_ only.</small>
-            </div>
-            
-            <div class="form-group">
-                <label for="id_email" class="form-label">Email</label>
-                <input type="email" name="email" id="id_email" class="form-control" required>
-            </div>
-            
-            <div class="form-group">
-                <label for="id_password1" class="form-label">Password</label>
-                <input type="password" name="password1" id="id_password1" class="form-control" required>
-                <small class="form-text">
-                    Your password must contain at least 8 characters, can't be entirely numeric, 
-                    and can't be a commonly used password.
-                </small>
-            </div>
-            
-            <div class="form-group">
-                <label for="id_password2" class="form-label">Confirm Password</label>
-                <input type="password" name="password2" id="id_password2" class="form-control" required>
-                <small class="form-text">Enter the same password as above, for verification.</small>
-            </div>
-            
-            <div class="form-group">
-                <div class="checkbox">
-                    <input type="checkbox" name="agree_terms" id="id_agree_terms" required>
-                    <label for="id_agree_terms">
-                        I have read and agree to the <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a>
-                    </label>
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-6">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h2 class="h4 mb-0">Create an Account</h2>
+                </div>
+                <div class="card-body p-4">
+                    <form method="post" novalidate>
+                        {% csrf_token %}
+                        
+                        {% if form.non_field_errors %}
+                        <div class="alert alert-danger">
+                            {% for error in form.non_field_errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.username.id_for_label }}" class="form-label">Username</label>
+                            <input type="text" name="{{ form.username.name }}" id="{{ form.username.id_for_label }}" class="form-control {% if form.username.errors %}is-invalid{% endif %}" value="{{ form.username.value|default:'' }}" required>
+                            {% if form.username.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in form.username.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% else %}
+                                <small class="text-muted">
+                                    Required. 150 characters or fewer. Letters, digits and @/./+/-/_ only.
+                                </small>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.email.id_for_label }}" class="form-label">Email</label>
+                            <input type="email" name="{{ form.email.name }}" id="{{ form.email.id_for_label }}" class="form-control {% if form.email.errors %}is-invalid{% endif %}" value="{{ form.email.value|default:'' }}" required>
+                            {% if form.email.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in form.email.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.password1.id_for_label }}" class="form-label">Password</label>
+                            <input type="password" name="{{ form.password1.name }}" id="{{ form.password1.id_for_label }}" class="form-control {% if form.password1.errors %}is-invalid{% endif %}" required>
+                            {% if form.password1.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in form.password1.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% else %}
+                                <small class="text-muted">
+                                    Your password must contain at least 8 characters, can't be entirely numeric, 
+                                    and can't be a commonly used password.
+                                </small>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.password2.id_for_label }}" class="form-label">Confirm Password</label>
+                            <input type="password" name="{{ form.password2.name }}" id="{{ form.password2.id_for_label }}" class="form-control {% if form.password2.errors %}is-invalid{% endif %}" required>
+                            {% if form.password2.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in form.password2.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% else %}
+                                <small class="text-muted">Enter the same password as above, for verification.</small>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="mb-3 form-check">
+                            <input type="checkbox" name="{{ form.agree_terms.name }}" id="{{ form.agree_terms.id_for_label }}" class="form-check-input {% if form.agree_terms.errors %}is-invalid{% endif %}" required>
+                            <label class="form-check-label" for="{{ form.agree_terms.id_for_label }}">
+                                I have read and agree to the <a href="#" target="_blank">Terms of Service</a> and <a href="#" target="_blank">Privacy Policy</a>
+                            </label>
+                            {% if form.agree_terms.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in form.agree_terms.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary">Register</button>
+                        </div>
+                    </form>
+                </div>
+                <div class="card-footer bg-white text-center">
+                    <p class="mb-0">Already have an account? <a href="{% url 'app:login' %}">Login</a></p>
                 </div>
             </div>
-            
-            <div class="form-actions">
-                <button type="submit" class="btn btn-primary">Register</button>
-            </div>
-        </form>
-        
-        <div class="text-center mt-3">
-            <p>Already have an account? <a href="{% url 'app:login' %}">Login</a></p>
         </div>
     </div>
 </div>
