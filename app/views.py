@@ -46,7 +46,44 @@ def home(request):
     """
     Home page view
     """
-    return render(request, 'home.html')
+    # Get Article of the Day
+    # For simplicity, we'll get a random approved and published article
+    # In a real implementation, you might have a specific selection process
+    article_of_the_day = Article.objects.filter(
+        published=True, 
+        review_status='approved'
+    ).order_by('?').first()
+    
+    # Get latest articles (for "Trending" section)
+    latest_articles = Article.objects.filter(
+        published=True, 
+        review_status='approved'
+    ).order_by('-published_at')[:4]
+    
+    # Get categories with article counts
+    categories = Category.objects.all()
+    
+    # Prepare categories with article counts
+    categories_with_counts = []
+    for category in categories[:6]:  # Limit to 6 categories
+        article_count = Article.objects.filter(
+            categories=category,
+            published=True,
+            review_status='approved'
+        ).count()
+        
+        categories_with_counts.append({
+            'category': category,
+            'count': article_count
+        })
+    
+    context = {
+        'article_of_the_day': article_of_the_day,
+        'latest_articles': latest_articles,
+        'categories_with_counts': categories_with_counts
+    }
+    
+    return render(request, 'home.html', context)
 
 def user_login(request):
     """

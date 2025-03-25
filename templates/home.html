@@ -55,103 +55,80 @@
     <!-- Article of the day -->
     <div class="mb-5">
         <h2 class="h4 mb-4">Article of the Day</h2>
-        <div class="card border-0 shadow-sm">
-            <div class="row g-0">
-                <div class="col-md-3">
-                    <img src="/static/images/placeholder.jpg" class="img-fluid rounded-start h-100" style="object-fit: cover;" alt="Article image">
-                </div>
-                <div class="col-md-9">
-                    <div class="card-body">
-                        <div class="d-flex justify-content-between align-items-start mb-2">
-                            <h3 class="card-title h5">Traditional Festivals of Northeast India</h3>
-                            <span class="text-muted small">
-                                <i class="far fa-eye me-1"></i> 23.4K
-                            </span>
-                        </div>
-                        <p class="card-text mb-2 small">
-                            <span class="text-muted">Last edited: February 24, 2023 </span> • <span class="text-muted">Category:</span> <a href="#" class="text-decoration-none">Cultural Heritage</a>
-                        </p>
-                        <p class="card-text">Northeast India is home to numerous vibrant festivals that showcase the region's rich cultural diversity. From Assam's Bihu celebrations to Nagaland's Hornbill Festival, these events feature traditional music, dance, cuisine, and rituals that have been preserved for generations...</p>
-                        <div class="d-flex justify-content-end">
-                            <a href="#" class="btn btn-sm btn-primary">Read More</a>
-                        </div>
+        {% if article_of_the_day %}
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <h3 class="card-title h5">{{ article_of_the_day.title }}</h3>
+                        <span class="text-muted small">
+                            <i class="far fa-star me-1"></i> Featured
+                        </span>
+                    </div>
+                    <p class="card-text mb-2 small">
+                        <span class="text-muted">Last edited: {{ article_of_the_day.updated_at|date:"F j, Y" }} </span>
+                        {% if article_of_the_day.categories.all %}
+                            • <span class="text-muted">Category:</span>
+                            {% for category in article_of_the_day.categories.all|slice:":1" %}
+                                <a href="{% url 'app:article-category' slug=category.slug %}" class="text-decoration-none">{{ category.name }}</a>{% if not forloop.last %}, {% endif %}
+                            {% endfor %}
+                        {% endif %}
+                    </p>
+                    <p class="card-text">{{ article_of_the_day.excerpt|default:article_of_the_day.content|striptags|truncatewords:50 }}</p>
+                    <div class="d-flex justify-content-end">
+                        <a href="{% url 'app:article-detail' slug=article_of_the_day.slug %}" class="btn btn-sm btn-primary">Read More</a>
                     </div>
                 </div>
             </div>
-        </div>
+        {% else %}
+            <div class="card border-0 shadow-sm">
+                <div class="card-body text-center py-5">
+                    <i class="fas fa-newspaper fa-3x text-muted mb-3"></i>
+                    <h3 class="h5">No featured article available</h3>
+                    <p class="text-muted">Check back later for our article of the day.</p>
+                </div>
+            </div>
+        {% endif %}
     </div>
 
-    <!-- Trending section -->
+    <!-- Latest Articles section -->
     <div class="mb-5">
         <div class="d-flex align-items-center mb-4">
-            <h2 class="h4 mb-0 me-2">Trending</h2>
-            <i class="fas fa-chart-line text-accent"></i>
+            <h2 class="h4 mb-0 me-2">Latest Articles</h2>
+            <i class="fas fa-clock text-accent"></i>
         </div>
         
         <div class="row row-cols-1 row-cols-md-2 row-cols-lg-4 g-4">
-            <!-- Trending card 1 -->
-            <div class="col">
-                <div class="card h-100 border-0 shadow-sm">
-                    <div class="position-relative">
-                        <img src="/static/images/placeholder.jpg" class="card-img-top" alt="Bihu Festival">
-                        <div class="position-absolute top-0 end-0 bg-accent text-white m-2 px-2 py-1 rounded-pill small">
-                            <i class="far fa-eye me-1"></i> 21.4K
+            {% if latest_articles %}
+                {% for article in latest_articles %}
+                    <div class="col">
+                        <div class="card h-100 border-0 shadow-sm">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span class="badge bg-accent rounded-pill">
+                                        <i class="far fa-clock me-1"></i> New
+                                    </span>
+                                    {% if article.categories.all %}
+                                        <span class="badge bg-secondary rounded-pill">
+                                            {{ article.categories.all.0.name }}
+                                        </span>
+                                    {% endif %}
+                                </div>
+                                <h5 class="card-title">{{ article.title|truncatechars:40 }}</h5>
+                                <p class="card-text small">{{ article.excerpt|default:article.content|striptags|truncatewords:15 }}</p>
+                                <div class="mt-auto">
+                                    <a href="{% url 'app:article-detail' slug=article.slug %}" class="btn btn-sm btn-outline-primary mt-2 stretched-link">Read Article</a>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                    <div class="card-body">
-                        <h5 class="card-title">Bihu Festival 2023</h5>
-                        <p class="card-text small">Learn about the latest celebrations of Assam's most important cultural festival.</p>
+                {% endfor %}
+            {% else %}
+                <div class="col-12">
+                    <div class="alert alert-light text-center" role="alert">
+                        <i class="fas fa-info-circle me-2"></i> No articles available yet. Check back soon!
                     </div>
                 </div>
-            </div>
-            
-            <!-- Trending card 2 -->
-            <div class="col">
-                <div class="card h-100 border-0 shadow-sm">
-                    <div class="position-relative">
-                        <img src="/static/images/placeholder.jpg" class="card-img-top" alt="Ethereum">
-                        <div class="position-absolute top-0 end-0 bg-accent text-white m-2 px-2 py-1 rounded-pill small">
-                            <i class="far fa-eye me-1"></i> 19.2K
-                        </div>
-                    </div>
-                    <div class="card-body">
-                        <h5 class="card-title">Crypto in Northeast</h5>
-                        <p class="card-text small">How cryptocurrency adoption is changing the economic landscape in Northeast India.</p>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Trending card 3 -->
-            <div class="col">
-                <div class="card h-100 border-0 shadow-sm">
-                    <div class="position-relative">
-                        <img src="/static/images/placeholder.jpg" class="card-img-top" alt="Famous Personalities">
-                        <div class="position-absolute top-0 end-0 bg-accent text-white m-2 px-2 py-1 rounded-pill small">
-                            <i class="far fa-eye me-1"></i> 10.6K
-                        </div>
-                    </div>
-                    <div class="card-body">
-                        <h5 class="card-title">Indigenous Communities</h5>
-                        <p class="card-text small">The latest research on indigenous communities in Northeast India.</p>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Trending card 4 -->
-            <div class="col">
-                <div class="card h-100 border-0 shadow-sm">
-                    <div class="position-relative">
-                        <img src="/static/images/placeholder.jpg" class="card-img-top" alt="Billboard Music Awards">
-                        <div class="position-absolute top-0 end-0 bg-accent text-white m-2 px-2 py-1 rounded-pill small">
-                            <i class="far fa-eye me-1"></i> 7.5K
-                        </div>
-                    </div>
-                    <div class="card-body">
-                        <h5 class="card-title">Artists from Northeast</h5>
-                        <p class="card-text small">Recognition for artists from Northeast India at global music awards.</p>
-                    </div>
-                </div>
-            </div>
+            {% endif %}
         </div>
     </div>
 
@@ -163,117 +140,33 @@
         </div>
         
         <div class="row row-cols-1 row-cols-md-2 g-4">
-            <!-- Technology category -->
-            <div class="col">
-                <div class="card border-0 shadow-sm">
-                    <div class="card-body d-flex align-items-center">
-                        <div class="me-3">
-                            <div class="bg-accent p-3 rounded-circle">
-                                <i class="fas fa-microchip fa-2x text-white"></i>
+            {% if categories_with_counts %}
+                {% for category_data in categories_with_counts %}
+                    <div class="col">
+                        <div class="card border-0 shadow-sm">
+                            <div class="card-body d-flex align-items-center">
+                                <div class="me-3">
+                                    <div class="bg-{% cycle 'accent' 'secondary' %} p-3 rounded-circle">
+                                        <i class="fas fa-{% cycle 'book' 'map-marker-alt' 'users' 'landmark' 'music' 'drum' %} fa-2x text-white"></i>
+                                    </div>
+                                </div>
+                                <div>
+                                    <h5 class="card-title mb-1">{{ category_data.category.name }}</h5>
+                                    <p class="card-text text-muted mb-2 small">{{ category_data.category.description|truncatechars:60 }}</p>
+                                    <p class="mb-0"><strong>{{ category_data.count }}</strong> article{% if category_data.count != 1 %}s{% endif %}</p>
+                                </div>
                             </div>
-                        </div>
-                        <div>
-                            <h5 class="card-title mb-1">Technology</h5>
-                            <p class="card-text text-muted mb-2 small">Innovation, digital and technology in Northeast</p>
-                            <p class="mb-0"><strong>6790</strong> articles</p>
+                            <a href="{% url 'app:article-category' slug=category_data.category.slug %}" class="stretched-link"></a>
                         </div>
                     </div>
-                </div>
-            </div>
-            
-            <!-- Science category -->
-            <div class="col">
-                <div class="card border-0 shadow-sm">
-                    <div class="card-body d-flex align-items-center">
-                        <div class="me-3">
-                            <div class="bg-secondary p-3 rounded-circle">
-                                <i class="fas fa-atom fa-2x text-white"></i>
-                            </div>
-                        </div>
-                        <div>
-                            <h5 class="card-title mb-1">Science</h5>
-                            <p class="card-text text-muted mb-2 small">Research, discoveries, and scientific knowledge</p>
-                            <p class="mb-0"><strong>2250</strong> articles</p>
-                        </div>
+                {% endfor %}
+            {% else %}
+                <div class="col-12">
+                    <div class="alert alert-light text-center" role="alert">
+                        <i class="fas fa-info-circle me-2"></i> No categories available yet.
                     </div>
                 </div>
-            </div>
-            
-            <!-- Medicine category -->
-            <div class="col">
-                <div class="card border-0 shadow-sm">
-                    <div class="card-body d-flex align-items-center">
-                        <div class="me-3">
-                            <div class="bg-accent p-3 rounded-circle">
-                                <i class="fas fa-heartbeat fa-2x text-white"></i>
-                            </div>
-                        </div>
-                        <div>
-                            <h5 class="card-title mb-1">Medicine</h5>
-                            <p class="card-text text-muted mb-2 small">Traditional and modern medical practices</p>
-                            <p class="mb-0"><strong>1054</strong> articles</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Sports category -->
-            <div class="col">
-                <div class="card border-0 shadow-sm">
-                    <div class="card-body d-flex align-items-center">
-                        <div class="me-3">
-                            <div class="bg-secondary p-3 rounded-circle">
-                                <i class="fas fa-futbol fa-2x text-white"></i>
-                            </div>
-                        </div>
-                        <div>
-                            <h5 class="card-title mb-1">Sports</h5>
-                            <p class="card-text text-muted mb-2 small">Traditional games and modern sports</p>
-                            <p class="mb-0"><strong>20K</strong> articles</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Arts category -->
-            <div class="col">
-                <div class="card border-0 shadow-sm">
-                    <div class="card-body d-flex align-items-center">
-                        <div class="me-3">
-                            <div class="bg-accent p-3 rounded-circle">
-                                <i class="fas fa-palette fa-2x text-white"></i>
-                            </div>
-                        </div>
-                        <div>
-                            <h5 class="card-title mb-1">Arts</h5>
-                            <p class="card-text text-muted mb-2 small">Visual arts, music, dance, and crafts</p>
-                            <p class="mb-0"><strong>7800</strong> articles</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Politics category -->
-            <div class="col">
-                <div class="card border-0 shadow-sm">
-                    <div class="card-body d-flex align-items-center">
-                        <div class="me-3">
-                            <div class="bg-secondary p-3 rounded-circle">
-                                <i class="fas fa-landmark fa-2x text-white"></i>
-                            </div>
-                        </div>
-                        <div>
-                            <h5 class="card-title mb-1">Politics</h5>
-                            <p class="card-text text-muted mb-2 small">Governance, policy, and political history</p>
-                            <p class="mb-0"><strong>12K</strong> articles</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        <div class="text-center mt-4">
-            <a href="#" class="btn btn-outline-primary">View All Categories</a>
+            {% endif %}
         </div>
     </div>
 
