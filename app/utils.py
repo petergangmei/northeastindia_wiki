@@ -330,6 +330,8 @@ def _calculate_regional_connection_bonus(article, candidate):
     """
     Calculate bonus points for regional connections specific to Northeast India.
     """
+    from .templatetags.schema_tags import detect_content_type
+    
     bonus = 0
     
     # Personality to cultural/event connections
@@ -362,6 +364,7 @@ def _ensure_related_articles_diversity(scored_articles, limit):
     Ensure diversity in the final selection of related articles.
     Prioritizes different content types and states for better user experience.
     """
+    from .templatetags.schema_tags import detect_content_type
     if len(scored_articles) <= limit:
         return [item['article'] for item in scored_articles]
     
