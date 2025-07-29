@@ -1,0 +1,210 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ page_title }}{% endblock %}
+{% block meta_description %}{{ meta_description }}{% endblock %}
+
+{% block structured_data %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Place",
+  "name": "{{ state.name }}",
+  "description": "{{ state.description|truncatewords:30 }}",
+  "alternateName": "{{ state.name }}, Northeast India",
+  "containedInPlace": {
+    "@type": "Country",
+    "name": "India"
+  },
+  "additionalProperty": [
+    {
+      "@type": "PropertyValue",
+      "name": "Capital",
+      "value": "{{ state.capital }}"
+    }{% if state.population %},
+    {
+      "@type": "PropertyValue",
+      "name": "Population",
+      "value": "{{ state.population }}"
+    }{% endif %}{% if state.area %},
+    {
+      "@type": "PropertyValue",
+      "name": "Area",
+      "value": "{{ state.area }} sq km"
+    }{% endif %}
+  ]
+}
+</script>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Breadcrumbs -->
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'app:home' %}">Home</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'app:state-list' %}">States</a></li>
+            <li class="breadcrumb-item active" aria-current="page">{{ state.name }}</li>
+        </ol>
+    </nav>
+
+    <!-- State Header -->
+    <div class="row mb-5">
+        <div class="col-12">
+            <div class="card bg-gradient-primary text-white">
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col-md-8">
+                            <h1 class="display-4 mb-3">{{ state.name }}</h1>
+                            <p class="lead mb-3">{{ state.description }}</p>
+                            
+                            <div class="row text-center">
+                                <div class="col-md-3">
+                                    <div class="border-end border-light pe-3">
+                                        <i class="fas fa-city fa-2x mb-2"></i>
+                                        <h5>{{ state.capital }}</h5>
+                                        <small>Capital City</small>
+                                    </div>
+                                </div>
+                                {% if state.population %}
+                                <div class="col-md-3">
+                                    <div class="border-end border-light pe-3">
+                                        <i class="fas fa-users fa-2x mb-2"></i>
+                                        <h5>{{ state.population|floatformat:0 }}</h5>
+                                        <small>Population</small>
+                                    </div>
+                                </div>
+                                {% endif %}
+                                {% if state.area %}
+                                <div class="col-md-3">
+                                    <div class="border-end border-light pe-3">
+                                        <i class="fas fa-expand-arrows-alt fa-2x mb-2"></i>
+                                        <h5>{{ state.area|floatformat:0 }} km²</h5>
+                                        <small>Area</small>
+                                    </div>
+                                </div>
+                                {% endif %}
+                                {% if state.formation_date %}
+                                <div class="col-md-3">
+                                    <i class="fas fa-calendar fa-2x mb-2"></i>
+                                    <h5>{{ state.formation_date|date:"Y" }}</h5>
+                                    <small>Formed</small>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% if state.image %}
+                        <div class="col-md-4">
+                            <img src="{{ state.image.url }}" class="img-fluid rounded shadow" alt="{{ state.name }}">
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Content Categories -->
+    {% if category_counts %}
+    <div class="row mb-5">
+        <div class="col-12">
+            <h2 class="mb-4">Explore {{ state.name }} by Category</h2>
+            <div class="row g-3">
+                {% for category, count in category_counts.items %}
+                <div class="col-md-6 col-lg-4 col-xl-3">
+                    <a href="{% url 'app:state-category-articles' state.slug category.slug %}" class="text-decoration-none">
+                        <div class="card h-100 hover-card">
+                            <div class="card-body text-center">
+                                <i class="fas fa-{% if category.slug == 'personalities' %}user-tie{% elif category.slug == 'culture' %}palette{% elif category.slug == 'festivals' %}calendar-star{% elif category.slug == 'places' %}map-marker-alt{% elif category.slug == 'heritage' %}landmark{% elif category.slug == 'food' %}utensils{% elif category.slug == 'music' %}music{% elif category.slug == 'dance' %}dancer{% else %}book{% endif %} fa-3x text-primary mb-3"></i>
+                                <h5 class="card-title">{{ category.name }}</h5>
+                                <p class="text-muted">{{ count }} article{{ count|pluralize }}</p>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Recent Articles -->
+    {% if articles %}
+    <div class="row mb-5">
+        <div class="col-12">
+            <h2 class="mb-4">Latest Articles from {{ state.name }}</h2>
+            <div class="row g-4">
+                {% for article in articles %}
+                <div class="col-md-6 col-lg-4">
+                    <div class="card h-100 shadow-sm hover-shadow">
+                        {% if article.featured_image %}
+                        <img src="{{ article.featured_image.url }}" class="card-img-top" alt="{{ article.title }}" style="height: 200px; object-fit: cover;">
+                        {% endif %}
+                        
+                        <div class="card-body d-flex flex-column">
+                            <h5 class="card-title">
+                                <a href="{{ article.get_absolute_url }}" class="text-decoration-none">{{ article.title }}</a>
+                            </h5>
+                            
+                            <p class="card-text text-muted flex-grow-1">{{ article.excerpt|default:article.content|striptags|truncatewords:20 }}</p>
+                            
+                            <div class="d-flex justify-content-between align-items-center mt-auto">
+                                <small class="text-muted">
+                                    <i class="fas fa-user me-1"></i>{{ article.author.get_full_name|default:article.author.username }}
+                                </small>
+                                <small class="text-muted">{{ article.published_at|timesince }} ago</small>
+                            </div>
+                            
+                            {% if article.categories.all %}
+                            <div class="mt-2">
+                                {% for category in article.categories.all %}
+                                <span class="badge bg-secondary me-1">{{ category.name }}</span>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            
+            <div class="text-center mt-4">
+                <a href="{% url 'app:article-list' %}?states={{ state.slug }}" class="btn btn-primary">
+                    View All Articles from {{ state.name }}
+                    <i class="fas fa-arrow-right ms-1"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Languages Section -->
+    {% if state.languages %}
+    <div class="row">
+        <div class="col-12">
+            <div class="card bg-light">
+                <div class="card-body">
+                    <h3 class="mb-3">
+                        <i class="fas fa-language me-2"></i>Languages Spoken
+                    </h3>
+                    <p class="mb-0">{{ state.languages }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<style>
+.hover-card:hover {
+    transform: translateY(-5px);
+    transition: all 0.3s ease;
+}
+.hover-shadow:hover {
+    box-shadow: 0 0.5rem 1rem rgba(0,0,0,.15) !important;
+}
+.bg-gradient-primary {
+    background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+}
+</style>
+{% endblock %}

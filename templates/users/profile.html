@@ -1,6 +1,14 @@
 {% extends 'base.html' %}
+{% load schema_tags %}
+
+<!-- Canonical URL for user profile page -->
+{% block canonical_url %}{% canonical_url request %}{% endblock %}
 
 {% block title %}{{ user_profile.user.username }} - Profile{% endblock %}
+
+{% block breadcrumbs %}
+{% include 'commons/breadcrumbs.html' with page_type='profile' username=user_profile.user.username %}
+{% endblock %}
 
 {% block content %}
 <div class="container">

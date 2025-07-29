@@ -19,6 +19,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.sitemaps',
     
     # Third-party apps
     'tinymce',
@@ -37,6 +38,9 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    # Custom SEO middleware for URL redirects and canonical URLs
+    'app.middleware.SEORedirectMiddleware',
+    'app.middleware.CanonicalURLMiddleware',
 ]
 
 ROOT_URLCONF = 'core.urls'

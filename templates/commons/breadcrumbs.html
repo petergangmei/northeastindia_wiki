@@ -1,0 +1,89 @@
+{% load schema_tags %}
+
+<!-- Breadcrumb Navigation -->
+{% generate_breadcrumb_data page_type request article=article category=category tag=tag username=username query=query as breadcrumb_data %}
+
+{% if breadcrumb_data %}
+<nav aria-label="breadcrumb" class="bg-light border-bottom">
+    <div class="container">
+        <ol class="breadcrumb py-3 mb-0 bg-transparent">
+            {% for breadcrumb in breadcrumb_data %}
+                {% if breadcrumb.is_current %}
+                    <li class="breadcrumb-item active text-primary fw-semibold" aria-current="page">
+                        <i class="fas fa-map-marker-alt me-2"></i>
+                        <span>{{ breadcrumb.name }}</span>
+                    </li>
+                {% else %}
+                    <li class="breadcrumb-item">
+                        <a href="{{ breadcrumb.url }}" class="text-decoration-none text-primary d-flex align-items-center">
+                            {% if forloop.first %}
+                                <i class="fas fa-home me-2 text-success"></i>
+                            {% elif breadcrumb.name == "Articles" %}
+                                <i class="fas fa-newspaper me-2 text-info"></i>
+                            {% elif breadcrumb.name == "Categories" %}
+                                <i class="fas fa-folder me-2 text-warning"></i>
+                            {% elif breadcrumb.name == "Tags" %}
+                                <i class="fas fa-tag me-2 text-secondary"></i>
+                            {% elif breadcrumb.name == "Profiles" %}
+                                <i class="fas fa-user me-2 text-primary"></i>
+                            {% elif "Search" in breadcrumb.name %}
+                                <i class="fas fa-search me-2 text-success"></i>
+                            {% elif breadcrumb.name == "History" %}
+                                <i class="fas fa-history me-2 text-info"></i>
+                            {% elif breadcrumb.name == "Edit" %}
+                                <i class="fas fa-edit me-2 text-warning"></i>
+                            {% elif breadcrumb.name == "Review Queue" %}
+                                <i class="fas fa-tasks me-2 text-danger"></i>
+                            {% elif breadcrumb.name == "Notifications" %}
+                                <i class="fas fa-bell me-2 text-primary"></i>
+                            {% else %}
+                                <i class="fas fa-file-alt me-2 text-muted"></i>
+                            {% endif %}
+                            <span class="breadcrumb-text">{{ breadcrumb.name }}</span>
+                        </a>
+                    </li>
+                {% endif %}
+            {% endfor %}
+        </ol>
+    </div>
+</nav>
+
+<style>
+.breadcrumb-text {
+    max-width: 200px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.breadcrumb a:hover {
+    color: var(--mdb-primary) !important;
+    transition: color 0.2s ease;
+}
+
+.breadcrumb a:hover i {
+    transform: scale(1.1);
+    transition: transform 0.2s ease;
+}
+
+@media (max-width: 768px) {
+    .breadcrumb-text {
+        max-width: 120px;
+    }
+    
+    .breadcrumb {
+        font-size: 0.875rem;
+    }
+    
+    .breadcrumb i {
+        font-size: 0.8rem;
+    }
+}
+</style>
+
+<!-- Schema.org BreadcrumbList structured data -->
+{% generate_breadcrumb_schema page_type request article=article category=category tag=tag username=username query=query as breadcrumb_schema %}
+<script type="application/ld+json">
+{{ breadcrumb_schema|jsonify }}
+</script>
+{% endif %}

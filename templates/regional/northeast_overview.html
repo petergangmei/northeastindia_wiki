@@ -1,0 +1,293 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ page_title }}{% endblock %}
+{% block meta_description %}{{ meta_description }}{% endblock %}
+
+{% block structured_data %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Place",
+  "name": "Northeast India",
+  "description": "{{ meta_description }}",
+  "alternateName": ["Seven Sisters States", "Northeast India", "Seven Sisters and Sikkim"],
+  "containedInPlace": {
+    "@type": "Country",
+    "name": "India"
+  },
+  "containsPlace": [
+    {% for state in states %}
+    {
+      "@type": "Place",
+      "name": "{{ state.name }}",
+      "alternateName": "{{ state.name }}, India"
+    }{% if not forloop.last %},{% endif %}
+    {% endfor %}
+  ]
+}
+</script>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Hero Section -->
+    <div class="row mb-5">
+        <div class="col-12">
+            <div class="card bg-gradient-primary text-white position-relative overflow-hidden">
+                <div class="card-body text-center py-5">
+                    <div class="position-relative z-index-1">
+                        <h1 class="display-3 mb-3">Northeast India</h1>
+                        <p class="lead mb-4">Discover the enchanting world of the Seven Sisters states and Sikkim</p>
+                        <p class="mb-0">A land of diverse cultures, breathtaking landscapes, and rich traditions</p>
+                    </div>
+                    <!-- Background Pattern -->
+                    <div class="position-absolute top-0 start-0 w-100 h-100 opacity-10">
+                        <i class="fas fa-mountain position-absolute" style="top: 20%; left: 10%; font-size: 3rem;"></i>
+                        <i class="fas fa-tree position-absolute" style="top: 60%; left: 20%; font-size: 2rem;"></i>
+                        <i class="fas fa-water position-absolute" style="top: 40%; right: 15%; font-size: 2.5rem;"></i>
+                        <i class="fas fa-sun position-absolute" style="top: 15%; right: 25%; font-size: 2rem;"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Stats -->
+    <div class="row mb-5">
+        <div class="col-md-3">
+            <div class="card text-center h-100">
+                <div class="card-body">
+                    <i class="fas fa-map-marked-alt fa-3x text-primary mb-3"></i>
+                    <h3 class="text-primary">8</h3>
+                    <h5>States</h5>
+                    <p class="text-muted small">Seven Sisters + Sikkim</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center h-100">
+                <div class="card-body">
+                    <i class="fas fa-language fa-3x text-success mb-3"></i>
+                    <h3 class="text-success">200+</h3>
+                    <h5>Languages</h5>
+                    <p class="text-muted small">Diverse linguistic heritage</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center h-100">
+                <div class="card-body">
+                    <i class="fas fa-users fa-3x text-info mb-3"></i>
+                    <h3 class="text-info">100+</h3>
+                    <h5>Tribes</h5>
+                    <p class="text-muted small">Rich tribal diversity</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center h-100">
+                <div class="card-body">
+                    <i class="fas fa-leaf fa-3x text-warning mb-3"></i>
+                    <h3 class="text-warning">70%</h3>
+                    <h5>Forest Cover</h5>
+                    <p class="text-muted small">Green biodiversity</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Featured Articles -->
+    {% if featured_articles %}
+    <div class="row mb-5">
+        <div class="col-12">
+            <h2 class="mb-4">
+                <i class="fas fa-star text-warning me-2"></i>Featured Content
+            </h2>
+            <div class="row g-4">
+                {% for article in featured_articles %}
+                <div class="col-md-6 col-lg-4">
+                    <div class="card h-100 shadow-sm hover-shadow featured-card">
+                        {% if article.featured_image %}
+                        <img src="{{ article.featured_image.url }}" class="card-img-top" alt="{{ article.title }}" style="height: 200px; object-fit: cover;">
+                        {% endif %}
+                        
+                        <div class="card-body d-flex flex-column">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <span class="badge bg-warning text-dark">Featured</span>
+                                {% if article.states.first %}
+                                <span class="badge bg-info">{{ article.states.first.name }}</span>
+                                {% endif %}
+                            </div>
+                            
+                            <h5 class="card-title">
+                                <a href="{{ article.get_absolute_url }}" class="text-decoration-none">{{ article.title }}</a>
+                            </h5>
+                            
+                            <p class="card-text text-muted flex-grow-1">{{ article.excerpt|default:article.content|striptags|truncatewords:20 }}</p>
+                            
+                            <div class="mt-auto">
+                                <small class="text-muted">
+                                    <i class="fas fa-user me-1"></i>{{ article.author.get_full_name|default:article.author.username }}
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- States Grid -->
+    <div class="row mb-5">
+        <div class="col-12">
+            <h2 class="mb-4">
+                <i class="fas fa-map me-2"></i>The Eight States
+            </h2>
+            <div class="row g-4">
+                {% for state in states %}
+                <div class="col-md-6 col-lg-4 col-xl-3">
+                    <div class="card h-100 shadow-sm hover-card">
+                        {% if state.image %}
+                        <img src="{{ state.image.url }}" class="card-img-top" alt="{{ state.name }}" style="height: 180px; object-fit: cover;">
+                        {% else %}
+                        <div class="card-img-top bg-gradient-secondary d-flex align-items-center justify-content-center" style="height: 180px;">
+                            <i class="fas fa-mountain text-white fa-3x"></i>
+                        </div>
+                        {% endif %}
+                        
+                        <div class="card-body d-flex flex-column">
+                            <h5 class="card-title">{{ state.name }}</h5>
+                            <p class="card-text flex-grow-1">{{ state.description|truncatewords:15 }}</p>
+                            
+                            <div class="mb-3">
+                                <small class="text-muted">
+                                    <i class="fas fa-city me-1"></i>{{ state.capital }}
+                                </small>
+                            </div>
+                            
+                            <a href="{% url 'app:state-detail' state.slug %}" class="btn btn-outline-primary btn-sm mt-auto">
+                                Explore {{ state.name }}
+                                <i class="fas fa-arrow-right ms-1"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Content Categories -->
+    <div class="row mb-5">
+        <div class="col-12">
+            <h2 class="mb-4">
+                <i class="fas fa-compass me-2"></i>Explore by Theme
+            </h2>
+            <div class="row g-4">
+                <div class="col-md-6 col-lg-3">
+                    <div class="card h-100 theme-card bg-gradient-primary text-white">
+                        <div class="card-body text-center">
+                            <i class="fas fa-user-tie fa-4x mb-3"></i>
+                            <h4>Personalities</h4>
+                            <p class="mb-3">Notable figures who shaped Northeast India</p>
+                            <a href="{% url 'app:personalities-list' %}" class="btn btn-light">Explore</a>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-6 col-lg-3">
+                    <div class="card h-100 theme-card bg-gradient-success text-white">
+                        <div class="card-body text-center">
+                            <i class="fas fa-palette fa-4x mb-3"></i>
+                            <h4>Culture</h4>
+                            <p class="mb-3">Rich traditions and cultural heritage</p>
+                            <a href="{% url 'app:culture-list' %}" class="btn btn-light">Explore</a>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-6 col-lg-3">
+                    <div class="card h-100 theme-card bg-gradient-warning text-white">
+                        <div class="card-body text-center">
+                            <i class="fas fa-calendar-star fa-4x mb-3"></i>
+                            <h4>Festivals</h4>
+                            <p class="mb-3">Colorful celebrations and ceremonies</p>
+                            <a href="{% url 'app:festivals-list' %}" class="btn btn-light">Explore</a>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-6 col-lg-3">
+                    <div class="card h-100 theme-card bg-gradient-info text-white">
+                        <div class="card-body text-center">
+                            <i class="fas fa-map-marker-alt fa-4x mb-3"></i>
+                            <h4>Places</h4>
+                            <p class="mb-3">Beautiful destinations and landmarks</p>
+                            <a href="{% url 'app:places-list' %}" class="btn btn-light">Explore</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Call to Action -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card bg-light">
+                <div class="card-body text-center py-5">
+                    <h3 class="mb-3">Contribute to Northeast India Wiki</h3>
+                    <p class="lead text-muted mb-4">Help us preserve and share the rich heritage of Northeast India</p>
+                    <div class="d-flex justify-content-center gap-3">
+                        <a href="{% url 'app:article-create' %}" class="btn btn-primary btn-lg">
+                            <i class="fas fa-plus me-2"></i>Add Article
+                        </a>
+                        <a href="{% url 'app:article-list' %}" class="btn btn-outline-primary btn-lg">
+                            <i class="fas fa-search me-2"></i>Browse All
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.bg-gradient-primary {
+    background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+}
+.bg-gradient-success {
+    background: linear-gradient(135deg, #28a745 0%, #1e7e34 100%);
+}
+.bg-gradient-warning {
+    background: linear-gradient(135deg, #ffc107 0%, #d39e00 100%);
+}
+.bg-gradient-info {
+    background: linear-gradient(135deg, #17a2b8 0%, #138496 100%);
+}
+.bg-gradient-secondary {
+    background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
+}
+
+.hover-card:hover {
+    transform: translateY(-5px);
+    transition: all 0.3s ease;
+}
+.hover-shadow:hover {
+    box-shadow: 0 0.5rem 1rem rgba(0,0,0,.15) !important;
+}
+.featured-card {
+    border-left: 4px solid #ffc107;
+}
+.theme-card:hover {
+    transform: scale(1.05);
+    transition: all 0.3s ease;
+}
+.z-index-1 {
+    z-index: 1;
+}
+</style>
+{% endblock %}

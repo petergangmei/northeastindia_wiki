@@ -1,0 +1,149 @@
+{% load static %}
+
+<div class="social-sharing-widget">
+    <div class="d-flex align-items-center mb-3">
+        <h6 class="mb-0 me-3">Share this article:</h6>
+        <div class="social-buttons d-flex gap-2">
+            <!-- Twitter Share -->
+            <a href="{{ twitter_url }}" 
+               target="_blank" 
+               rel="noopener noreferrer"
+               class="btn btn-outline-primary btn-sm d-flex align-items-center"
+               title="Share on Twitter"
+               onclick="window.open(this.href, 'twitter-share', 'width=550,height=400'); return false;">
+                <i class="fab fa-twitter me-1"></i>
+                <span class="d-none d-md-inline">Twitter</span>
+            </a>
+            
+            <!-- Facebook Share -->
+            <a href="{{ facebook_url }}" 
+               target="_blank" 
+               rel="noopener noreferrer"
+               class="btn btn-outline-primary btn-sm d-flex align-items-center"
+               title="Share on Facebook"
+               onclick="window.open(this.href, 'facebook-share', 'width=550,height=400'); return false;">
+                <i class="fab fa-facebook-f me-1"></i>
+                <span class="d-none d-md-inline">Facebook</span>
+            </a>
+            
+            <!-- LinkedIn Share -->
+            <a href="{{ linkedin_url }}" 
+               target="_blank" 
+               rel="noopener noreferrer"
+               class="btn btn-outline-primary btn-sm d-flex align-items-center"
+               title="Share on LinkedIn"
+               onclick="window.open(this.href, 'linkedin-share', 'width=550,height=400'); return false;">
+                <i class="fab fa-linkedin-in me-1"></i>
+                <span class="d-none d-md-inline">LinkedIn</span>
+            </a>
+            
+            <!-- WhatsApp Share -->
+            <a href="{{ whatsapp_url }}" 
+               target="_blank" 
+               rel="noopener noreferrer"
+               class="btn btn-outline-success btn-sm d-flex align-items-center"
+               title="Share on WhatsApp">
+                <i class="fab fa-whatsapp me-1"></i>
+                <span class="d-none d-md-inline">WhatsApp</span>
+            </a>
+            
+            <!-- Copy Link -->
+            <button type="button" 
+                    class="btn btn-outline-secondary btn-sm d-flex align-items-center"
+                    title="Copy link"
+                    onclick="copyToClipboard('{{ share_url }}', this)">
+                <i class="fas fa-link me-1"></i>
+                <span class="d-none d-md-inline">Copy</span>
+            </button>
+        </div>
+    </div>
+    
+    <!-- Cultural Context for Sharing -->
+    <div class="sharing-context">
+        <small class="text-muted">
+            <i class="fas fa-heart text-danger me-1"></i>
+            Help preserve and share Northeast India's rich cultural heritage
+        </small>
+    </div>
+</div>
+
+<script>
+function copyToClipboard(text, button) {
+    navigator.clipboard.writeText(text).then(function() {
+        // Change button text temporarily
+        const originalText = button.innerHTML;
+        button.innerHTML = '<i class="fas fa-check me-1"></i><span class="d-none d-md-inline">Copied!</span>';
+        button.classList.remove('btn-outline-secondary');
+        button.classList.add('btn-success');
+        
+        setTimeout(function() {
+            button.innerHTML = originalText;
+            button.classList.remove('btn-success');
+            button.classList.add('btn-outline-secondary');
+        }, 2000);
+    }).catch(function(err) {
+        console.error('Could not copy text: ', err);
+        // Fallback for older browsers
+        const textArea = document.createElement('textarea');
+        textArea.value = text;
+        document.body.appendChild(textArea);
+        textArea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textArea);
+        
+        // Still show success message
+        const originalText = button.innerHTML;
+        button.innerHTML = '<i class="fas fa-check me-1"></i><span class="d-none d-md-inline">Copied!</span>';
+        button.classList.remove('btn-outline-secondary');
+        button.classList.add('btn-success');
+        
+        setTimeout(function() {
+            button.innerHTML = originalText;
+            button.classList.remove('btn-success');
+            button.classList.add('btn-outline-secondary');
+        }, 2000);
+    });
+}
+</script>
+
+<style>
+.social-sharing-widget {
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    padding: 1rem;
+    background-color: #f8f9fa;
+    margin-bottom: 1rem;
+}
+
+.social-buttons .btn {
+    min-width: 45px;
+    transition: all 0.2s ease;
+}
+
+.social-buttons .btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.sharing-context {
+    border-top: 1px solid #e9ecef;
+    padding-top: 0.5rem;
+    margin-top: 0.5rem;
+}
+
+@media (max-width: 768px) {
+    .social-buttons {
+        justify-content: center;
+    }
+    
+    .social-sharing-widget h6 {
+        text-align: center;
+        margin-bottom: 0.5rem;
+    }
+    
+    .d-flex.align-items-center {
+        flex-direction: column;
+        align-items: center !important;
+    }
+}
+</style>

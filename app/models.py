@@ -35,6 +35,11 @@ class UserProfile(models.Model):
     website = models.URLField(blank=True)
     role = models.CharField(max_length=20, choices=USER_ROLES, default='viewer')
     
+    # Social media handles for enhanced sharing
+    twitter_handle = models.CharField(max_length=50, blank=True, help_text="Twitter handle without @")
+    linkedin_profile = models.URLField(blank=True, help_text="LinkedIn profile URL")
+    facebook_profile = models.URLField(blank=True, help_text="Facebook profile URL")
+    
     # Reputation and contribution tracking
     reputation_points = models.IntegerField(default=0)
     contribution_count = models.IntegerField(default=0)
@@ -71,7 +76,7 @@ class Category(TimeStampedModel):
         super().save(*args, **kwargs)
     
     def get_absolute_url(self):
-        return reverse('category-detail', kwargs={'slug': self.slug})
+        return reverse('app:article-category', kwargs={'slug': self.slug})
 
 
 class Tag(TimeStampedModel):
@@ -91,6 +96,9 @@ class Tag(TimeStampedModel):
         if not self.slug:
             self.slug = slugify(self.name)
         super().save(*args, **kwargs)
+    
+    def get_absolute_url(self):
+        return reverse('app:article-tag', kwargs={'slug': self.slug})
 
 
 class State(TimeStampedModel):
@@ -116,7 +124,7 @@ class State(TimeStampedModel):
         super().save(*args, **kwargs)
     
     def get_absolute_url(self):
-        return reverse('state-detail', kwargs={'slug': self.slug})
+        return reverse('app:state-detail', kwargs={'state_slug': self.slug})
 
 
 class ContentItem(TimeStampedModel):
@@ -178,7 +186,160 @@ class Article(ContentItem):
     last_edited_by = models.ForeignKey(User, null=True, blank=True, on_delete=models.SET_NULL, related_name='edited_articles')
     
     def get_absolute_url(self):
-        return reverse('article-detail', kwargs={'slug': self.slug})
+        """
+        Generate SEO-optimized URL based on primary category and state if available
+        Falls back to generic URL structure if no specific context
+        """
+        # Get primary category and state for URL generation
+        primary_category = self.categories.first()
+        primary_state = self.states.first()
+        
+        # Try to generate SEO-friendly URL based on category
+        if primary_category and primary_state:
+            category_slug = primary_category.slug
+            state_slug = primary_state.slug
+            
+            # Map categories to URL patterns - enhanced mapping
+            category_url_map = {
+                'personalities': 'app:seo-personalities-detail',
+                'culture': 'app:seo-culture-detail',
+                'festivals': 'app:seo-festivals-detail',
+                'places': 'app:seo-places-detail',
+                'heritage': 'app:seo-heritage-detail',
+                'history': 'app:seo-history-detail',
+                'traditional-crafts': 'app:seo-crafts-detail',
+                'traditional-arts': 'app:seo-crafts-detail',  # Alias for crafts
+                'food': 'app:seo-food-detail',
+                'cuisine': 'app:seo-food-detail',  # Alias for food
+                'music': 'app:seo-music-detail',
+                'folk-music': 'app:seo-music-detail',  # Alias for music
+                'dance': 'app:seo-dance-detail',
+                'literature': 'app:seo-literature-detail',
+                'tribal-culture': 'app:seo-culture-detail',  # Alias for culture
+                'historical-sites': 'app:seo-heritage-detail',  # Alias for heritage
+            }
+            
+            url_name = category_url_map.get(category_slug)
+            if url_name:
+                try:
+                    return reverse(url_name, kwargs={
+                        'state_slug': state_slug,
+                        'slug': self.slug
+                    })
+                except:
+                    pass
+        
+        # If we have a category but no state, try category-only URLs
+        elif primary_category:
+            category_slug = primary_category.slug
+            
+            # For certain categories, we can still generate good URLs without state
+            category_only_patterns = {
+                'personalities': f'/personalities/{self.slug}/',
+                'culture': f'/culture/{self.slug}/',
+                'festivals': f'/festivals/{self.slug}/',
+                'places': f'/places/{self.slug}/',
+                'heritage': f'/heritage/{self.slug}/',
+                'traditional-crafts': f'/traditional-crafts/{self.slug}/',
+            }
+            
+            category_url = category_only_patterns.get(category_slug)
+            if category_url:
+                return category_url
+        
+        # Fallback to original URL structure
+        return reverse('app:article-detail', kwargs={'slug': self.slug})
+    
+    def get_seo_url(self):
+        """
+        Get the SEO-optimized URL for this article
+        Returns the new URL structure if conditions are met
+        """
+        return self.get_absolute_url()
+    
+    def get_canonical_url(self):
+        """
+        Get canonical URL for SEO purposes
+        Always returns the SEO-optimized URL
+        """
+        return self.get_absolute_url()
+    
+    def get_breadcrumb_data(self):
+        """
+        Generate breadcrumb data for SEO structured data
+        """
+        breadcrumbs = [
+            {'name': 'Home', 'url': '/'},
+            {'name': 'Northeast India', 'url': '/northeast-india/'}
+        ]
+        
+        # Add state if available
+        primary_state = self.states.first()
+        if primary_state:
+            breadcrumbs.append({
+                'name': primary_state.name,
+                'url': f'/states/{primary_state.slug}/'
+            })
+        
+        # Add category if available
+        primary_category = self.categories.first()
+        if primary_category:
+            category_name = primary_category.name.title()
+            if primary_state:
+                breadcrumbs.append({
+                    'name': f'{category_name} in {primary_state.name}',
+                    'url': f'/{primary_category.slug}/{primary_state.slug}/'
+                })
+            else:
+                breadcrumbs.append({
+                    'name': category_name,
+                    'url': f'/{primary_category.slug}/'
+                })
+        
+        # Add current article
+        breadcrumbs.append({
+            'name': self.title,
+            'url': self.get_absolute_url()
+        })
+        
+        return breadcrumbs
+    
+    def get_seo_title(self):
+        """
+        Generate SEO-optimized title for the article
+        """
+        components = [self.title]
+        
+        # Add state context
+        primary_state = self.states.first()
+        if primary_state:
+            components.append(primary_state.name)
+        
+        # Add category context
+        primary_category = self.categories.first()
+        if primary_category:
+            components.append(primary_category.name.title())
+        
+        # Add regional context
+        components.append('Northeast India')
+        
+        return ' | '.join(components)
+    
+    def get_seo_description(self):
+        """
+        Generate SEO-optimized meta description
+        """
+        if self.meta_description:
+            return self.meta_description
+        
+        # Fallback to excerpt or truncated content
+        if self.excerpt:
+            return self.excerpt[:155] + '...' if len(self.excerpt) > 155 else self.excerpt
+        
+        # Generate from content (strip HTML)
+        import re
+        clean_content = re.sub(r'<[^>]+>', '', self.content)
+        return (clean_content[:150] + '...') if len(clean_content) > 150 else clean_content
 
 
 class ArticleRevision(TimeStampedModel):

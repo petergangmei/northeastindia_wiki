@@ -1,6 +1,14 @@
 {% extends 'base.html' %}
+{% load schema_tags %}
+
+<!-- Canonical URL for notifications page -->
+{% block canonical_url %}{% canonical_url request %}{% endblock %}
 
 {% block title %}Your Notifications | Northeast India Wiki{% endblock %}
+
+{% block breadcrumbs %}
+{% include 'commons/breadcrumbs.html' with page_type='notifications' %}
+{% endblock %}
 
 {% block content %}
 <div class="container py-5">

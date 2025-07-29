@@ -3,6 +3,14 @@
 
 {% block title %}{{ title }} | Northeast India Wiki{% endblock %}
 
+{% block breadcrumbs %}
+{% if article %}
+    {% include 'commons/breadcrumbs.html' with page_type='article_edit' article=article %}
+{% else %}
+    {% include 'commons/breadcrumbs.html' with page_type='article_list' %}
+{% endif %}
+{% endblock %}
+
 {% block extra_css %}
 {{ form.media }}
 <style>

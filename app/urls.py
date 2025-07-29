@@ -7,6 +7,9 @@ app_name = 'app'  # Define namespace for URL names
 urlpatterns = [
     path('', views.home, name='home'),
     
+    # SEO and crawlers
+    path('robots.txt', views.robots_txt, name='robots-txt'),
+    
     # Authentication URLs
     path('login/', views.user_login, name='login'),
     path('logout/', views.user_logout, name='logout'),
@@ -56,4 +59,13 @@ urlpatterns = [
     # Tag URLs
     path('tags/', views.tag_list, name='article-tags'),
     path('tags/<slug:slug>/', views.tag_articles, name='article-tag'),
+    
+    # SEO-Optimized URL Patterns for Northeast India Content (Basic Implementation)
+    
+    # Category-State specific URLs (SEO optimized) - Main benefit achieved
+    path('personalities/<slug:state_slug>/<slug:slug>/', views.article_detail, name='seo-personalities-detail'),
+    path('culture/<slug:state_slug>/<slug:slug>/', views.article_detail, name='seo-culture-detail'),
+    path('festivals/<slug:state_slug>/<slug:slug>/', views.article_detail, name='seo-festivals-detail'),
+    path('places/<slug:state_slug>/<slug:slug>/', views.article_detail, name='seo-places-detail'),
+    path('heritage/<slug:state_slug>/<slug:slug>/', views.article_detail, name='seo-heritage-detail'),
 ]

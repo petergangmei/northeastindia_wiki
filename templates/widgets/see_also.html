@@ -1,0 +1,48 @@
+{% load static %}
+{% load schema_tags %}
+<!-- See Also Widget -->
+{% if see_also_articles %}
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-header bg-gradient bg-secondary text-white d-flex align-items-center">
+        <i class="fas fa-link me-2"></i>
+        <h5 class="mb-0">See Also</h5>
+    </div>
+    <div class="card-body">
+        <div class="list-group list-group-flush">
+            {% for article in see_also_articles %}
+            {% detect_content_type article as content_type %}
+            <a href="{% url 'app:article-detail' slug=article.slug %}" 
+               class="list-group-item list-group-item-action border-0 px-0 py-2">
+                <div class="d-flex align-items-center">
+                    <div class="flex-shrink-0 me-3">
+                        {% if content_type == 'Person' %}
+                        <i class="fas fa-user text-success"></i>
+                        {% elif content_type == 'Cultural' %}
+                        <i class="fas fa-palette text-warning"></i>
+                        {% elif content_type == 'Event' %}
+                        <i class="fas fa-calendar-alt text-info"></i>
+                        {% elif content_type == 'Place' %}
+                        <i class="fas fa-map-marker-alt text-danger"></i>
+                        {% else %}
+                        <i class="fas fa-file-alt text-secondary"></i>
+                        {% endif %}
+                    </div>
+                    <div class="flex-grow-1">
+                        <h6 class="mb-1 text-dark">{{ article.title|truncatechars:50 }}</h6>
+                        <small class="text-muted">
+                            {% if article.states.exists %}
+                            {{ article.states.first.name }} •
+                            {% endif %}
+                            {{ content_type }}
+                        </small>
+                    </div>
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-chevron-right text-muted small"></i>
+                    </div>
+                </div>
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endif %}

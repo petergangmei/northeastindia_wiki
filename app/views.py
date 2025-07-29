@@ -295,11 +295,19 @@ def article_search_htmx(request):
     
     return render(request, 'articles/search_results_partial.html', context)
 
-def article_detail(request, slug):
+def article_detail(request, slug, state_slug=None):
     """
     Display a single article
+    Handles both old and new SEO-optimized URL structures
     """
     article = get_object_or_404(Article, slug=slug)
+    
+    # If state_slug is provided, verify the article belongs to that state
+    if state_slug:
+        state = get_object_or_404(State, slug=state_slug)
+        if not article.states.filter(slug=state_slug).exists():
+            # Article doesn't belong to this state, redirect to correct URL
+            return redirect(article.get_absolute_url(), permanent=True)
     
     # Check if article is published or if the user is the author or has appropriate permissions
     is_visible_to_user = article.published
@@ -323,13 +331,12 @@ def article_detail(request, slug):
     if not is_visible_to_user:
         raise Http404("Article not found or not published.")
     
-    # Get the top 3 related articles (simple implementation: sharing categories)
-    related_articles = []
-    if article.categories.exists():
-        related_articles = Article.objects.filter(
-            categories__in=article.categories.all(),
-            published=True
-        ).exclude(id=article.id).distinct().order_by('-published_at')[:3]
+    # Get sophisticated related articles using multiple strategies
+    from .utils import get_enhanced_related_articles, get_contextual_links_data
+    related_articles = get_enhanced_related_articles(article, limit=6)
+    
+    # Get contextual linking data for widgets
+    contextual_data = get_contextual_links_data(article)
     
     # Check if there's a pending edit for this article
     has_pending_edit = False
@@ -345,6 +352,7 @@ def article_detail(request, slug):
         'has_edit_permission': has_edit_permission,
         'has_review_permission': has_review_permission,
         'has_pending_edit': has_pending_edit,
+        'contextual_data': contextual_data,
     }
     
     return render(request, 'articles/article_detail.html', context)
@@ -912,12 +920,17 @@ def category_articles(request, slug):
     contributors_count = contributors.count()
     last_updated = articles.order_by('-updated_at').values_list('updated_at', flat=True).first()
     
-    # Get related categories (siblings)
+    # Get related categories (siblings) and cross-references
+    from .utils import get_discover_more_suggestions
+    related_categories = []
     if category.parent:
         related_categories = Category.objects.filter(parent=category.parent).exclude(id=category.id)[:5]
     else:
         # If no parent, show some random categories
         related_categories = Category.objects.exclude(id=category.id).order_by('?')[:5]
+    
+    # Get discovery suggestions for better cross-linking
+    category_suggestions = get_discover_more_suggestions('category', category, limit=4)
     
     # Pagination
     paginator = Paginator(articles, 10)  # Show 10 articles per page
@@ -935,6 +948,7 @@ def category_articles(request, slug):
         'contributors_count': contributors_count,
         'last_updated': last_updated,
         'related_categories': related_categories,
+        'category_suggestions': category_suggestions,
         'sort': sort,
         'selected_subcategories': selected_subcategories,
         'selected_tags': selected_tags,
@@ -1065,6 +1079,9 @@ def tag_articles(request, slug):
     article_ids = articles.values_list('id', flat=True)
     related_tags = Tag.objects.filter(article_items__id__in=article_ids).exclude(id=tag.id).distinct()[:10]
     
+    # Get discovery suggestions for better cross-linking
+    tag_suggestions = get_discover_more_suggestions('tag', tag, limit=5)
+    
     # Pagination
     paginator = Paginator(articles, 10)  # Show 10 articles per page
     page_number = request.GET.get('page')
@@ -1080,6 +1097,7 @@ def tag_articles(request, slug):
         'contributors_count': contributors_count,
         'last_updated': last_updated,
         'related_tags': related_tags,
+        'tag_suggestions': tag_suggestions,
         'sort': sort,
         'selected_categories': selected_categories,
         'selected_categories_names': selected_categories_names,
@@ -1567,3 +1585,584 @@ def delete_all_notifications(request):
     
     # If not AJAX, redirect back to notifications list
     return redirect('app:notification-list')
+
+
+def robots_txt(request):
+    """
+    Generate robots.txt file for search engine crawlers
+    
+    This view creates a dynamic robots.txt that optimizes search engine crawling
+    for the Northeast India Wiki while protecting private areas:
+    
+    ALLOWED PATHS (Public Content):
+    - / (Home page with article of the day)
+    - /articles/ (All published articles about Northeast India)
+    - /categories/ (Category-based article organization)
+    - /tags/ (Tag-based article classification)
+    - /static/ (CSS, JS, images for proper rendering)
+    
+    BLOCKED PATHS (Private/Admin Areas):
+    - /admin/ (Django admin panel)
+    - /profile/edit/ (User profile editing)
+    - /notifications/ (User notifications)
+    - /articles/review-queue/ (Admin moderation)
+    - /articles/*/edit/ (Article editing forms)
+    - /articles/*/history/ (Version control pages)
+    - /contributions/ (User contribution tracking)
+    - /media/ (User-uploaded content that might be private)
+    - Authentication pages (login, register, password reset)
+    
+    CRAWL OPTIMIZATION:
+    - Different crawl delays for major search engines
+    - Blocks aggressive SEO crawlers that don't add value
+    - Includes sitemap reference for efficient indexing
+    
+    This ensures search engines can efficiently discover and index
+    Northeast India cultural content while respecting user privacy.
+    """
+    robots_content = """User-agent: *
+
+# Allow crawling of public content about Northeast India
+Allow: /
+Allow: /articles/
+Allow: /categories/
+Allow: /tags/
+Allow: /static/css/
+Allow: /static/js/
+Allow: /static/images/
+
+# Allow SEO-optimized URLs for better indexing
+Allow: /personalities/
+Allow: /culture/
+Allow: /festivals/
+Allow: /places/
+Allow: /heritage/
+Allow: /history/
+Allow: /traditional-crafts/
+Allow: /food/
+Allow: /music/
+Allow: /dance/
+Allow: /literature/
+Allow: /states/
+Allow: /northeast-india/
+
+# Block admin and moderation areas
+Disallow: /admin/
+Disallow: /profile/edit/
+Disallow: /notifications/
+Disallow: /articles/review-queue/
+Disallow: /articles/*/review/
+Disallow: /articles/*/edit/
+Disallow: /articles/*/delete/
+Disallow: /articles/*/history/
+Disallow: /articles/*/revision/
+Disallow: /articles/*/compare/
+Disallow: /contributions/
+
+# Block search result pages to avoid duplicate content
+Disallow: /articles/search/?*
+Disallow: /articles/search-htmx/
+
+# Block authentication and user management pages
+Disallow: /login/
+Disallow: /logout/
+Disallow: /register/
+Disallow: /password-reset*
+
+# Block user-generated media that might contain private content
+Disallow: /media/
+
+# Block profile pages except public profile views
+Disallow: /profile/edit/
+
+# General crawl delay to prevent server overload
+Crawl-delay: 1
+
+# Specific rules for major search engines
+User-agent: Googlebot
+Crawl-delay: 0.5
+
+User-agent: Bingbot
+Crawl-delay: 1
+
+User-agent: Slurp
+Crawl-delay: 2
+
+# Block aggressive crawlers
+User-agent: SemrushBot
+Disallow: /
+
+User-agent: AhrefsBot
+Disallow: /
+
+User-agent: MJ12bot
+Disallow: /
+
+# Sitemap reference for search engines
+Sitemap: {scheme}://{host}/sitemap.xml""".format(
+        scheme=request.scheme,
+        host=request.get_host()
+    )
+    
+    return HttpResponse(robots_content, content_type='text/plain')
+
+
+# SEO-Optimized Views for Northeast India Content
+
+def state_list(request):
+    """
+    Display list of all Northeast Indian states
+    """
+    states = State.objects.all().order_by('name')
+    
+    context = {
+        'states': states,
+        'page_title': 'Northeast Indian States',
+        'meta_description': 'Explore the eight states of Northeast India - Assam, Arunachal Pradesh, Manipur, Meghalaya, Mizoram, Nagaland, Sikkim, and Tripura.',
+    }
+    return render(request, 'states/state_list.html', context)
+
+
+def state_detail(request, state_slug):
+    """
+    Display detailed information about a specific state
+    """
+    state = get_object_or_404(State, slug=state_slug)
+    
+    # Get articles related to this state
+    articles = Article.objects.filter(
+        states=state,
+        published=True,
+        review_status='approved'
+    ).order_by('-published_at')[:10]
+    
+    # Get article counts by category for this state
+    categories = Category.objects.all()
+    category_counts = {}
+    for category in categories:
+        count = Article.objects.filter(
+            states=state,
+            categories=category,
+            published=True,
+            review_status='approved'
+        ).count()
+        if count > 0:
+            category_counts[category] = count
+    
+    context = {
+        'state': state,
+        'articles': articles,
+        'category_counts': category_counts,
+        'page_title': f'{state.name} - Northeast India',
+        'meta_description': f'Discover {state.name}, one of the northeastern states of India. Learn about its culture, history, festivals, and notable personalities.',
+    }
+    return render(request, 'states/state_detail.html', context)
+
+
+def northeast_overview(request):
+    """
+    Regional overview of Northeast India
+    """
+    states = State.objects.all().order_by('name')
+    featured_articles = Article.objects.filter(
+        published=True,
+        review_status='featured'
+    ).order_by('-published_at')[:6]
+    
+    context = {
+        'states': states,
+        'featured_articles': featured_articles,
+        'page_title': 'Northeast India - Seven Sisters & Sikkim',
+        'meta_description': 'Comprehensive guide to Northeast India covering the Seven Sisters states and Sikkim. Explore rich culture, diverse traditions, and fascinating history.',
+    }
+    return render(request, 'regional/northeast_overview.html', context)
+
+
+def seven_sisters(request):
+    """
+    Information about the Seven Sisters states
+    """
+    seven_sisters_states = State.objects.filter(
+        slug__in=['assam', 'arunachal-pradesh', 'manipur', 'meghalaya', 'mizoram', 'nagaland', 'tripura']
+    ).order_by('name')
+    
+    context = {
+        'states': seven_sisters_states,
+        'page_title': 'Seven Sisters States of Northeast India',
+        'meta_description': 'Learn about the Seven Sisters - the northeastern states of India known for their rich cultural diversity and natural beauty.',
+    }
+    return render(request, 'regional/seven_sisters.html', context)
+
+
+def northeast_culture(request):
+    """
+    Cultural overview of Northeast India
+    """
+    cultural_articles = Article.objects.filter(
+        categories__slug='culture',
+        published=True,
+        review_status='approved'
+    ).order_by('-published_at')[:20]
+    
+    states = State.objects.all().order_by('name')
+    
+    context = {
+        'articles': cultural_articles,
+        'states': states,
+        'page_title': 'Culture of Northeast India',
+        'meta_description': 'Explore the rich and diverse culture of Northeast India including traditional crafts, music, dance, festivals, and customs.',
+    }
+    return render(request, 'regional/northeast_culture.html', context)
+
+
+def northeast_heritage(request):
+    """
+    Heritage sites and traditions of Northeast India
+    """
+    heritage_articles = Article.objects.filter(
+        categories__slug='heritage',
+        published=True,
+        review_status='approved'
+    ).order_by('-published_at')[:20]
+    
+    context = {
+        'articles': heritage_articles,
+        'page_title': 'Heritage of Northeast India',
+        'meta_description': 'Discover the rich heritage of Northeast India including historical sites, traditional practices, and cultural monuments.',
+    }
+    return render(request, 'regional/northeast_heritage.html', context)
+
+
+def category_articles_list(request, category_slug):
+    """
+    Display articles for a specific category across all states
+    """
+    category = get_object_or_404(Category, slug=category_slug)
+    
+    articles = Article.objects.filter(
+        categories=category,
+        published=True,
+        review_status='approved'
+    ).order_by('-published_at')
+    
+    # Pagination
+    paginator = Paginator(articles, 20)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    
+    # Get state counts for this category
+    states = State.objects.all()
+    state_counts = {}
+    for state in states:
+        count = Article.objects.filter(
+            categories=category,
+            states=state,
+            published=True,
+            review_status='approved'
+        ).count()
+        if count > 0:
+            state_counts[state] = count
+    
+    context = {
+        'category': category,
+        'page_obj': page_obj,
+        'state_counts': state_counts,
+        'page_title': f'{category.name} in Northeast India',
+        'meta_description': f'Explore {category.name.lower()} from Northeast India. Discover articles about {category.name.lower()} from the eight northeastern states.',
+    }
+    return render(request, 'categories/category_articles_list.html', context)
+
+
+def state_category_articles(request, state_slug, category_slug):
+    """
+    Display articles for a specific category within a specific state
+    """
+    state = get_object_or_404(State, slug=state_slug)
+    category = get_object_or_404(Category, slug=category_slug)
+    
+    articles = Article.objects.filter(
+        categories=category,
+        states=state,
+        published=True,
+        review_status='approved'
+    ).order_by('-published_at')
+    
+    # Pagination
+    paginator = Paginator(articles, 20)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    
+    context = {
+        'state': state,
+        'category': category,
+        'page_obj': page_obj,
+        'page_title': f'{category.name} in {state.name}',
+        'meta_description': f'Explore {category.name.lower()} from {state.name}. Discover articles about {category.name.lower()} specific to {state.name}, Northeast India.',
+    }
+    return render(request, 'categories/state_category_articles.html', context)
+
+
+def article_redirect(request, slug):
+    """
+    Handle redirects from old URL structure to new SEO-optimized URLs
+    Maintains backward compatibility
+    """
+    article = get_object_or_404(Article, slug=slug)
+    
+    # Get the SEO-optimized URL
+    seo_url = article.get_seo_url()
+    
+    # If the SEO URL is different from the current URL, redirect
+    if seo_url != f"/articles/{slug}/":
+        return redirect(seo_url, permanent=True)
+    
+    # Otherwise, use the original article detail view
+    return article_detail(request, slug)
+
+
+# SEO Landing Page Views
+def personalities_landing(request):
+    """
+    SEO-optimized landing page for personalities category
+    """
+    # Get all states for the region selector
+    states = State.objects.all().order_by('name')
+    
+    # Get personality category
+    personality_category = get_object_or_404(Category, slug='personalities')
+    
+    # Get featured personalities (latest published)
+    featured_personalities = Article.objects.filter(
+        categories=personality_category,
+        published=True
+    ).select_related('author').prefetch_related('categories', 'states')[:6]
+    
+    # Get personalities by state
+    personalities_by_state = {}
+    for state in states:
+        state_personalities = Article.objects.filter(
+            categories=personality_category,
+            states=state,
+            published=True
+        ).select_related('author')[:3]
+        if state_personalities.exists():
+            personalities_by_state[state] = state_personalities
+    
+    context = {
+        'page_title': 'Notable Personalities of Northeast India',
+        'meta_description': 'Discover the inspiring stories of notable personalities from Northeast India - leaders, artists, writers, and change-makers who shaped the region.',
+        'category': personality_category,
+        'states': states,
+        'featured_articles': featured_personalities,
+        'articles_by_state': personalities_by_state,
+        'canonical_url': request.build_absolute_uri('/personalities/'),
+        'breadcrumbs': [
+            {'name': 'Home', 'url': '/'},
+            {'name': 'Northeast India', 'url': '/northeast-india/'},
+            {'name': 'Personalities', 'url': '/personalities/'}
+        ]
+    }
+    
+    return render(request, 'categories/personalities_landing.html', context)
+
+
+def culture_landing(request):
+    """
+    SEO-optimized landing page for culture category
+    """
+    states = State.objects.all().order_by('name')
+    culture_category = get_object_or_404(Category, slug='culture')
+    
+    # Get featured cultural articles
+    featured_culture = Article.objects.filter(
+        categories=culture_category,
+        published=True
+    ).select_related('author').prefetch_related('categories', 'states')[:6]
+    
+    # Get culture articles by state
+    culture_by_state = {}
+    for state in states:
+        state_culture = Article.objects.filter(
+            categories=culture_category,
+            states=state,
+            published=True
+        ).select_related('author')[:3]
+        if state_culture.exists():
+            culture_by_state[state] = state_culture
+    
+    context = {
+        'page_title': 'Cultural Heritage of Northeast India',
+        'meta_description': 'Explore the rich cultural heritage of Northeast India - traditions, art forms, music, dance, and customs of the eight sister states.',
+        'category': culture_category,
+        'states': states,
+        'featured_articles': featured_culture,
+        'articles_by_state': culture_by_state,
+        'canonical_url': request.build_absolute_uri('/culture/'),
+        'breadcrumbs': [
+            {'name': 'Home', 'url': '/'},
+            {'name': 'Northeast India', 'url': '/northeast-india/'},
+            {'name': 'Culture', 'url': '/culture/'}
+        ]
+    }
+    
+    return render(request, 'categories/culture_landing.html', context)
+
+
+def festivals_landing(request):
+    """
+    SEO-optimized landing page for festivals category
+    """
+    states = State.objects.all().order_by('name')
+    festivals_category = get_object_or_404(Category, slug='festivals')
+    
+    # Get featured festivals
+    featured_festivals = Article.objects.filter(
+        categories=festivals_category,
+        published=True
+    ).select_related('author').prefetch_related('categories', 'states')[:6]
+    
+    # Get festivals by state
+    festivals_by_state = {}
+    for state in states:
+        state_festivals = Article.objects.filter(
+            categories=festivals_category,
+            states=state,
+            published=True
+        ).select_related('author')[:3]
+        if state_festivals.exists():
+            festivals_by_state[state] = state_festivals
+    
+    context = {
+        'page_title': 'Festivals of Northeast India',
+        'meta_description': 'Discover the vibrant festivals of Northeast India - traditional celebrations, cultural events, and seasonal festivities across the eight states.',
+        'category': festivals_category,
+        'states': states,
+        'featured_articles': featured_festivals,
+        'articles_by_state': festivals_by_state,
+        'canonical_url': request.build_absolute_uri('/festivals/'),
+        'breadcrumbs': [
+            {'name': 'Home', 'url': '/'},
+            {'name': 'Northeast India', 'url': '/northeast-india/'},
+            {'name': 'Festivals', 'url': '/festivals/'}
+        ]
+    }
+    
+    return render(request, 'categories/festivals_landing.html', context)
+
+
+def places_landing(request):
+    """
+    SEO-optimized landing page for places category
+    """
+    states = State.objects.all().order_by('name')
+    places_category = get_object_or_404(Category, slug='places')
+    
+    # Get featured places
+    featured_places = Article.objects.filter(
+        categories=places_category,
+        published=True
+    ).select_related('author').prefetch_related('categories', 'states')[:6]
+    
+    # Get places by state
+    places_by_state = {}
+    for state in states:
+        state_places = Article.objects.filter(
+            categories=places_category,
+            states=state,
+            published=True
+        ).select_related('author')[:3]
+        if state_places.exists():
+            places_by_state[state] = state_places
+    
+    context = {
+        'page_title': 'Places to Visit in Northeast India',
+        'meta_description': 'Explore breathtaking destinations in Northeast India - monasteries, national parks, hill stations, and cultural sites across the region.',
+        'category': places_category,
+        'states': states,
+        'featured_articles': featured_places,
+        'articles_by_state': places_by_state,
+        'canonical_url': request.build_absolute_uri('/places/'),
+        'breadcrumbs': [
+            {'name': 'Home', 'url': '/'},
+            {'name': 'Northeast India', 'url': '/northeast-india/'},
+            {'name': 'Places', 'url': '/places/'}
+        ]
+    }
+    
+    return render(request, 'categories/places_landing.html', context)
+
+
+def heritage_landing(request):
+    """
+    SEO-optimized landing page for heritage category
+    """
+    states = State.objects.all().order_by('name')
+    heritage_category = get_object_or_404(Category, slug='heritage')
+    
+    # Get featured heritage sites
+    featured_heritage = Article.objects.filter(
+        categories=heritage_category,
+        published=True
+    ).select_related('author').prefetch_related('categories', 'states')[:6]
+    
+    # Get heritage by state
+    heritage_by_state = {}
+    for state in states:
+        state_heritage = Article.objects.filter(
+            categories=heritage_category,
+            states=state,
+            published=True
+        ).select_related('author')[:3]
+        if state_heritage.exists():
+            heritage_by_state[state] = state_heritage
+    
+    context = {
+        'page_title': 'Heritage Sites of Northeast India',
+        'meta_description': 'Discover the rich heritage of Northeast India - archaeological sites, historical monuments, traditional architecture, and cultural landmarks.',
+        'category': heritage_category,
+        'states': states,
+        'featured_articles': featured_heritage,
+        'articles_by_state': heritage_by_state,
+        'canonical_url': request.build_absolute_uri('/heritage/'),
+        'breadcrumbs': [
+            {'name': 'Home', 'url': '/'},
+            {'name': 'Northeast India', 'url': '/northeast-india/'},
+            {'name': 'Heritage', 'url': '/heritage/'}
+        ]
+    }
+    
+    return render(request, 'categories/heritage_landing.html', context)
+
+
+def seven_sisters(request):
+    """
+    SEO-optimized page about the Seven Sister States
+    """
+    # Get the seven sister states (excluding Sikkim)
+    sister_states = State.objects.exclude(slug='sikkim').order_by('name')
+    
+    # Get overview articles for each state
+    state_overviews = {}
+    for state in sister_states:
+        # Get the most comprehensive article about this state
+        overview = Article.objects.filter(
+            states=state,
+            published=True
+        ).select_related('author').prefetch_related('categories').first()
+        if overview:
+            state_overviews[state] = overview
+    
+    context = {
+        'page_title': 'Seven Sister States of Northeast India',
+        'meta_description': 'Complete guide to the Seven Sister States of Northeast India - Assam, Arunachal Pradesh, Manipur, Meghalaya, Mizoram, Nagaland, and Tripura.',
+        'states': sister_states,
+        'state_overviews': state_overviews,
+        'canonical_url': request.build_absolute_uri('/northeast-india/seven-sisters/'),
+        'breadcrumbs': [
+            {'name': 'Home', 'url': '/'},
+            {'name': 'Northeast India', 'url': '/northeast-india/'},
+            {'name': 'Seven Sister States', 'url': '/northeast-india/seven-sisters/'}
+        ]
+    }
+    
+    return render(request, 'regional/seven_sisters.html', context)

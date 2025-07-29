@@ -4,14 +4,199 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Northeast India Wiki - A comprehensive resource on the cultural heritage, history, and personalities of Northeast India">
     
-    <!-- Open Graph / Social Media Meta Tags -->
-    <meta property="og:title" content="{% block og_title %}Northeast India Wiki{% endblock %}">
-    <meta property="og:description" content="{% block og_description %}A comprehensive resource on the cultural heritage, history, and personalities of Northeast India{% endblock %}">
-    <meta property="og:image" content="{% block og_image %}{% static 'images/northeast-india-logo.jpg' %}{% endblock %}">
+    <!-- Enhanced SEO Meta Tags for Northeast India -->
+    <meta name="description" content="{% block meta_description %}Northeast India Wiki - Comprehensive resource on Seven Sisters states culture, history, personalities, traditions, and heritage of Assam, Meghalaya, Manipur, Mizoram, Nagaland, Tripura, Arunachal Pradesh, and Sikkim{% endblock %}">
+    <meta name="keywords" content="{% block meta_keywords %}Northeast India, Seven Sisters states, Assam, Meghalaya, Manipur, Mizoram, Nagaland, Tripura, Arunachal Pradesh, Sikkim, culture, heritage, traditions, personalities, history, tribal culture, festivals, languages, cuisine, tourism{% endblock %}">
+    <meta name="author" content="Northeast India Wiki">
+    <meta name="robots" content="index, follow">
+    <meta name="googlebot" content="index, follow">
+    
+    <!-- Geographic and Regional SEO -->
+    <meta name="geo.region" content="IN-AS,IN-AR,IN-MN,IN-ML,IN-MZ,IN-NL,IN-SK,IN-TR">
+    <meta name="geo.placename" content="Northeast India, Seven Sisters States">
+    <meta name="ICBM" content="26.2006,92.9376">
+    <meta name="DC.title" content="{% block dc_title %}Northeast India Wiki{% endblock %}">
+    <meta name="DC.subject" content="Northeast India culture, Seven Sisters states, tribal heritage">
+    <meta name="DC.coverage" content="Northeast India">
+    
+    <!-- Language and Content Type -->
+    <meta name="language" content="English">
+    <meta name="content-language" content="en">
+    <meta name="revisit-after" content="7 days">
+    
+    <!-- Brand and Site Information -->
+    <meta name="application-name" content="Northeast India Wiki">
+    <meta name="msapplication-TileColor" content="#2d89ef">
+    <meta name="theme-color" content="#ffffff">
+    
+    <!-- Enhanced Open Graph / Social Media Meta Tags -->
+    <meta property="og:title" content="{% block og_title %}Northeast India Wiki - Seven Sisters States Culture & Heritage{% endblock %}">
+    <meta property="og:description" content="{% block og_description %}Discover the rich cultural heritage, history, and personalities of Northeast India's Seven Sisters states - Assam, Meghalaya, Manipur, Mizoram, Nagaland, Tripura, Arunachal Pradesh, and Sikkim{% endblock %}">
+    <meta property="og:image" content="{% block og_image %}{{ request.scheme }}://{{ request.get_host }}{% static 'images/default-og-image.jpg' %}{% endblock %}">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:image:alt" content="{% block og_image_alt %}Northeast India Wiki - Exploring Seven Sisters States Culture & Heritage{% endblock %}">
     <meta property="og:url" content="{{ request.build_absolute_uri }}">
-    <meta property="og:type" content="website">
+    <meta property="og:type" content="{% block og_type %}website{% endblock %}">
+    <meta property="og:site_name" content="Northeast India Wiki">
+    <meta property="og:locale" content="en_IN">
+    <meta property="og:locale:alternate" content="en_US">
+    <meta property="article:publisher" content="Northeast India Wiki">
+    {% block og_article_tags %}{% endblock %}
+    
+    <!-- Enhanced Twitter Card Meta Tags -->
+    <meta name="twitter:card" content="{% block twitter_card_type %}summary_large_image{% endblock %}">
+    <meta name="twitter:site" content="@NeIndiaWiki">
+    <meta name="twitter:creator" content="{% block twitter_creator %}@NeIndiaWiki{% endblock %}">
+    <meta name="twitter:title" content="{% block twitter_title %}Northeast India Wiki - Seven Sisters States Culture{% endblock %}">
+    <meta name="twitter:description" content="{% block twitter_description %}Explore Northeast India's rich cultural heritage, tribal traditions, and personalities from the Seven Sisters states. Discover Assam, Meghalaya, Manipur, Mizoram, Nagaland, Tripura, Arunachal Pradesh & Sikkim.{% endblock %}">
+    <meta name="twitter:image" content="{% block twitter_image %}{{ request.scheme }}://{{ request.get_host }}{% static 'images/default-og-image.jpg' %}{% endblock %}">
+    <meta name="twitter:image:alt" content="{% block twitter_image_alt %}Northeast India Wiki - Seven Sisters States Cultural Heritage Platform{% endblock %}">
+    <meta name="twitter:domain" content="{{ request.get_host }}">
+    {% block twitter_additional %}{% endblock %}
+    
+    <!-- Canonical URL -->
+    <link rel="canonical" href="{% block canonical_url %}{{ request.build_absolute_uri }}{% endblock %}">
+    
+    <!-- Enhanced Schema.org Structured Data for Northeast India -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "name": "Northeast India Wiki",
+      "alternateName": "NE India Wiki",
+      "description": "Comprehensive digital encyclopedia documenting the rich cultural heritage, history, personalities, and traditions of Northeast India's Seven Sisters states",
+      "url": "{{ request.scheme }}://{{ request.get_host }}",
+      "inLanguage": "en-IN",
+      "keywords": [
+        "Northeast India",
+        "Seven Sisters States", 
+        "Assam",
+        "Arunachal Pradesh",
+        "Manipur", 
+        "Meghalaya",
+        "Mizoram",
+        "Nagaland",
+        "Tripura",
+        "Sikkim",
+        "Indian Culture",
+        "Tribal Heritage",
+        "Indigenous Traditions"
+      ],
+      "about": {
+        "@type": "Place",
+        "name": "Northeast India",
+        "alternateName": "Seven Sisters States",
+        "description": "A culturally diverse region in India comprising eight states known for their rich indigenous heritage, traditional arts, and natural beauty",
+        "addressRegion": "Northeast India",
+        "addressCountry": "India",
+        "geo": {
+          "@type": "GeoCoordinates",
+          "latitude": 26.2006,
+          "longitude": 92.9376
+        },
+        "containsPlace": [
+          {
+            "@type": "Place",
+            "name": "Assam",
+            "addressCountry": "India"
+          },
+          {
+            "@type": "Place", 
+            "name": "Arunachal Pradesh",
+            "addressCountry": "India"
+          },
+          {
+            "@type": "Place",
+            "name": "Manipur", 
+            "addressCountry": "India"
+          },
+          {
+            "@type": "Place",
+            "name": "Meghalaya",
+            "addressCountry": "India"
+          },
+          {
+            "@type": "Place",
+            "name": "Mizoram",
+            "addressCountry": "India"
+          },
+          {
+            "@type": "Place",
+            "name": "Nagaland", 
+            "addressCountry": "India"
+          },
+          {
+            "@type": "Place",
+            "name": "Tripura",
+            "addressCountry": "India"
+          },
+          {
+            "@type": "Place",
+            "name": "Sikkim",
+            "addressCountry": "India"
+          }
+        ]
+      },
+      "publisher": {
+        "@type": "Organization",
+        "name": "Northeast India Wiki",
+        "url": "{{ request.scheme }}://{{ request.get_host }}",
+        "logo": {
+          "@type": "ImageObject",
+          "url": "{{ request.scheme }}://{{ request.get_host }}{% static 'images/northeast-india-logo.jpg' %}",
+          "width": 200,
+          "height": 200
+        },
+        "foundingDate": "2024",
+        "areaServed": {
+          "@type": "Place",
+          "name": "Northeast India",
+          "addressCountry": "India"
+        },
+        "knowsAbout": [
+          "Northeast India Culture",
+          "Seven Sisters States History",
+          "Indigenous Communities", 
+          "Traditional Arts and Crafts",
+          "Regional Festivals",
+          "Tribal Heritage",
+          "Local Languages and Literature"
+        ]
+      },
+      "potentialAction": {
+        "@type": "SearchAction",
+        "target": {
+          "@type": "EntryPoint",
+          "urlTemplate": "{{ request.scheme }}://{{ request.get_host }}/articles/?q={search_term_string}"
+        },
+        "query-input": "required name=search_term_string"
+      },
+      "mainEntity": {
+        "@type": "CreativeWork",
+        "name": "Northeast India Cultural Documentation",
+        "description": "Comprehensive collection of articles, personalities, places, and cultural elements from Northeast India",
+        "about": "Northeast India Heritage and Culture"
+      },
+      "audience": {
+        "@type": "Audience",
+        "audienceType": "General Public",
+        "geographicArea": {
+          "@type": "Place",
+          "name": "India"
+        }
+      },
+      "spatialCoverage": {
+        "@type": "Place",
+        "name": "Northeast India",
+        "geo": {
+          "@type": "GeoShape",
+          "box": "21.57 87.01 29.50 97.40"
+        }
+      }
+    }
+    </script>
     
     <title>{% block title %}Northeast India Wiki{% endblock %}</title>
     
@@ -53,6 +238,9 @@
 <body>
     <!-- Header -->
     {% include 'commons/header.html' %}
+    
+    <!-- Breadcrumb Navigation -->
+    {% block breadcrumbs %}{% endblock %}
     
     <!-- Main Content -->
     <main class="site-content">

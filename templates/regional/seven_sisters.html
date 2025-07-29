@@ -1,0 +1,110 @@
+{% extends 'base.html' %}
+{% load schema_tags %}
+
+{% block title %}{{ page_title }}{% endblock %}
+{% block meta_description %}{{ meta_description }}{% endblock %}
+{% block canonical_url %}{{ canonical_url }}{% endblock %}
+
+{% block extra_head %}
+{% generate_breadcrumb_schema breadcrumbs %}
+<meta property="og:title" content="{{ page_title }}">
+<meta property="og:description" content="{{ meta_description }}">
+<meta property="og:url" content="{{ canonical_url }}">
+<meta property="og:type" content="website">
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            {% for crumb in breadcrumbs %}
+                {% if forloop.last %}
+                    <li class="breadcrumb-item active" aria-current="page">{{ crumb.name }}</li>
+                {% else %}
+                    <li class="breadcrumb-item"><a href="{{ crumb.url }}">{{ crumb.name }}</a></li>
+                {% endif %}
+            {% endfor %}
+        </ol>
+    </nav>
+
+    <div class="row mb-5">
+        <div class="col-12">
+            <div class="card bg-dark text-white">
+                <div class="card-body p-5">
+                    <h1 class="display-4 mb-3">{{ page_title }}</h1>
+                    <p class="lead mb-0">{{ meta_description }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <h2 class="mb-4">The Seven Sister States</h2>
+            <div class="row">
+                {% for state in states %}
+                <div class="col-lg-6 col-md-12 mb-4">
+                    <div class="card h-100">
+                        {% if state.image %}
+                        <img src="{{ state.image.url }}" class="card-img-top" alt="{{ state.name }}" style="height: 200px; object-fit: cover;">
+                        {% endif %}
+                        <div class="card-body">
+                            <h5 class="card-title">
+                                <a href="{% url 'app:state-detail' state.slug %}" class="text-decoration-none">{{ state.name }}</a>
+                            </h5>
+                            <p class="card-text">{{ state.description|truncatewords:30 }}</p>
+                            
+                            <div class="mb-3">
+                                <small class="text-muted">
+                                    <strong>Capital:</strong> {{ state.capital }}<br>
+                                    {% if state.formation_date %}
+                                    <strong>Formed:</strong> {{ state.formation_date|date:"F j, Y" }}<br>
+                                    {% endif %}
+                                    {% if state.languages %}
+                                    <strong>Languages:</strong> {{ state.languages }}
+                                    {% endif %}
+                                </small>
+                            </div>
+                            
+                            {% if state in state_overviews %}
+                            <div class="border-top pt-3">
+                                <h6>Featured Article:</h6>
+                                <p class="small">
+                                    <a href="{{ state_overviews.state.get_absolute_url }}" class="text-decoration-none">
+                                        {{ state_overviews.state.title }}
+                                    </a>
+                                </p>
+                            </div>
+                            {% endif %}
+                        </div>
+                        <div class="card-footer">
+                            <div class="btn-group w-100" role="group">
+                                <a href="{% url 'app:state-detail' state.slug %}" class="btn btn-primary btn-sm">Overview</a>
+                                <a href="{% url 'app:state-culture-articles' state.slug %}" class="btn btn-outline-primary btn-sm">Culture</a>
+                                <a href="{% url 'app:state-places-articles' state.slug %}" class="btn btn-outline-primary btn-sm">Places</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-5">
+        <div class="col-12">
+            <div class="card bg-light">
+                <div class="card-body p-4 text-center">
+                    <h3>Explore Each State</h3>
+                    <p class="mb-4">Discover the unique culture, places, and heritage of each sister state</p>
+                    <div class="btn-group flex-wrap" role="group">
+                        {% for state in states %}
+                        <a href="{% url 'app:state-detail' state.slug %}" class="btn btn-outline-primary m-1">{{ state.name }}</a>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

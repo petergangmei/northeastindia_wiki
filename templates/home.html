@@ -1,6 +1,10 @@
 {% extends 'base.html' %}
+{% load schema_tags %}
 
-{% block title %}Home | Northeast India Wiki{% endblock %}
+<!-- Canonical URL for home page -->
+{% block canonical_url %}{% home_canonical_url request %}{% endblock %}
+
+{% block title %}{% get_optimized_home_title latest_articles.count %}{% endblock %}
 
 {% block content %}
 <!-- Main container -->

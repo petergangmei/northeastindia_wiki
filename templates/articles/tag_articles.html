@@ -1,6 +1,14 @@
 {% extends 'base.html' %}
+{% load schema_tags %}
 
-{% block title %}{{ tag.name }} - Articles | Northeast India Wiki{% endblock %}
+<!-- Canonical URL for tag page -->
+{% block canonical_url %}{% tag_canonical_url request tag %}{% endblock %}
+
+{% block title %}{% get_optimized_tag_title tag total_articles %}{% endblock %}
+
+{% block breadcrumbs %}
+{% include 'commons/breadcrumbs.html' with page_type='tag' tag=tag %}
+{% endblock %}
 
 {% block extra_css %}
 <style>
@@ -202,6 +210,16 @@
                         </ul>
                     </div>
                 </div>
+                
+                <!-- Cross-reference Widgets -->
+                
+                <!-- Related Tags Widget -->
+                {% if tag_suggestions %}
+                {% include 'widgets/explore_category.html' with category_suggestions=tag_suggestions %}
+                {% endif %}
+                
+                <!-- Discover Northeast India Widget -->
+                {% include 'widgets/discover_northeast.html' %}
             </div>
         </div>
         

@@ -18,10 +18,16 @@ from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
+from django.contrib.sitemaps.views import sitemap, index
+from app.sitemaps import SITEMAPS
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('app.urls', namespace='app')),
+    
+    # XML Sitemaps
+    path('sitemap.xml', index, {'sitemaps': SITEMAPS}, name='django.contrib.sitemaps.views.index'),
+    path('sitemap-<section>.xml', sitemap, {'sitemaps': SITEMAPS}, name='django.contrib.sitemaps.views.sitemap'),
 ]
 
 # Serve media files in development

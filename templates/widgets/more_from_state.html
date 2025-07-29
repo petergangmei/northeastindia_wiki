@@ -1,0 +1,56 @@
+{% load static %}
+<!-- More from [State Name] Widget -->
+{% if state_articles %}
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-header bg-gradient bg-info text-white d-flex align-items-center">
+        <i class="fas fa-map-marker-alt me-2"></i>
+        <h5 class="mb-0">More from {{ state.name }}</h5>
+    </div>
+    <div class="card-body p-0">
+        {% for article in state_articles %}
+        <div class="border-bottom last:border-0 hover:bg-light">
+            <a href="{% url 'app:article-detail' slug=article.slug %}" class="text-decoration-none d-block p-3">
+                <div class="row align-items-center">
+                    <div class="col-3">
+                        {% if article.featured_image and article.featured_image.name %}
+                        <img src="{{ article.featured_image.url }}" 
+                             class="img-fluid rounded" 
+                             alt="{{ article.title }}"
+                             style="height: 60px; width: 80px; object-fit: cover;">
+                        {% else %}
+                        <div class="bg-light rounded d-flex align-items-center justify-content-center" style="height: 60px; width: 80px;">
+                            <i class="fas fa-file-alt text-muted"></i>
+                        </div>
+                        {% endif %}
+                    </div>
+                    <div class="col-9">
+                        <h6 class="text-dark mb-1 fw-bold">{{ article.title|truncatechars:45 }}</h6>
+                        <p class="text-muted small mb-1">{{ article.excerpt|truncatechars:80 }}</p>
+                        <div class="d-flex align-items-center">
+                            <small class="text-muted">
+                                <i class="far fa-calendar me-1"></i>
+                                {{ article.published_at|date:"M j, Y" }}
+                            </small>
+                            {% if article.categories.exists %}
+                            <span class="badge bg-primary ms-2 small">
+                                {{ article.categories.first.name }}
+                            </span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </a>
+        </div>
+        {% endfor %}
+        
+        <!-- View All Link -->
+        <div class="p-3 text-center bg-light">
+            <a href="{% url 'app:article-list' %}?state={{ state.slug }}" 
+               class="btn btn-outline-info btn-sm">
+                <i class="fas fa-eye me-1"></i>
+                View all articles from {{ state.name }}
+            </a>
+        </div>
+    </div>
+</div>
+{% endif %}

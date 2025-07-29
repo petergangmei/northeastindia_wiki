@@ -1,0 +1,110 @@
+{% extends 'base.html' %}
+{% load schema_tags %}
+
+{% block title %}{{ page_title }}{% endblock %}
+{% block meta_description %}{{ meta_description }}{% endblock %}
+{% block canonical_url %}{{ canonical_url }}{% endblock %}
+
+{% block extra_head %}
+{% generate_article_list_schema featured_articles page_title meta_description canonical_url %}
+{% generate_breadcrumb_schema breadcrumbs %}
+<meta property="og:title" content="{{ page_title }}">
+<meta property="og:description" content="{{ meta_description }}">
+<meta property="og:url" content="{{ canonical_url }}">
+<meta property="og:type" content="website">
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            {% for crumb in breadcrumbs %}
+                {% if forloop.last %}
+                    <li class="breadcrumb-item active" aria-current="page">{{ crumb.name }}</li>
+                {% else %}
+                    <li class="breadcrumb-item"><a href="{{ crumb.url }}">{{ crumb.name }}</a></li>
+                {% endif %}
+            {% endfor %}
+        </ol>
+    </nav>
+
+    <div class="row mb-5">
+        <div class="col-12">
+            <div class="card bg-secondary text-white">
+                <div class="card-body p-5">
+                    <h1 class="display-4 mb-3">{{ page_title }}</h1>
+                    <p class="lead mb-0">{{ meta_description }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% if featured_articles %}
+    <div class="row mb-5">
+        <div class="col-12">
+            <h2 class="mb-4">Important Heritage Sites</h2>
+            <div class="row">
+                {% for article in featured_articles %}
+                <div class="col-lg-4 col-md-6 mb-4">
+                    <div class="card h-100">
+                        {% if article.featured_image %}
+                        <img src="{{ article.featured_image.url }}" class="card-img-top" alt="{{ article.title }}" style="height: 200px; object-fit: cover;">
+                        {% endif %}
+                        <div class="card-body d-flex flex-column">
+                            <h5 class="card-title">
+                                <a href="{{ article.get_absolute_url }}" class="text-decoration-none">{{ article.title }}</a>
+                            </h5>
+                            <p class="card-text flex-grow-1">{{ article.excerpt|truncatewords:20 }}</p>
+                            <div class="mt-auto">
+                                {% if article.states.all %}
+                                <small class="text-muted">
+                                    Location: {% for state in article.states.all %}{{ state.name }}{% if not forloop.last %}, {% endif %}{% endfor %}
+                                </small>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    {% if articles_by_state %}
+    <div class="row">
+        <div class="col-12">
+            <h2 class="mb-4">Heritage Sites by State</h2>
+            {% for state, articles in articles_by_state.items %}
+            <div class="mb-5">
+                <h3 class="border-bottom pb-2 mb-3">
+                    <a href="{% url 'app:state-heritage-articles' state.slug %}" class="text-decoration-none">
+                        Heritage of {{ state.name }}
+                    </a>
+                </h3>
+                <div class="row">
+                    {% for article in articles %}
+                    <div class="col-lg-4 col-md-6 mb-3">
+                        <div class="card">
+                            <div class="card-body">
+                                <h5 class="card-title">
+                                    <a href="{{ article.get_absolute_url }}" class="text-decoration-none">{{ article.title }}</a>
+                                </h5>
+                                <p class="card-text">{{ article.excerpt|truncatewords:15 }}</p>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                <div class="text-end">
+                    <a href="{% url 'app:state-heritage-articles' state.slug %}" class="btn btn-outline-secondary btn-sm">
+                        {{ state.name }} heritage →
+                    </a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

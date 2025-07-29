@@ -1,14 +1,61 @@
 {% extends 'base.html' %}
+{% load schema_tags %}
+{% load social_media_tags %}
+{% load static %}
 
-{% block title %}{{ article.title }} | Northeast India Wiki{% endblock %}
+<!-- Canonical URL for article -->
+{% block canonical_url %}{% article_canonical_url request article %}{% endblock %}
 
-{% block og_title %}{{ article.title }} | Northeast India Wiki{% endblock %}
-{% block og_description %}{{ article.meta_description|default:article.excerpt }}{% endblock %}
+{% block title %}{% get_optimized_article_title article %}{% endblock %}
 
-{% block og_image %}
-    {% if article.featured_image and article.featured_image.name and article.featured_image.name != '' %}
-        {{ article.featured_image.url }}
-    {% endif %}
+<!-- Enhanced Article-Specific Meta Tags -->
+{% block meta_description %}{% get_social_description article.title article.excerpt article.categories.all article.states.all %}{% endblock %}
+
+{% block meta_keywords %}{% get_social_keywords article.title article.categories.all article.states.all article.tags.all %}{% endblock %}
+
+{% block dc_title %}{% get_optimized_article_title article %}{% endblock %}
+
+<!-- Enhanced Open Graph Article-Specific Tags -->
+{% block og_type %}article{% endblock %}
+{% block og_title %}{% get_optimized_article_title article %} | Northeast India Wiki{% endblock %}
+{% block og_description %}{% get_social_description article.title article.excerpt article.categories.all article.states.all 155 %}{% endblock %}
+{% block og_image %}{% get_social_image article=article %}{% endblock %}
+{% block og_image_alt %}{{ article.title }} - Northeast India Cultural Heritage{% endblock %}
+
+{% block og_article_tags %}
+    <meta property="article:author" content="{{ article.author.get_full_name|default:article.author.username }}">
+    <meta property="article:published_time" content="{{ article.published_at|date:'c' }}">
+    <meta property="article:modified_time" content="{{ article.updated_at|date:'c' }}">
+    <meta property="article:section" content="Northeast India Culture">
+    {% for category in article.categories.all %}
+    <meta property="article:tag" content="{{ category.name }}">
+    {% endfor %}
+    {% for state in article.states.all %}
+    <meta property="article:tag" content="{{ state.name }}">
+    {% endfor %}
+    {% for tag in article.tags.all|slice:":10" %}
+    <meta property="article:tag" content="{{ tag.name }}">
+    {% endfor %}
+    <meta property="og:see_also" content="{{ request.scheme }}://{{ request.get_host }}/articles/">
+{% endblock %}
+
+<!-- Enhanced Twitter Card Article-Specific Tags -->
+{% block twitter_card_type %}summary_large_image{% endblock %}
+{% block twitter_title %}{% get_optimized_article_title article %}{% endblock %}
+{% block twitter_description %}{% get_social_description article.title article.excerpt article.categories.all article.states.all 200 %}{% endblock %}
+{% block twitter_image %}{% get_social_image article=article %}{% endblock %}
+{% block twitter_image_alt %}{{ article.title }} - Northeast India Cultural Heritage{% endblock %}
+{% block twitter_creator %}{% get_twitter_creator article %}{% endblock %}
+
+{% block twitter_additional %}
+    <meta name="twitter:label1" content="Reading time">
+    <meta name="twitter:data1" content="{% get_article_reading_time article %} min read">
+    <meta name="twitter:label2" content="Region">
+    <meta name="twitter:data2" content="{% for state in article.states.all|slice:':2' %}{{ state.name }}{% if not forloop.last %}, {% endif %}{% empty %}Northeast India{% endfor %}">
+{% endblock %}
+
+{% block breadcrumbs %}
+{% include 'commons/breadcrumbs.html' with page_type='article' article=article %}
 {% endblock %}
 
 {% block content %}
@@ -93,6 +140,9 @@
             </div>
             {% endif %}
             
+            <!-- Social Sharing Buttons -->
+            {% social_sharing_buttons article=article %}
+            
             <!-- Tags -->
             {% if article.tags.exists %}
             <div class="article-tags mb-4">
@@ -117,24 +167,53 @@
             </div>
             {% endif %}
             
-            <!-- Related articles -->
+            <!-- Enhanced Related Articles with better presentation -->
             {% if related_articles %}
-            <div class="mb-4">
-                <h3 class="h5 mb-3">Related Articles</h3>
-                <div class="row row-cols-1 row-cols-md-3 g-3">
+            <div class="mb-5">
+                <div class="d-flex align-items-center mb-3">
+                    <h3 class="h5 mb-0 me-2">Related Articles</h3>
+                    <span class="badge bg-primary">{{ related_articles|length }}</span>
+                </div>
+                <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-3">
                     {% for related in related_articles %}
+                    {% load schema_tags %}
+                    {% detect_content_type related as content_type %}
                     <div class="col">
-                        <div class="card h-100 border-0 shadow-sm">
+                        <div class="card h-100 border-0 shadow-sm hover:shadow transition-shadow">
                             {% if related.featured_image and related.featured_image.name and related.featured_image.name != '' %}
-                            <img src="{{ related.featured_image.url }}" class="card-img-top" alt="{{ related.title }}" style="height: 120px; object-fit: cover;">
+                            <img src="{{ related.featured_image.url }}" class="card-img-top" alt="{{ related.title }}" style="height: 140px; object-fit: cover;">
                             {% else %}
-                            <div class="card-img-top bg-light d-flex align-items-center justify-content-center" style="height: 120px;">
-                                <i class="fas fa-file-alt fa-2x text-secondary"></i>
+                            <div class="card-img-top bg-gradient-primary d-flex align-items-center justify-content-center" style="height: 140px;">
+                                {% if content_type == 'Person' %}
+                                <i class="fas fa-user fa-2x text-white"></i>
+                                {% elif content_type == 'Cultural' %}
+                                <i class="fas fa-palette fa-2x text-white"></i>
+                                {% elif content_type == 'Event' %}
+                                <i class="fas fa-calendar-alt fa-2x text-white"></i>
+                                {% elif content_type == 'Place' %}
+                                <i class="fas fa-map-marker-alt fa-2x text-white"></i>
+                                {% else %}
+                                <i class="fas fa-file-alt fa-2x text-white"></i>
+                                {% endif %}
                             </div>
                             {% endif %}
-                            <div class="card-body">
-                                <h5 class="card-title h6">{{ related.title }}</h5>
-                                <p class="card-text">{{ related.excerpt|truncatechars:100 }}</p>
+                            <div class="card-body d-flex flex-column">
+                                <div class="mb-2">
+                                    {% if content_type != 'Article' %}
+                                    <span class="badge bg-secondary mb-1">{{ content_type }}</span>
+                                    {% endif %}
+                                    {% for state in related.states.all|slice:":2" %}
+                                    <span class="badge bg-info mb-1">{{ state.name }}</span>
+                                    {% endfor %}
+                                </div>
+                                <h5 class="card-title h6 mb-2">{{ related.title|truncatechars:60 }}</h5>
+                                <p class="card-text text-muted small flex-grow-1">{{ related.excerpt|truncatechars:90 }}</p>
+                                <div class="mt-auto">
+                                    <small class="text-muted">
+                                        <i class="far fa-calendar me-1"></i>
+                                        {{ related.published_at|date:"M j, Y" }}
+                                    </small>
+                                </div>
                                 <a href="{% url 'app:article-detail' slug=related.slug %}" class="stretched-link"></a>
                             </div>
                         </div>
@@ -147,30 +226,328 @@
         
         <!-- Sidebar -->
         <div class="col-lg-3">
-            <div class="card border-0 shadow-sm mb-4 sticky-top" style="top: 1rem;">
-                <div class="card-header bg-primary text-white">
-                    <h5 class="mb-0">Table of Contents</h5>
-                </div>
-                <div class="card-body">
-                    <div id="toc" class="px-0"></div>
-                    <hr>
-                    <div class="d-flex justify-content-between">
-                        <a href="{% url 'app:article-list' %}" class="btn btn-sm btn-outline-primary">
-                            <i class="fas fa-arrow-left me-1"></i> All Articles
-                        </a>
-                        {% if user.is_authenticated %}
-                        <button class="btn btn-sm btn-outline-secondary" onclick="window.print()">
-                            <i class="fas fa-print me-1"></i> Print
-                        </button>
-                        {% endif %}
+            <div class="sticky-top" style="top: 1rem;">
+                <!-- Table of Contents -->
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0">Table of Contents</h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="toc" class="px-0"></div>
+                        <hr>
+                        <div class="d-flex justify-content-between">
+                            <a href="{% url 'app:article-list' %}" class="btn btn-sm btn-outline-primary">
+                                <i class="fas fa-arrow-left me-1"></i> All Articles
+                            </a>
+                            {% if user.is_authenticated %}
+                            <button class="btn btn-sm btn-outline-secondary" onclick="window.print()">
+                                <i class="fas fa-print me-1"></i> Print
+                            </button>
+                            {% endif %}
+                        </div>
                     </div>
                 </div>
+                
+                <!-- More from State Widget -->
+                {% for state_data in contextual_data.more_from_states %}
+                {% include 'widgets/more_from_state.html' with state=state_data.state state_articles=state_data.articles %}
+                {% endfor %}
+                
+                <!-- Related Personalities Widget -->
+                {% if contextual_data.related_personalities %}
+                {% include 'widgets/related_personalities.html' with personalities=contextual_data.related_personalities %}
+                {% endif %}
+                
+                <!-- Cultural Connections Widget -->
+                {% if contextual_data.cultural_connections %}
+                {% include 'widgets/cultural_connections.html' with cultural_articles=contextual_data.cultural_connections %}
+                {% endif %}
+                
+                <!-- See Also Widget (using some related articles) -->
+                {% if related_articles %}
+                {% include 'widgets/see_also.html' with see_also_articles=related_articles|slice:":4" %}
+                {% endif %}
+                
+                <!-- Discover Northeast India Widget -->
+                {% include 'widgets/discover_northeast.html' %}
             </div>
         </div>
     </div>
 </div>
 
 {% block extra_js %}
+<!-- Enhanced Schema.org Structured Data for Northeast India Content -->
+
+<!-- Organization Schema -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  "name": "Northeast India Wiki",
+  "alternateName": "NE India Wiki",  
+  "url": "{{ request.scheme }}://{{ request.get_host }}",
+  "logo": {
+    "@type": "ImageObject",
+    "url": "{{ request.scheme }}://{{ request.get_host }}{% static 'images/northeast-india-logo.jpg' %}",
+    "width": 200,
+    "height": 200
+  },
+  "description": "Comprehensive digital encyclopedia documenting the rich cultural heritage, history, and traditions of Northeast India's Seven Sisters states",
+  "foundingDate": "2024",
+  "areaServed": {
+    "@type": "Place",
+    "name": "Northeast India",
+    "addressRegion": "Northeast India",
+    "addressCountry": "India"
+  },
+  "knowsAbout": [
+    "Northeast India Culture",
+    "Seven Sisters States",
+    "Assam",
+    "Arunachal Pradesh", 
+    "Manipur",
+    "Meghalaya",
+    "Mizoram",
+    "Nagaland",
+    "Tripura",
+    "Sikkim",
+    "Indigenous Communities",
+    "Traditional Arts",
+    "Festivals",
+    "Languages",
+    "History"
+  ],
+  "sameAs": [
+    "https://en.wikipedia.org/wiki/Northeast_India"
+  ]
+}
+</script>
+
+<!-- BreadcrumbList Schema is included in breadcrumbs.html -->
+
+<!-- Main Article Schema with Content Type Detection -->
+{% detect_content_type article as content_type %}
+{% is_person_article article as is_person %}
+{% is_place_article article as is_place %}
+{% is_event_article article as is_event %}
+{% is_cultural_article article as is_cultural %}
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": [
+    "Article"{% if is_person %}, "Person"{% endif %}{% if is_place %}, "Place"{% endif %}{% if is_event %}, "Event"{% endif %}{% if is_cultural %}, "CreativeWork"{% endif %}
+  ],
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "{{ request.build_absolute_uri }}"
+  },
+  "headline": "{{ article.title }}",
+  "description": "{{ article.meta_description|default:article.excerpt|default:article.title|add:' - Comprehensive guide to Northeast India culture and heritage' }}",
+  "alternativeHeadline": "{{ article.excerpt|truncatechars:110 }}",
+  {% if article.featured_image and article.featured_image.name and article.featured_image.name != '' %}
+  "image": {
+    "@type": "ImageObject",
+    "url": "{{ request.scheme }}://{{ request.get_host }}{{ article.featured_image.url }}",
+    "caption": "{{ article.title }}",
+    "width": 1200,
+    "height": 630,
+    "contentLocation": {
+      "@type": "Place",
+      "name": "Northeast India",
+      "addressRegion": "Northeast India",
+      "addressCountry": "India"
+    }
+  },
+  {% endif %}
+  "author": {
+    "@type": "Person",
+    "name": "{{ article.author.get_full_name|default:article.author.username }}",
+    "url": "{{ request.scheme }}://{{ request.get_host }}/profile/{{ article.author.username }}/",
+    "knowsAbout": "Northeast India Culture"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "Northeast India Wiki",
+    "url": "{{ request.scheme }}://{{ request.get_host }}",
+    "logo": {
+      "@type": "ImageObject", 
+      "url": "{{ request.scheme }}://{{ request.get_host }}{% static 'images/northeast-india-logo.jpg' %}"
+    }
+  },
+  "datePublished": "{{ article.published_at|date:'c' }}",
+  "dateModified": "{{ article.updated_at|date:'c' }}",
+  "wordCount": {{ article.content|length }},
+  {% get_article_reading_time article as reading_time %}
+  "timeRequired": "PT{{ reading_time }}M",
+  "articleSection": "{% for category in article.categories.all %}{{ category.name }}{% if not forloop.last %}, {% endif %}{% endfor %}",
+  {% get_cultural_context article as cultural_context %}
+  {% if cultural_context %}
+  "genre": {{ cultural_context|jsonify }},
+  {% endif %}
+  {% get_article_mentions article as mentions %}
+  {% if mentions.people %}
+  "mentions": [
+    {% for person in mentions.people %}
+    {
+      "@type": "Person",
+      "name": "{{ person }}",
+      "description": "Notable personality from Northeast India"
+    }{% if not forloop.last %},{% endif %}
+    {% endfor %}
+  ],
+  {% endif %}
+  "about": [
+    {
+      "@type": "Place",
+      "name": "Northeast India",
+      "alternateName": "Seven Sisters States",
+      "description": "A region in India comprising eight states known for their rich cultural diversity and natural beauty",
+      "addressRegion": "Northeast India",
+      "addressCountry": "India",
+      "containsPlace": [
+        {% get_northeast_states as ne_states %}
+        {% for state in ne_states %}
+        {
+          "@type": "Place",
+          "name": "{{ state }}",
+          "addressRegion": "Northeast India",
+          "addressCountry": "India"
+        }{% if not forloop.last %},{% endif %}
+        {% endfor %}
+      ]
+    }{% if article.categories.all or article.states.all %},{% endif %}
+    {% for category in article.categories.all %}
+    {
+      "@type": "Thing",
+      "name": "{{ category.name }}",
+      "description": "{{ category.description|default:'Northeast India '|add:category.name }}",
+      "about": "Northeast India Culture"
+    }{% if not forloop.last %},{% endif %}
+    {% endfor %}
+    {% if article.categories.all and article.states.all %},{% endif %}
+    {% for state in article.states.all %}
+    {
+      "@type": "Place",
+      "name": "{{ state.name }}",
+      "description": "{{ state.description|truncatechars:200 }}",
+      "addressRegion": "Northeast India",
+      "addressCountry": "India"{% if state.capital %},
+      "containsPlace": {
+        "@type": "Place",
+        "name": "{{ state.capital }}",
+        "addressRegion": "{{ state.name }}",
+        "addressCountry": "India"
+      }{% endif %}
+    }{% if not forloop.last %},{% endif %}
+    {% endfor %}
+  ],
+  {% generate_content_keywords article as content_keywords %}
+  "keywords": {{ content_keywords|jsonify }},
+  "inLanguage": "en-IN",
+  "isPartOf": {
+    "@type": "WebSite",
+    "name": "Northeast India Wiki",
+    "url": "{{ request.scheme }}://{{ request.get_host }}",
+    "potentialAction": {
+      "@type": "SearchAction",
+      "target": "{{ request.scheme }}://{{ request.get_host }}/search?q={search_term_string}",
+      "query-input": "required name=search_term_string"
+    }
+  },
+  "locationCreated": {
+    "@type": "Place",
+    "name": "Northeast India",
+    "addressRegion": "Northeast India", 
+    "addressCountry": "India",
+    "geo": {
+      "@type": "GeoCoordinates",
+      "latitude": 26.2006,
+      "longitude": 92.9376
+    }
+  },
+  "spatialCoverage": {
+    "@type": "Place",
+    "name": "Northeast India",
+    "geo": {
+      "@type": "GeoShape",
+      "box": "21.57 87.01 29.50 97.40"
+    }
+  }{% if is_person %},
+  {% extract_person_data article as person_data %}
+  "birthDate": "{{ person_data.birthDate }}",
+  "birthPlace": {
+    "@type": "Place",
+    "addressRegion": "Northeast India",
+    "addressCountry": "India"
+  },
+  "nationality": {
+    "@type": "Country",
+    "name": "India"
+  },
+  "knowsAbout": "Northeast India Culture"{% endif %}{% if is_place %},
+  {% extract_place_data article as place_data %}
+  "address": {
+    "@type": "PostalAddress",
+    "addressRegion": "{{ place_data.addressRegion }}",
+    "addressCountry": "{{ place_data.addressCountry }}"
+  },
+  "containedInPlace": {
+    "@type": "Place",
+    "name": "Northeast India",
+    "addressCountry": "India"
+  }{% endif %}{% if is_event %},
+  {% extract_event_data article as event_data %}
+  "eventStatus": "https://schema.org/EventScheduled",
+  "location": {
+    "@type": "Place",
+    "name": "Northeast India",
+    "addressRegion": "Northeast India",
+    "addressCountry": "India"
+  },
+  "organizer": {
+    "@type": "Thing",
+    "name": "Traditional Communities of Northeast India"
+  }{% endif %}{% if is_cultural %},
+  "culturalContext": "Northeast Indian Culture",
+  "artform": "Traditional Northeast Indian Art",
+  "genre": "Cultural Heritage"{% endif %}
+}
+</script>
+
+<!-- FAQ Schema for Common Questions -->
+{% if article.content %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "about": {
+    "@type": "Thing",
+    "name": "{{ article.title }}",
+    "about": "Northeast India"
+  },
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "What is {{ article.title }}?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "{{ article.excerpt|default:article.meta_description|default:'Learn about '|add:article.title|add:' and its significance in Northeast India culture and heritage.' }}"
+      }
+    },
+    {
+      "@type": "Question", 
+      "name": "Where is {{ article.title }} located?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "{{ article.title }} is part of Northeast India, specifically in the {% for state in article.states.all %}{{ state.name }}{% if not forloop.last %}, {% endif %}{% endfor %}{% if not article.states.all %}Seven Sisters states region{% endif %}."
+      }
+    }
+  ]
+}
+</script>
+{% endif %}
+
 <script>
   document.addEventListener('DOMContentLoaded', function() {
     // Generate table of contents

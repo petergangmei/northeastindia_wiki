@@ -2,6 +2,10 @@
 
 {% block title %}All Tags | Northeast India Wiki{% endblock %}
 
+{% block breadcrumbs %}
+{% include 'commons/breadcrumbs.html' with page_type='tag_list' %}
+{% endblock %}
+
 {% block extra_css %}
 <style>
     .tag-cloud {

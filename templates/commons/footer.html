@@ -9,30 +9,65 @@
                 <p class="mt-3">Our mission is to preserve and share knowledge about the Northeast region's unique identity through collaborative contributions.</p>
             </div>
 
-            <!-- Quick links -->
+            <!-- Navigation & Discovery -->
             <div class="col-lg-3 col-md-6 mb-4 mb-lg-0">
-                <h5 class="text-uppercase text-white mb-4">Quick Links</h5>
+                <h5 class="text-uppercase text-white mb-4">Explore Content</h5>
                 <ul class="list-unstyled">
-                    <li class="mb-2"><a href="{% url 'app:home' %}" class="text-white"><i class="fas fa-angle-right me-2"></i>Home</a></li>
-                    <li class="mb-2"><a href="#" class="text-white"><i class="fas fa-angle-right me-2"></i>About Us</a></li>
-                    <li class="mb-2"><a href="#" class="text-white"><i class="fas fa-angle-right me-2"></i>Contact</a></li>
-                    <li class="mb-2"><a href="#" class="text-white"><i class="fas fa-angle-right me-2"></i>Contribute</a></li>
-                    <li class="mb-2"><a href="#" class="text-white"><i class="fas fa-angle-right me-2"></i>Code of Conduct</a></li>
-                    <li class="mb-2"><a href="#" class="text-white"><i class="fas fa-angle-right me-2"></i>Privacy Policy</a></li>
+                    <li class="mb-2"><a href="{% url 'app:home' %}" class="text-white text-decoration-none"><i class="fas fa-home me-2"></i>Home</a></li>
+                    <li class="mb-2"><a href="{% url 'app:article-list' %}" class="text-white text-decoration-none"><i class="fas fa-newspaper me-2"></i>All Articles</a></li>
+                    <li class="mb-2"><a href="{% url 'app:categories' %}" class="text-white text-decoration-none"><i class="fas fa-folder me-2"></i>Browse Categories</a></li>
+                    <li class="mb-2"><a href="{% url 'app:article-tags' %}" class="text-white text-decoration-none"><i class="fas fa-tags me-2"></i>Explore Tags</a></li>
+                    <li class="mb-2"><a href="{% url 'app:article-search' %}" class="text-white text-decoration-none"><i class="fas fa-search me-2"></i>Advanced Search</a></li>
+                    {% if user.is_authenticated %}
+                    <li class="mb-2"><a href="{% url 'app:article-create' %}" class="text-white text-decoration-none"><i class="fas fa-plus me-2"></i>Create Article</a></li>
+                    {% else %}
+                    <li class="mb-2"><a href="{% url 'app:register' %}" class="text-white text-decoration-none"><i class="fas fa-user-plus me-2"></i>Join Community</a></li>
+                    {% endif %}
                 </ul>
+                
+                <!-- Recent Activity -->
+                <div class="mt-3 pt-3 border-top border-light">
+                    <h6 class="text-uppercase text-white mb-2">Content Discovery</h6>
+                    <div class="d-flex flex-wrap gap-1">
+                        <a href="{% url 'app:article-search' %}?q=recent" class="badge bg-success text-decoration-none">Recent</a>
+                        <a href="{% url 'app:article-search' %}?q=featured" class="badge bg-warning text-dark text-decoration-none">Featured</a>
+                        <a href="{% url 'app:article-search' %}?q=heritage" class="badge bg-info text-decoration-none">Heritage</a>
+                    </div>
+                </div>
             </div>
 
-            <!-- Categories -->
+            <!-- Northeast India States -->
             <div class="col-lg-3 col-md-6 mb-4 mb-lg-0">
-                <h5 class="text-uppercase text-white mb-4">Categories</h5>
-                <ul class="list-unstyled">
-                    <li class="mb-2"><a href="#" class="text-white"><i class="fas fa-angle-right me-2"></i>States</a></li>
-                    <li class="mb-2"><a href="#" class="text-white"><i class="fas fa-angle-right me-2"></i>Cultural Heritage</a></li>
-                    <li class="mb-2"><a href="#" class="text-white"><i class="fas fa-angle-right me-2"></i>Famous Personalities</a></li>
-                    <li class="mb-2"><a href="#" class="text-white"><i class="fas fa-angle-right me-2"></i>History</a></li>
-                    <li class="mb-2"><a href="#" class="text-white"><i class="fas fa-angle-right me-2"></i>Festivals</a></li>
-                    <li class="mb-2"><a href="#" class="text-white"><i class="fas fa-angle-right me-2"></i>Traditions</a></li>
-                </ul>
+                <h5 class="text-uppercase text-white mb-4">Seven Sisters + Sikkim</h5>
+                <div class="row">
+                    <div class="col-6">
+                        <ul class="list-unstyled">
+                            <li class="mb-2"><a href="{% url 'app:article-list' %}?state=assam" class="text-white text-decoration-none small"><i class="fas fa-map-marker-alt me-2"></i>Assam</a></li>
+                            <li class="mb-2"><a href="{% url 'app:article-list' %}?state=arunachal-pradesh" class="text-white text-decoration-none small"><i class="fas fa-map-marker-alt me-2"></i>Arunachal Pradesh</a></li>
+                            <li class="mb-2"><a href="{% url 'app:article-list' %}?state=manipur" class="text-white text-decoration-none small"><i class="fas fa-map-marker-alt me-2"></i>Manipur</a></li>
+                            <li class="mb-2"><a href="{% url 'app:article-list' %}?state=meghalaya" class="text-white text-decoration-none small"><i class="fas fa-map-marker-alt me-2"></i>Meghalaya</a></li>
+                        </ul>
+                    </div>
+                    <div class="col-6">
+                        <ul class="list-unstyled">
+                            <li class="mb-2"><a href="{% url 'app:article-list' %}?state=mizoram" class="text-white text-decoration-none small"><i class="fas fa-map-marker-alt me-2"></i>Mizoram</a></li>
+                            <li class="mb-2"><a href="{% url 'app:article-list' %}?state=nagaland" class="text-white text-decoration-none small"><i class="fas fa-map-marker-alt me-2"></i>Nagaland</a></li>
+                            <li class="mb-2"><a href="{% url 'app:article-list' %}?state=tripura" class="text-white text-decoration-none small"><i class="fas fa-map-marker-alt me-2"></i>Tripura</a></li>
+                            <li class="mb-2"><a href="{% url 'app:article-list' %}?state=sikkim" class="text-white text-decoration-none small"><i class="fas fa-mountain me-2"></i>Sikkim</a></li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <!-- Popular Topics -->
+                <div class="mt-3 pt-3 border-top border-light">
+                    <h6 class="text-uppercase text-white mb-2">Popular Topics</h6>
+                    <div class="d-flex flex-wrap gap-1">
+                        <a href="{% url 'app:article-search' %}?q=festival" class="badge bg-light text-dark text-decoration-none">Festivals</a>
+                        <a href="{% url 'app:article-search' %}?q=culture" class="badge bg-light text-dark text-decoration-none">Culture</a>
+                        <a href="{% url 'app:article-search' %}?q=tradition" class="badge bg-light text-dark text-decoration-none">Traditions</a>
+                        <a href="{% url 'app:article-search' %}?q=personality" class="badge bg-light text-dark text-decoration-none">People</a>
+                    </div>
+                </div>
             </div>
 
             <!-- Connect with us -->

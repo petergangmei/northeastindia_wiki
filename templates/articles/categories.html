@@ -1,6 +1,14 @@
 {% extends 'base.html' %}
+{% load schema_tags %}
+
+<!-- Canonical URL for categories page -->
+{% block canonical_url %}{% canonical_url request %}{% endblock %}
 
 {% block title %}Categories | Northeast India Wiki{% endblock %}
+
+{% block breadcrumbs %}
+{% include 'commons/breadcrumbs.html' with page_type='category_list' %}
+{% endblock %}
 
 {% block extra_css %}
 <style>

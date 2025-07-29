@@ -1,6 +1,28 @@
 {% extends 'base.html' %}
+{% load schema_tags %}
 
-{% block title %}Articles | Northeast India Wiki{% endblock %}
+<!-- Canonical URL for article list page -->
+{% block canonical_url %}{% canonical_url request %}{% endblock %}
+
+{% block title %}
+{% if query %}
+  {% get_optimized_search_title query page_obj.paginator.count %}
+{% elif category_slug %}
+  {% get_optimized_category_title category page_obj.paginator.count %}
+{% elif tag_slug %}
+  {% get_optimized_tag_title tag page_obj.paginator.count %}
+{% else %}
+  Articles | Seven Sisters Culture | Northeast India Wiki
+{% endif %}
+{% endblock %}
+
+{% block breadcrumbs %}
+{% if query %}
+    {% include 'commons/breadcrumbs.html' with page_type='search' query=query %}
+{% else %}
+    {% include 'commons/breadcrumbs.html' with page_type='article_list' %}
+{% endif %}
+{% endblock %}
 
 {% block content %}
 <div class="container my-2">

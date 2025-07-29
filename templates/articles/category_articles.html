@@ -1,6 +1,10 @@
 {% extends 'base.html' %}
+{% load schema_tags %}
 
-{% block title %}{{ category.name }} - Articles | Northeast India Wiki{% endblock %}
+<!-- Canonical URL for category page -->
+{% block canonical_url %}{% category_canonical_url request category %}{% endblock %}
+
+{% block title %}{% get_optimized_category_title category total_articles %}{% endblock %}
 
 {% block extra_css %}
 <style>
@@ -122,20 +126,11 @@
 </style>
 {% endblock %}
 
+{% block breadcrumbs %}
+{% include 'commons/breadcrumbs.html' with page_type='category' category=category %}
+{% endblock %}
+
 {% block content %}
-<!-- Breadcrumb navigation -->
-<div class="container breadcrumb-nav">
-    <nav aria-label="breadcrumb">
-        <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a href="{% url 'app:home' %}">Home</a></li>
-            <li class="breadcrumb-item"><a href="{% url 'app:categories' %}">Categories</a></li>
-            {% if category.parent %}
-            <li class="breadcrumb-item"><a href="{% url 'app:article_category' slug=category.parent.slug %}">{{ category.parent.name }}</a></li>
-            {% endif %}
-            <li class="breadcrumb-item active" aria-current="page">{{ category.name }}</li>
-        </ol>
-    </nav>
-</div>
 
 <!-- Category header with image if available -->
 {% if category.image %}
@@ -295,6 +290,16 @@
                         {% endif %}
                     </div>
                 </div>
+                
+                <!-- Cross-reference Widgets -->
+                
+                <!-- Related Categories Widget -->
+                {% if category_suggestions %}
+                {% include 'widgets/explore_category.html' with category_suggestions=category_suggestions %}
+                {% endif %}
+                
+                <!-- Discover Northeast India Widget -->
+                {% include 'widgets/discover_northeast.html' %}
             </div>
         </div>
         

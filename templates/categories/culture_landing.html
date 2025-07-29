@@ -1,0 +1,185 @@
+{% extends 'base.html' %}
+{% load schema_tags %}
+
+{% block title %}{{ page_title }}{% endblock %}
+
+{% block meta_description %}{{ meta_description }}{% endblock %}
+
+{% block canonical_url %}{{ canonical_url }}{% endblock %}
+
+{% block extra_head %}
+{% generate_article_list_schema featured_articles page_title meta_description canonical_url %}
+{% generate_breadcrumb_schema breadcrumbs %}
+<meta property="og:title" content="{{ page_title }}">
+<meta property="og:description" content="{{ meta_description }}">
+<meta property="og:url" content="{{ canonical_url }}">
+<meta property="og:type" content="website">
+<meta name="twitter:title" content="{{ page_title }}">
+<meta name="twitter:description" content="{{ meta_description }}">
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            {% for crumb in breadcrumbs %}
+                {% if forloop.last %}
+                    <li class="breadcrumb-item active" aria-current="page">{{ crumb.name }}</li>
+                {% else %}
+                    <li class="breadcrumb-item"><a href="{{ crumb.url }}">{{ crumb.name }}</a></li>
+                {% endif %}
+            {% endfor %}
+        </ol>
+    </nav>
+
+    <!-- Page Header -->
+    <div class="row mb-5">
+        <div class="col-12">
+            <div class="card bg-success text-white">
+                <div class="card-body p-5">
+                    <h1 class="display-4 mb-3">{{ page_title }}</h1>
+                    <p class="lead mb-0">{{ meta_description }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Featured Cultural Articles -->
+    {% if featured_articles %}
+    <div class="row mb-5">
+        <div class="col-12">
+            <h2 class="mb-4">Featured Cultural Elements</h2>
+            <div class="row">
+                {% for article in featured_articles %}
+                <div class="col-lg-4 col-md-6 mb-4">
+                    <div class="card h-100">
+                        {% if article.featured_image %}
+                        <img src="{{ article.featured_image.url }}" class="card-img-top" alt="{{ article.title }}" style="height: 200px; object-fit: cover;">
+                        {% endif %}
+                        <div class="card-body d-flex flex-column">
+                            <h5 class="card-title">
+                                <a href="{{ article.get_absolute_url }}" class="text-decoration-none">{{ article.title }}</a>
+                            </h5>
+                            <p class="card-text flex-grow-1">{{ article.excerpt|truncatewords:20 }}</p>
+                            <div class="mt-auto">
+                                {% if article.states.all %}
+                                <small class="text-muted">
+                                    Region: {% for state in article.states.all %}{{ state.name }}{% if not forloop.last %}, {% endif %}{% endfor %}
+                                </small>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Culture by State -->
+    {% if articles_by_state %}
+    <div class="row">
+        <div class="col-12">
+            <h2 class="mb-4">Cultural Heritage by State</h2>
+            
+            {% for state, articles in articles_by_state.items %}
+            <div class="mb-5">
+                <h3 class="border-bottom pb-2 mb-3">
+                    <a href="{% url 'app:state-culture-articles' state.slug %}" class="text-decoration-none">
+                        Culture of {{ state.name }}
+                    </a>
+                </h3>
+                
+                <div class="row">
+                    {% for article in articles %}
+                    <div class="col-lg-4 col-md-6 mb-3">
+                        <div class="card">
+                            <div class="card-body">
+                                <h5 class="card-title">
+                                    <a href="{{ article.get_absolute_url }}" class="text-decoration-none">{{ article.title }}</a>
+                                </h5>
+                                <p class="card-text">{{ article.excerpt|truncatewords:15 }}</p>
+                                <small class="text-muted">By {{ article.author.get_full_name|default:article.author.username }}</small>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                
+                <div class="text-end">
+                    <a href="{% url 'app:state-culture-articles' state.slug %}" class="btn btn-outline-success btn-sm">
+                        Explore {{ state.name }} culture →
+                    </a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Cultural Categories -->
+    <div class="row mt-5">
+        <div class="col-12">
+            <h2 class="mb-4">Explore Cultural Aspects</h2>
+            <div class="row">
+                <div class="col-lg-3 col-md-6 mb-3">
+                    <div class="card">
+                        <div class="card-body text-center">
+                            <h5 class="card-title">Traditional Music</h5>
+                            <p class="card-text">Folk songs, instruments, and musical traditions</p>
+                            <a href="{% url 'app:folk-music-list' %}" class="btn btn-outline-primary">Explore</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6 mb-3">
+                    <div class="card">
+                        <div class="card-body text-center">
+                            <h5 class="card-title">Traditional Arts</h5>
+                            <p class="card-text">Handicrafts, weaving, and artistic expressions</p>
+                            <a href="{% url 'app:traditional-arts-list' %}" class="btn btn-outline-primary">Explore</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6 mb-3">
+                    <div class="card">
+                        <div class="card-body text-center">
+                            <h5 class="card-title">Tribal Culture</h5>
+                            <p class="card-text">Indigenous communities and their traditions</p>
+                            <a href="{% url 'app:tribal-culture-list' %}" class="btn btn-outline-primary">Explore</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6 mb-3">
+                    <div class="card">
+                        <div class="card-body text-center">
+                            <h5 class="card-title">Traditional Crafts</h5>
+                            <p class="card-text">Pottery, bamboo work, and artisan skills</p>
+                            <a href="{% url 'app:crafts-list' %}" class="btn btn-outline-primary">Explore</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Call to Action -->
+    <div class="row mt-5">
+        <div class="col-12">
+            <div class="card bg-light">
+                <div class="card-body p-4 text-center">
+                    <h3>Discover More of Northeast India</h3>
+                    <p class="mb-4">Explore the diverse cultural landscape of the region</p>
+                    <div class="btn-group" role="group">
+                        <a href="{% url 'app:personalities-landing' %}" class="btn btn-primary">Personalities</a>
+                        <a href="{% url 'app:festivals-landing' %}" class="btn btn-primary">Festivals</a>
+                        <a href="{% url 'app:places-landing' %}" class="btn btn-primary">Places</a>
+                        <a href="{% url 'app:heritage-landing' %}" class="btn btn-primary">Heritage</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,58 @@
+{% load static %}
+{% load schema_tags %}
+<!-- Related Personalities Widget -->
+{% if personalities %}
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-header bg-gradient bg-success text-white d-flex align-items-center">
+        <i class="fas fa-users me-2"></i>
+        <h5 class="mb-0">Notable Personalities</h5>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            {% for personality in personalities %}
+            <div class="col-12 mb-3">
+                <div class="border rounded p-3 h-100 hover:shadow-sm transition-shadow">
+                    <a href="{% url 'app:article-detail' slug=personality.slug %}" class="text-decoration-none">
+                        <div class="d-flex align-items-start">
+                            <div class="flex-shrink-0 me-3">
+                                {% if personality.featured_image and personality.featured_image.name %}
+                                <img src="{{ personality.featured_image.url }}" 
+                                     class="rounded-circle" 
+                                     alt="{{ personality.title }}"
+                                     style="width: 50px; height: 50px; object-fit: cover;">
+                                {% else %}
+                                <div class="bg-success text-white rounded-circle d-flex align-items-center justify-content-center" 
+                                     style="width: 50px; height: 50px;">
+                                    <i class="fas fa-user"></i>
+                                </div>
+                                {% endif %}
+                            </div>
+                            <div class="flex-grow-1">
+                                <h6 class="text-dark mb-1 fw-bold">{{ personality.title }}</h6>
+                                <p class="text-muted small mb-2">{{ personality.excerpt|truncatechars:85 }}</p>
+                                <div class="d-flex flex-wrap align-items-center">
+                                    {% for state in personality.states.all %}
+                                    <span class="badge bg-success me-1 mb-1">{{ state.name }}</span>
+                                    {% endfor %}
+                                    {% for category in personality.categories.all|slice:":2" %}
+                                    <span class="badge bg-secondary me-1 mb-1">{{ category.name }}</span>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        
+        <!-- Explore More Link -->
+        <div class="text-center mt-3 pt-3 border-top">
+            <a href="{% url 'app:article-search' %}?q=personality+biography" class="btn btn-outline-success btn-sm">
+                <i class="fas fa-search me-1"></i>
+                Discover more personalities
+            </a>
+        </div>
+    </div>
+</div>
+{% endif %}

@@ -1,0 +1,87 @@
+{% load static %}
+<!-- Discover Northeast India Widget -->
+<div class="card border-0 shadow-sm">
+    <div class="card-header bg-gradient bg-dark text-white d-flex align-items-center">
+        <i class="fas fa-mountain me-2"></i>
+        <h5 class="mb-0">Discover Northeast India</h5>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <!-- Seven Sisters States -->
+            <div class="col-md-6 mb-3">
+                <h6 class="text-primary mb-2">
+                    <i class="fas fa-map me-1"></i>
+                    Seven Sisters States
+                </h6>
+                <div class="d-flex flex-wrap gap-1">
+                    <a href="{% url 'app:article-list' %}?state=assam" class="badge bg-info text-decoration-none">Assam</a>
+                    <a href="{% url 'app:article-list' %}?state=arunachal-pradesh" class="badge bg-info text-decoration-none">Arunachal Pradesh</a>
+                    <a href="{% url 'app:article-list' %}?state=manipur" class="badge bg-info text-decoration-none">Manipur</a>
+                    <a href="{% url 'app:article-list' %}?state=meghalaya" class="badge bg-info text-decoration-none">Meghalaya</a>
+                    <a href="{% url 'app:article-list' %}?state=mizoram" class="badge bg-info text-decoration-none">Mizoram</a>
+                    <a href="{% url 'app:article-list' %}?state=nagaland" class="badge bg-info text-decoration-none">Nagaland</a>
+                    <a href="{% url 'app:article-list' %}?state=tripura" class="badge bg-info text-decoration-none">Tripura</a>
+                    <a href="{% url 'app:article-list' %}?state=sikkim" class="badge bg-success text-decoration-none">Sikkim</a>
+                </div>
+            </div>
+            
+            <!-- Popular Topics -->
+            <div class="col-md-6 mb-3">
+                <h6 class="text-primary mb-2">
+                    <i class="fas fa-star me-1"></i>
+                    Popular Topics
+                </h6>
+                <div class="d-flex flex-wrap gap-1">
+                    <a href="{% url 'app:article-search' %}?q=festival" class="badge bg-warning text-dark text-decoration-none">Festivals</a>
+                    <a href="{% url 'app:article-search' %}?q=dance" class="badge bg-warning text-dark text-decoration-none">Traditional Dance</a>
+                    <a href="{% url 'app:article-search' %}?q=cuisine" class="badge bg-warning text-dark text-decoration-none">Cuisine</a>
+                    <a href="{% url 'app:article-search' %}?q=craft" class="badge bg-warning text-dark text-decoration-none">Handicrafts</a>
+                    <a href="{% url 'app:article-search' %}?q=language" class="badge bg-warning text-dark text-decoration-none">Languages</a>
+                    <a href="{% url 'app:article-search' %}?q=music" class="badge bg-warning text-dark text-decoration-none">Music</a>
+                </div>
+            </div>
+        </div>
+        
+        <hr class="my-3">
+        
+        <div class="row">
+            <!-- Quick Navigation -->
+            <div class="col-md-6">
+                <h6 class="text-secondary mb-2">
+                    <i class="fas fa-compass me-1"></i>
+                    Quick Navigation
+                </h6>
+                <div class="d-flex flex-column gap-1">
+                    <a href="{% url 'app:categories' %}" class="text-decoration-none small">
+                        <i class="fas fa-folder me-1"></i> Browse by Category
+                    </a>
+                    <a href="{% url 'app:article-tags' %}" class="text-decoration-none small">
+                        <i class="fas fa-tags me-1"></i> Explore Tags
+                    </a>
+                    <a href="{% url 'app:article-search' %}" class="text-decoration-none small">
+                        <i class="fas fa-search me-1"></i> Advanced Search
+                    </a>
+                </div>
+            </div>
+            
+            <!-- Featured Content -->
+            <div class="col-md-6">
+                <h6 class="text-secondary mb-2">
+                    <i class="fas fa-gem me-1"></i>
+                    Featured Content
+                </h6>
+                <div class="d-flex flex-column gap-1">
+                    <a href="{% url 'app:article-search' %}?q=heritage" class="text-decoration-none small">
+                        <i class="fas fa-monument me-1"></i> Cultural Heritage
+                    </a>
+                    <a href="{% url 'app:article-search' %}?q=personality" class="text-decoration-none small">
+                        <i class="fas fa-users me-1"></i> Notable Personalities
+                    </a>
+                    <a href="{% url 'app:article-search' %}?q=tourism" class="text-decoration-none small">
+                        <i class="fas fa-camera me-1"></i> Tourist Destinations
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
