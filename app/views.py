@@ -2166,3 +2166,177 @@ def seven_sisters(request):
     }
     
     return render(request, 'regional/seven_sisters.html', context)
+
+
+def personalities_list(request):
+    """
+    Display all personality articles
+    """
+    try:
+        personalities_category = Category.objects.get(slug='personalities')
+    except Category.DoesNotExist:
+        personalities_category = None
+    
+    if personalities_category:
+        articles = Article.objects.filter(
+            categories=personalities_category,
+            published=True,
+            review_status='approved'
+        ).select_related('author').prefetch_related('categories', 'states').order_by('-created_at')
+    else:
+        # Fallback: filter by content type or title patterns
+        articles = Article.objects.filter(
+            published=True,
+            review_status='approved'
+        ).filter(
+            Q(title__icontains='biography') | 
+            Q(title__icontains='personality') |
+            Q(content__icontains='biography') |
+            Q(content__icontains='personality')
+        ).select_related('author').prefetch_related('categories', 'states').order_by('-created_at')
+    
+    context = {
+        'articles': articles,
+        'category': personalities_category,
+        'page_title': 'Personalities of Northeast India',
+        'meta_description': 'Discover notable personalities, leaders, and influential figures from Northeast India.',
+    }
+    
+    return render(request, 'articles/article_list.html', context)
+
+
+def culture_list(request):
+    """
+    Display all culture articles
+    """
+    try:
+        culture_category = Category.objects.get(slug='culture')
+    except Category.DoesNotExist:
+        culture_category = None
+    
+    if culture_category:
+        articles = Article.objects.filter(
+            categories=culture_category,
+            published=True,
+            review_status='approved'
+        ).select_related('author').prefetch_related('categories', 'states').order_by('-created_at')
+    else:
+        # Fallback: filter by content patterns
+        articles = Article.objects.filter(
+            published=True,
+            review_status='approved'
+        ).filter(
+            Q(title__icontains='culture') | 
+            Q(title__icontains='tradition') |
+            Q(content__icontains='culture') |
+            Q(content__icontains='tradition')
+        ).select_related('author').prefetch_related('categories', 'states').order_by('-created_at')
+    
+    context = {
+        'articles': articles,
+        'category': culture_category,
+        'page_title': 'Culture of Northeast India',
+        'meta_description': 'Explore the rich cultural heritage, traditions, and customs of Northeast India.',
+    }
+    
+    return render(request, 'articles/article_list.html', context)
+
+
+def festivals_list(request):
+    """
+    Display all festival articles
+    """
+    try:
+        festivals_category = Category.objects.get(slug='festivals')
+    except Category.DoesNotExist:
+        festivals_category = None
+    
+    if festivals_category:
+        articles = Article.objects.filter(
+            categories=festivals_category,
+            published=True,
+            review_status='approved'
+        ).select_related('author').prefetch_related('categories', 'states').order_by('-created_at')
+    else:
+        # Fallback: filter by content patterns
+        articles = Article.objects.filter(
+            published=True,
+            review_status='approved'
+        ).filter(
+            Q(title__icontains='festival') | 
+            Q(title__icontains='celebration') |
+            Q(content__icontains='festival') |
+            Q(content__icontains='celebration')
+        ).select_related('author').prefetch_related('categories', 'states').order_by('-created_at')
+    
+    context = {
+        'articles': articles,
+        'category': festivals_category,
+        'page_title': 'Festivals of Northeast India',
+        'meta_description': 'Discover the vibrant festivals and celebrations of Northeast India.',
+    }
+    
+    return render(request, 'articles/article_list.html', context)
+
+
+def places_list(request):
+    """
+    Display all places articles
+    """
+    try:
+        places_category = Category.objects.get(slug='places')
+    except Category.DoesNotExist:
+        places_category = None
+    
+    if places_category:
+        articles = Article.objects.filter(
+            categories=places_category,
+            published=True,
+            review_status='approved'
+        ).select_related('author').prefetch_related('categories', 'states').order_by('-created_at')
+    else:
+        # Fallback: filter by content patterns
+        articles = Article.objects.filter(
+            published=True,
+            review_status='approved'
+        ).filter(
+            Q(title__icontains='place') | 
+            Q(title__icontains='destination') |
+            Q(title__icontains='tourism') |
+            Q(content__icontains='place') |
+            Q(content__icontains='destination')
+        ).select_related('author').prefetch_related('categories', 'states').order_by('-created_at')
+    
+    context = {
+        'articles': articles,
+        'category': places_category,
+        'page_title': 'Places in Northeast India',
+        'meta_description': 'Explore beautiful places, destinations, and tourist attractions in Northeast India.',
+    }
+    
+    return render(request, 'articles/article_list.html', context)
+
+
+def tribal_culture_list(request):
+    """
+    Display tribal culture articles
+    """
+    # This is more specific - look for tribal culture content
+    articles = Article.objects.filter(
+        published=True,
+        review_status='approved'
+    ).filter(
+        Q(title__icontains='tribal') | 
+        Q(title__icontains='tribe') |
+        Q(content__icontains='tribal') |
+        Q(content__icontains='tribe')
+    ).select_related('author').prefetch_related('categories', 'states').order_by('-created_at')
+    
+    context = {
+        'articles': articles,
+        'category': None,
+        'page_title': 'Tribal Culture of Northeast India',
+        'meta_description': 'Learn about the diverse tribal cultures and communities of Northeast India.',
+    }
+    
+    return render(request, 'articles/article_list.html', context)

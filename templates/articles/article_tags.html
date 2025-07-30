@@ -108,7 +108,7 @@
                     <div class="tag-cloud">
                         {% for tag in tags %}
                         <div class="tag-item tag-size-{{ tag.size }}">
-                            <a href="{% url 'app:article_tag' slug=tag.slug %}" class="bg-{{ tag.color|default:'primary' }} text-white">
+                            <a href="{% url 'app:article-tag' slug=tag.slug %}" class="bg-{{ tag.color|default:'primary' }} text-white">
                                 {{ tag.name }} {% if tag.count %}<span class="badge bg-light text-dark">{{ tag.count }}</span>{% endif %}
                             </a>
                         </div>
@@ -152,7 +152,7 @@
                                 <div class="card-body">
                                     <div class="d-flex justify-content-between align-items-center">
                                         <h4 class="h5 mb-0">
-                                            <a href="{% url 'app:article_tag' slug=tag.slug %}" class="text-decoration-none">
+                                            <a href="{% url 'app:article-tag' slug=tag.slug %}" class="text-decoration-none">
                                                 {{ tag.name }}
                                             </a>
                                         </h4>
@@ -194,7 +194,7 @@
                                     <div class="d-flex align-items-center mb-3">
                                         <span class="text-primary me-2"><i class="fas fa-tag"></i></span>
                                         <h5 class="card-title mb-0">
-                                            <a href="{% url 'app:article_tag' slug=tag.slug %}" class="text-decoration-none">
+                                            <a href="{% url 'app:article-tag' slug=tag.slug %}" class="text-decoration-none">
                                                 {{ tag.name }}
                                             </a>
                                         </h5>

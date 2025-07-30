@@ -143,7 +143,7 @@
                 <span class="badge bg-light text-dark ms-2">{{ featured_category.subcategories.count }} Subcategories</span>
                 {% endif %}
             </div>
-            <a href="{% url 'app:article_category' slug=featured_category.slug %}" class="btn btn-light">
+            <a href="{% url 'app:article-category' slug=featured_category.slug %}" class="btn btn-light">
                 Explore Category <i class="fas fa-arrow-right ms-2"></i>
             </a>
         </div>
@@ -168,7 +168,7 @@
                 {% endif %}
                 <div class="card-body">
                     <h3 class="h5 card-title">
-                        <a href="{% url 'app:article_category' slug=category.slug %}" class="text-decoration-none">
+                        <a href="{% url 'app:article-category' slug=category.slug %}" class="text-decoration-none">
                             {{ category.name }}
                         </a>
                     </h3>
@@ -187,7 +187,7 @@
                     <div class="subcategory-list">
                         <small class="text-muted d-block mb-2">Subcategories:</small>
                         {% for subcategory in category.subcategories|slice:":3" %}
-                        <a href="{% url 'app:article_category' slug=subcategory.slug %}" class="badge bg-light text-dark text-decoration-none">
+                        <a href="{% url 'app:article-category' slug=subcategory.slug %}" class="badge bg-light text-dark text-decoration-none">
                             {{ subcategory.name }}
                         </a>
                         {% endfor %}
@@ -200,14 +200,14 @@
                     {% if category.latest_article %}
                     <div class="most-recent">
                         <small class="text-muted">Most recent article:</small>
-                        <a href="{% url 'app:article_detail' slug=category.latest_article.slug %}" class="d-block">
+                        <a href="{% url 'app:article-detail' slug=category.latest_article.slug %}" class="d-block">
                             {{ category.latest_article.title|truncatechars:50 }}
                         </a>
                     </div>
                     {% endif %}
                 </div>
                 <div class="card-footer bg-transparent border-0">
-                    <a href="{% url 'app:article_category' slug=category.slug %}" class="btn btn-sm btn-outline-primary">View Category</a>
+                    <a href="{% url 'app:article-category' slug=category.slug %}" class="btn btn-sm btn-outline-primary">View Category</a>
                 </div>
             </div>
         </div>
@@ -236,7 +236,7 @@
                             <div class="d-flex align-items-center mb-3">
                                 <span class="text-primary me-2"><i class="fas fa-folder"></i></span>
                                 <h5 class="card-title mb-0">
-                                    <a href="{% url 'app:article_category' slug=category.slug %}" class="text-decoration-none">
+                                    <a href="{% url 'app:article-category' slug=category.slug %}" class="text-decoration-none">
                                         {{ category.name }}
                                     </a>
                                 </h5>
@@ -272,7 +272,7 @@
                             <ul class="list-unstyled">
                                 {% for category in letter_group.categories %}
                                 <li class="mb-2">
-                                    <a href="{% url 'app:article_category' slug=category.slug %}" class="text-decoration-none">
+                                    <a href="{% url 'app:article-category' slug=category.slug %}" class="text-decoration-none">
                                         {{ category.name }}
                                     </a>
                                     <span class="badge bg-light text-dark ms-1">{{ category.article_count }}</span>

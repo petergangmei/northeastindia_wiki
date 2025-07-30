@@ -116,7 +116,7 @@
                 <div class="related-tags">
                     <h6 class="text-uppercase mb-3">Related Tags</h6>
                     {% for related in related_tags %}
-                    <a href="{% url 'app:article_tag' slug=related.slug %}" class="badge bg-light text-dark text-decoration-none">
+                    <a href="{% url 'app:article-tag' slug=related.slug %}" class="badge bg-light text-dark text-decoration-none">
                         {{ related.name }}
                     </a>
                     {% endfor %}
@@ -182,7 +182,7 @@
                             
                             <button type="submit" class="btn btn-primary w-100">Apply Filters</button>
                             {% if is_filtered %}
-                            <a href="{% url 'app:article_tag' slug=tag.slug %}" class="btn btn-outline-secondary w-100 mt-2">Clear Filters</a>
+                            <a href="{% url 'app:article-tag' slug=tag.slug %}" class="btn btn-outline-secondary w-100 mt-2">Clear Filters</a>
                             {% endif %}
                         </form>
                     </div>
@@ -244,7 +244,7 @@
                         </span>
                         {% endif %}
                     </div>
-                    <a href="{% url 'app:article_tag' slug=tag.slug %}" class="btn btn-sm btn-outline-secondary">
+                    <a href="{% url 'app:article-tag' slug=tag.slug %}" class="btn btn-sm btn-outline-secondary">
                         <i class="fas fa-times me-1"></i> Clear
                     </a>
                 </div>
@@ -264,7 +264,7 @@
                         {% endif %}
                         <div class="card-body">
                             <h5 class="card-title">
-                                <a href="{% url 'app:article_detail' slug=article.slug %}" class="text-decoration-none">
+                                <a href="{% url 'app:article-detail' slug=article.slug %}" class="text-decoration-none">
                                     {{ article.title }}
                                 </a>
                             </h5>
@@ -278,7 +278,7 @@
                             {% if article.tags.all %}
                             <div class="article-tags">
                                 {% for tag in article.tags.all %}
-                                <a href="{% url 'app:article_tag' slug=tag.slug %}" class="badge bg-light text-dark text-decoration-none">
+                                <a href="{% url 'app:article-tag' slug=tag.slug %}" class="badge bg-light text-dark text-decoration-none">
                                     {{ tag.name }}
                                 </a>
                                 {% endfor %}
@@ -289,7 +289,7 @@
                             {% endif %}
                         </div>
                         <div class="card-footer bg-transparent border-0">
-                            <a href="{% url 'app:article_detail' slug=article.slug %}" class="btn btn-sm btn-outline-primary">
+                            <a href="{% url 'app:article-detail' slug=article.slug %}" class="btn btn-sm btn-outline-primary">
                                 Read Article <i class="fas fa-arrow-right ms-1"></i>
                             </a>
                         </div>
@@ -352,9 +352,9 @@
                 <h3>No Articles Found</h3>
                 <p class="text-muted mb-4">There are no articles tagged with "{{ tag.name }}" {% if is_filtered %}matching your filters{% endif %}.</p>
                 {% if is_filtered %}
-                <a href="{% url 'app:article_tag' slug=tag.slug %}" class="btn btn-primary">Clear Filters</a>
+                <a href="{% url 'app:article-tag' slug=tag.slug %}" class="btn btn-primary">Clear Filters</a>
                 {% else %}
-                <a href="{% url 'app:article_create' %}" class="btn btn-primary">Create an Article</a>
+                <a href="{% url 'app:article-create' %}" class="btn btn-primary">Create an Article</a>
                 {% endif %}
             </div>
             {% endif %}

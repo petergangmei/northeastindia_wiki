@@ -60,6 +60,12 @@ urlpatterns = [
     path('tags/', views.tag_list, name='article-tags'),
     path('tags/<slug:slug>/', views.tag_articles, name='article-tag'),
     
+    # State URLs
+    path('states/', views.state_list, name='state-list'),
+    path('states/<slug:state_slug>/', views.state_detail, name='state-detail'),
+    path('states/<slug:state_slug>/culture/', views.state_category_articles, {'category_slug': 'culture'}, name='state-culture-articles'),
+    path('states/<slug:state_slug>/places/', views.state_category_articles, {'category_slug': 'places'}, name='state-places-articles'),
+    
     # SEO-Optimized URL Patterns for Northeast India Content (Basic Implementation)
     
     # Category-State specific URLs (SEO optimized) - Main benefit achieved
@@ -68,4 +74,11 @@ urlpatterns = [
     path('festivals/<slug:state_slug>/<slug:slug>/', views.article_detail, name='seo-festivals-detail'),
     path('places/<slug:state_slug>/<slug:slug>/', views.article_detail, name='seo-places-detail'),
     path('heritage/<slug:state_slug>/<slug:slug>/', views.article_detail, name='seo-heritage-detail'),
+    
+    # Category-specific list URLs (placed at end to avoid conflicts)
+    path('personalities/', views.personalities_list, name='personalities-list'),
+    path('culture/', views.culture_list, name='culture-list'),
+    path('festivals/', views.festivals_list, name='festivals-list'),
+    path('places/', views.places_list, name='places-list'),
+    path('tribal-culture/', views.tribal_culture_list, name='tribal-culture-list'),
 ]

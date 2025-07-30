@@ -22,7 +22,7 @@
 {% block og_image %}{% get_social_image article=article %}{% endblock %}
 {% block og_image_alt %}{{ article.title }} - Northeast India Cultural Heritage{% endblock %}
 
-{% block og_article_tags %}
+{% block og_article-tags %}
     <meta property="article:author" content="{{ article.author.get_full_name|default:article.author.username }}">
     <meta property="article:published_time" content="{{ article.published_at|date:'c' }}">
     <meta property="article:modified_time" content="{{ article.updated_at|date:'c' }}">
