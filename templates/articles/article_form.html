@@ -13,230 +13,977 @@
 
 {% block extra_css %}
 {{ form.media }}
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
 <style>
+    :root {
+        --primary-color: #151b25;
+        --primary-light: #2c3e50;
+        --secondary-color: #dbe8e1;
+        --accent-color: #e10032;
+        --success-color: #4caf50;
+        --warning-color: #ff9800;
+        --error-color: #f44336;
+        --light-bg: #f8f9fa;
+        --border-color: #dee2e6;
+        --text-muted: #6c757d;
+    }
+
+    /* Hide TinyMCE branding */
     .tox-statusbar__branding {
         display: none !important;
     }
-    .asteriskField {
-        color: red;
-        margin-left: 2px;
+
+    /* Enhanced Form Container */
+    .article-form-container {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        overflow: hidden;
+        margin-bottom: 2rem;
     }
+
+    .form-header {
+        background: linear-gradient(135deg, var(--primary-color), var(--primary-light));
+        color: white;
+        padding: 1.5rem 2rem;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .form-header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        right: 0;
+        width: 100px;
+        height: 100%;
+        background: linear-gradient(45deg, rgba(255,255,255,0.1), transparent);
+        transform: skewX(-15deg);
+        transform-origin: right;
+    }
+
+    .form-header h2 {
+        margin: 0;
+        font-weight: 600;
+        font-size: 1.5rem;
+    }
+
+    .form-header .subtitle {
+        opacity: 0.9;
+        margin-top: 0.25rem;
+        font-size: 0.9rem;
+    }
+
+    /* Enhanced Tab Navigation */
+    .form-tabs {
+        background: var(--light-bg);
+        border-bottom: 1px solid var(--border-color);
+        padding: 0 2rem;
+    }
+
+    .nav-pills .nav-link {
+        border-radius: 0;
+        border-bottom: 3px solid transparent;
+        color: var(--text-muted);
+        font-weight: 500;
+        padding: 1rem 1.5rem;
+        margin-right: 0.5rem;
+        transition: all 0.3s ease;
+        background: none;
+    }
+
+    .nav-pills .nav-link:hover {
+        color: var(--primary-color);
+        background: rgba(21, 27, 37, 0.05);
+    }
+
+    .nav-pills .nav-link.active {
+        background: white;
+        color: var(--primary-color);
+        border-bottom-color: var(--accent-color);
+        box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Form Content */
+    .form-content {
+        padding: 2rem;
+    }
+
+    .tab-pane {
+        display: none;
+        opacity: 0;
+        transform: translateY(10px);
+        transition: all 0.3s ease-in-out;
+    }
+
+    .tab-pane.show.active {
+        display: block;
+        opacity: 1;
+        transform: translateY(0);
+        animation: fadeIn 0.3s ease-in-out;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Enhanced Form Fields */
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+
+    .form-label {
+        font-weight: 600;
+        color: var(--primary-color);
+        margin-bottom: 0.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .form-label .required {
+        color: var(--accent-color);
+        font-size: 1.1em;
+    }
+
+    .form-label .help-icon {
+        color: var(--text-muted);
+        cursor: help;
+        font-size: 0.9em;
+    }
+
+    .form-control {
+        border: 2px solid var(--border-color);
+        border-radius: 8px;
+        padding: 0.75rem 1rem;
+        font-size: 0.95rem;
+        transition: all 0.3s ease;
+        background: white;
+    }
+
+    .form-control:focus {
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 0.2rem rgba(21, 27, 37, 0.15);
+        background: white;
+    }
+
+    .form-control.is-invalid {
+        border-color: var(--error-color);
+    }
+
+    .form-control.is-valid {
+        border-color: var(--success-color);
+    }
+
+    /* Character Counter */
+    .character-counter {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 0.5rem;
+    }
+
+    .form-text {
+        color: var(--text-muted);
+        font-size: 0.875rem;
+        margin: 0;
+    }
+
+    .counter {
+        font-size: 0.875rem;
+        color: var(--text-muted);
+        font-weight: 500;
+    }
+
+    .counter.warning {
+        color: var(--warning-color);
+    }
+
+    .counter.error {
+        color: var(--error-color);
+    }
+
+    /* Multi-select Enhancement */
+    .select-wrapper {
+        position: relative;
+    }
+
+    .form-select {
+        border: 2px solid var(--border-color);
+        border-radius: 8px;
+        padding: 0.75rem 1rem;
+        background: white;
+        transition: all 0.3s ease;
+    }
+
+    .form-select:focus {
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 0.2rem rgba(21, 27, 37, 0.15);
+    }
+
     .category-select, .tag-select, .state-select {
-        min-height: 100px;
+        min-height: 120px;
+    }
+
+    /* Tag Display */
+    .selected-tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        margin-top: 0.5rem;
+        min-height: 2rem;
+    }
+
+    .tag-item {
+        background: var(--secondary-color);
+        color: var(--primary-color);
+        padding: 0.25rem 0.75rem;
+        border-radius: 20px;
+        font-size: 0.875rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        animation: slideIn 0.2s ease;
+    }
+
+    @keyframes slideIn {
+        from { opacity: 0; transform: scale(0.8); }
+        to { opacity: 1; transform: scale(1); }
+    }
+
+    .tag-item .remove {
+        cursor: pointer;
+        color: var(--accent-color);
+        font-size: 0.8em;
+        padding: 0.1rem;
+        border-radius: 50%;
+        transition: background-color 0.2s;
+    }
+
+    .tag-item .remove:hover {
+        background: rgba(225, 0, 50, 0.1);
+    }
+
+    /* Image Upload Enhancement */
+    .image-upload-area {
+        border: 2px dashed var(--border-color);
+        border-radius: 8px;
+        padding: 2rem;
+        text-align: center;
+        transition: all 0.3s ease;
+        cursor: pointer;
+        background: var(--light-bg);
+    }
+
+    .image-upload-area:hover {
+        border-color: var(--primary-color);
+        background: rgba(21, 27, 37, 0.02);
+    }
+
+    .image-upload-area.dragover {
+        border-color: var(--accent-color);
+        background: rgba(225, 0, 50, 0.05);
+    }
+
+    .image-preview {
+        margin-top: 1rem;
+        text-align: center;
+    }
+
+    .image-preview img {
+        max-height: 200px;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+
+    /* Action Buttons */
+    .form-actions {
+        background: var(--light-bg);
+        padding: 1.5rem 2rem;
+        border-top: 1px solid var(--border-color);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .btn {
+        padding: 0.75rem 1.5rem;
+        border-radius: 8px;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        border: none;
+        cursor: pointer;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .btn-primary {
+        background: var(--primary-color);
+        color: white;
+    }
+
+    .btn-primary:hover {
+        background: var(--primary-light);
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(21, 27, 37, 0.3);
+    }
+
+    .btn-outline-primary {
+        background: white;
+        color: var(--primary-color);
+        border: 2px solid var(--primary-color);
+    }
+
+    .btn-outline-primary:hover {
+        background: var(--primary-color);
+        color: white;
+    }
+
+    .btn-outline-secondary {
+        background: white;
+        color: var(--text-muted);
+        border: 2px solid var(--border-color);
+    }
+
+    .btn-outline-secondary:hover {
+        background: var(--light-bg);
+        border-color: var(--text-muted);
+        color: var(--primary-color);
+    }
+
+    /* Progress Indicator */
+    .form-progress {
+        height: 4px;
+        background: var(--border-color);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .form-progress-bar {
+        height: 100%;
+        background: linear-gradient(90deg, var(--primary-color), var(--accent-color));
+        transition: width 0.3s ease;
+        position: relative;
+    }
+
+    .form-progress-bar::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+        animation: shimmer 2s infinite;
+    }
+
+    @keyframes shimmer {
+        0% { transform: translateX(-100%); }
+        100% { transform: translateX(100%); }
+    }
+
+    /* Validation Styles */
+    .invalid-feedback {
+        display: block;
+        color: var(--error-color);
+        font-size: 0.875rem;
+        margin-top: 0.5rem;
+        padding: 0.5rem;
+        background: rgba(244, 67, 54, 0.1);
+        border-radius: 4px;
+        border-left: 3px solid var(--error-color);
+    }
+
+    .valid-feedback {
+        display: block;
+        color: var(--success-color);
+        font-size: 0.875rem;
+        margin-top: 0.5rem;
+    }
+
+    /* Auto-save indicator */
+    .auto-save-status {
+        font-size: 0.875rem;
+        color: var(--text-muted);
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .auto-save-status.saving {
+        color: var(--warning-color);
+    }
+
+    .auto-save-status.saved {
+        color: var(--success-color);
+    }
+
+    .auto-save-status.error {
+        color: var(--error-color);
+    }
+
+    /* Responsive Design */
+    @media (max-width: 992px) {
+        .article-form-container {
+            margin: 1rem;
+        }
+        
+        .col-md-4 {
+            margin-bottom: 1rem;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .form-content {
+            padding: 1rem;
+        }
+        
+        .form-header {
+            padding: 1rem;
+        }
+        
+        .form-tabs {
+            padding: 0 0.5rem;
+            overflow-x: auto;
+        }
+        
+        .nav-pills {
+            flex-wrap: nowrap;
+            min-width: max-content;
+        }
+        
+        .nav-pills .nav-link {
+            padding: 0.75rem 1rem;
+            font-size: 0.9rem;
+            white-space: nowrap;
+        }
+        
+        .form-actions {
+            flex-direction: column;
+            gap: 0.75rem;
+            padding: 1rem;
+        }
+        
+        .btn {
+            width: 100%;
+            justify-content: center;
+        }
+        
+        .character-counter {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 0.25rem;
+        }
+        
+        .form-label {
+            font-size: 0.95rem;
+        }
+        
+        .selected-tags {
+            margin-top: 0.75rem;
+        }
+        
+        .tag-item {
+            font-size: 0.8rem;
+            padding: 0.2rem 0.6rem;
+        }
+    }
+
+    @media (max-width: 576px) {
+        .container {
+            padding: 0 0.5rem;
+        }
+        
+        .article-form-container {
+            border-radius: 8px;
+            margin: 0.5rem 0;
+        }
+        
+        .form-header h2 {
+            font-size: 1.25rem;
+        }
+        
+        .form-header .subtitle {
+            font-size: 0.8rem;
+        }
+        
+        .nav-pills .nav-link {
+            padding: 0.5rem 0.75rem;
+            font-size: 0.85rem;
+        }
+        
+        .nav-pills .nav-link i {
+            display: none;
+        }
+        
+        .form-content {
+            padding: 0.75rem;
+        }
+        
+        .form-actions {
+            padding: 0.75rem;
+        }
+        
+        .image-upload-area {
+            padding: 1rem;
+        }
+        
+        .image-upload-area .fa-2x {
+            font-size: 1.5em;
+        }
+    }
+
+    /* Print Styles */
+    @media print {
+        .form-tabs,
+        .form-actions,
+        .form-progress,
+        .auto-save-status {
+            display: none !important;
+        }
+        
+        .article-form-container {
+            box-shadow: none;
+            border: 1px solid #000;
+        }
+        
+        .tab-pane {
+            display: block !important;
+        }
+        
+        .form-content {
+            padding: 1rem;
+        }
+    }
+
+    /* TinyMCE Custom Styling */
+    .tox .tox-editor-header {
+        border-bottom: 2px solid var(--border-color);
+    }
+
+    .tox .tox-toolbar {
+        background: var(--light-bg);
+    }
+
+    .tox .tox-edit-area {
+        border-radius: 0 0 8px 8px;
+    }
+
+    /* Revision History Styling */
+    .recent-revisions {
+        background: var(--light-bg);
+        border-radius: 8px;
+        padding: 1.5rem;
+        margin-top: 1rem;
+    }
+
+    .recent-revisions h6 {
+        color: var(--primary-color);
+        font-weight: 600;
+        margin-bottom: 1rem;
+    }
+
+    .table {
+        background: white;
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .table th {
+        background: var(--primary-color);
+        color: white;
+        font-weight: 500;
+        border: none;
+    }
+
+    .table td {
+        border-color: var(--border-color);
+        padding: 0.75rem;
     }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="container my-5">
-    <div class="row">
-        <div class="col-lg-9 mx-auto">
-            <div class="card border-0 shadow-sm">
-                <div class="card-header bg-primary text-white">
-                    <h2 class="h4 mb-0">{{ title }}</h2>
-                </div>
-                <div class="card-body">
-                    <form method="post" enctype="multipart/form-data" id="article-form">
-                        {% csrf_token %}
-                        
-                        {% if form.non_field_errors %}
-                        <div class="alert alert-danger">
-                            {% for error in form.non_field_errors %}
-                            {{ error }}
-                            {% endfor %}
-                        </div>
-                        {% endif %}
-                        
-                        <!-- Title field -->
-                        <div class="mb-3">
-                            <label for="{{ form.title.id_for_label }}" class="form-label">Title <span class="asteriskField">*</span></label>
-                            {{ form.title }}
-                            {% if form.title.errors %}
-                            <div class="invalid-feedback d-block">
-                                {% for error in form.title.errors %}
-                                {{ error }}
-                                {% endfor %}
-                            </div>
-                            {% endif %}
-                            <div class="form-text">Choose a descriptive title for your article</div>
-                        </div>
-                        
-                        <!-- Content field (TinyMCE) -->
-                        <div class="mb-3">
-                            <label for="{{ form.content.id_for_label }}" class="form-label">Content <span class="asteriskField">*</span></label>
-                            {{ form.content }}
-                            {% if form.content.errors %}
-                            <div class="invalid-feedback d-block">
-                                {% for error in form.content.errors %}
-                                {{ error }}
-                                {% endfor %}
-                            </div>
-                            {% endif %}
-                        </div>
-                        
-                        <!-- Excerpt field -->
-                        <div class="mb-3">
-                            <label for="{{ form.excerpt.id_for_label }}" class="form-label">Excerpt</label>
-                            {{ form.excerpt }}
-                            {% if form.excerpt.errors %}
-                            <div class="invalid-feedback d-block">
-                                {% for error in form.excerpt.errors %}
-                                {{ error }}
-                                {% endfor %}
-                            </div>
-                            {% endif %}
-                            <div class="form-text">A brief summary of the article (appears in search results and previews)</div>
-                        </div>
-                        
-                        <div class="row">
-                            <!-- Categories field -->
-                            <div class="col-md-4 mb-3">
-                                <label for="{{ form.categories.id_for_label }}" class="form-label">Categories</label>
-                                {{ form.categories }}
-                                {% if form.categories.errors %}
-                                <div class="invalid-feedback d-block">
-                                    {% for error in form.categories.errors %}
-                                    {{ error }}
-                                    {% endfor %}
-                                </div>
-                                {% endif %}
-                                <div class="form-text">Hold Ctrl/Cmd to select multiple</div>
-                            </div>
-                            
-                            <!-- Tags field -->
-                            <div class="col-md-4 mb-3">
-                                <label for="{{ form.tags.id_for_label }}" class="form-label">Tags</label>
-                                {{ form.tags }}
-                                {% if form.tags.errors %}
-                                <div class="invalid-feedback d-block">
-                                    {% for error in form.tags.errors %}
-                                    {{ error }}
-                                    {% endfor %}
-                                </div>
-                                {% endif %}
-                                <div class="form-text">Hold Ctrl/Cmd to select multiple</div>
-                            </div>
-                            
-                            <!-- States field -->
-                            <div class="col-md-4 mb-3">
-                                <label for="{{ form.states.id_for_label }}" class="form-label">Related States</label>
-                                {{ form.states }}
-                                {% if form.states.errors %}
-                                <div class="invalid-feedback d-block">
-                                    {% for error in form.states.errors %}
-                                    {{ error }}
-                                    {% endfor %}
-                                </div>
-                                {% endif %}
-                                <div class="form-text">Hold Ctrl/Cmd to select multiple</div>
-                            </div>
-                        </div>
-                        
-                        <!-- Featured image field -->
-                        <div class="mb-3">
-                            <label for="{{ form.featured_image.id_for_label }}" class="form-label">Featured Image</label>
-                            {% if article.featured_image %}
-                            <div class="mb-2">
-                                <img src="{{ article.featured_image.url }}" alt="Featured image" class="img-thumbnail" style="max-height: 150px;">
-                            </div>
-                            {% endif %}
-                            {{ form.featured_image }}
-                            {% if form.featured_image.errors %}
-                            <div class="invalid-feedback d-block">
-                                {% for error in form.featured_image.errors %}
-                                {{ error }}
-                                {% endfor %}
-                            </div>
-                            {% endif %}
-                            <div class="form-text">Upload an image to be displayed at the top of the article (optional)</div>
-                        </div>
-                        
-                        <!-- Meta description field -->
-                        <div class="mb-3">
-                            <label for="{{ form.meta_description.id_for_label }}" class="form-label">Meta Description</label>
-                            {{ form.meta_description }}
-                            {% if form.meta_description.errors %}
-                            <div class="invalid-feedback d-block">
-                                {% for error in form.meta_description.errors %}
-                                {{ error }}
-                                {% endfor %}
-                            </div>
-                            {% endif %}
-                            <div class="form-text">A brief description for search engines (max 160 characters)</div>
-                        </div>
-                        
-                        <!-- Hidden content_type field -->
-                        {% if not article %}
-                        <input type="hidden" name="content_type" value="article">
-                        {% else %}
-                        {{ form.content_type.as_hidden }}
-                        {% endif %}
-                        
-                        
+<div class="container my-4">
+    <div class="row justify-content-center">
+        <div class="col-12 col-xl-10">
+            <div class="article-form-container">
+                <!-- Enhanced Header -->
+                <div class="form-header">
+                    <h2>{{ title }}</h2>
+                    <div class="subtitle">
                         {% if article %}
-                        <!-- Revision comment field (for edits) -->
-                        <div class="mb-3">
-                            <label for="{{ form.revision_comment.id_for_label }}" class="form-label">Revision Comment</label>
-                            {{ form.revision_comment }}
-                            {% if form.revision_comment.errors %}
-                            <div class="invalid-feedback d-block">
-                                {% for error in form.revision_comment.errors %}
-                                {{ error }}
-                                {% endfor %}
+                            Last edited {{ article.updated_at|timesince }} ago
+                        {% else %}
+                            Create a new article for Northeast India Wiki
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Progress Indicator -->
+                <div class="form-progress">
+                    <div class="form-progress-bar" style="width: 0%" id="form-progress"></div>
+                </div>
+
+                <!-- Tab Navigation -->
+                <div class="form-tabs">
+                    <ul class="nav nav-pills" id="form-tabs" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="basic-info-tab" data-mdb-toggle="pill" 
+                                    data-mdb-target="#basic-info" type="button" role="tab" aria-controls="basic-info" aria-selected="true">
+                                <i class="fas fa-edit me-2"></i>Basic Info
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="content-tab" data-mdb-toggle="pill" 
+                                    data-mdb-target="#content" type="button" role="tab" aria-controls="content" aria-selected="false">
+                                <i class="fas fa-file-text me-2"></i>Content
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="categorization-tab" data-mdb-toggle="pill" 
+                                    data-mdb-target="#categorization" type="button" role="tab" aria-controls="categorization" aria-selected="false">
+                                <i class="fas fa-tags me-2"></i>Categorization
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="media-seo-tab" data-mdb-toggle="pill" 
+                                    data-mdb-target="#media-seo" type="button" role="tab" aria-controls="media-seo" aria-selected="false">
+                                <i class="fas fa-image me-2"></i>Media & SEO
+                            </button>
+                        </li>
+                        {% if article %}
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="history-tab" data-mdb-toggle="pill" 
+                                    data-mdb-target="#history" type="button" role="tab" aria-controls="history" aria-selected="false">
+                                <i class="fas fa-history me-2"></i>History
+                            </button>
+                        </li>
+                        {% endif %}
+                    </ul>
+                </div>
+
+                <!-- Form Content -->
+                <form method="post" enctype="multipart/form-data" id="article-form">
+                    {% csrf_token %}
+                    
+                    {% if form.non_field_errors %}
+                    <div class="alert alert-danger m-3">
+                        {% for error in form.non_field_errors %}
+                        <i class="fas fa-exclamation-triangle me-2"></i>{{ error }}
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+
+                    <div class="form-content">
+                        <div class="tab-content" id="form-tab-content">
+                            <!-- Basic Info Tab -->
+                            <div class="tab-pane fade show active" id="basic-info" role="tabpanel">
+                                <div class="row">
+                                    <div class="col-12">
+                                        <!-- Title Field -->
+                                        <div class="form-group">
+                                            <label for="{{ form.title.id_for_label }}" class="form-label">
+                                                <i class="fas fa-heading me-2"></i>
+                                                Article Title
+                                                <span class="required">*</span>
+                                                <i class="fas fa-question-circle help-icon" 
+                                                   title="Choose a clear, descriptive title for your article"></i>
+                                            </label>
+                                            {{ form.title }}
+                                            <div class="character-counter">
+                                                <div class="form-text">Choose a descriptive title for your article</div>
+                                                <span class="counter" id="title-counter">0/255</span>
+                                            </div>
+                                            {% if form.title.errors %}
+                                            <div class="invalid-feedback">
+                                                {% for error in form.title.errors %}
+                                                <i class="fas fa-exclamation-circle me-1"></i>{{ error }}
+                                                {% endfor %}
+                                            </div>
+                                            {% endif %}
+                                            <div class="mt-2">
+                                                <small class="text-muted">
+                                                    <i class="fas fa-link me-1"></i>URL Preview: 
+                                                    <span id="slug-preview">{{ article.slug|default:"your-article-title" }}</span>
+                                                </small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Content Tab -->
+                            <div class="tab-pane fade" id="content" role="tabpanel">
+                                <!-- Main Content -->
+                                <div class="form-group">
+                                    <label for="{{ form.content.id_for_label }}" class="form-label">
+                                        <i class="fas fa-file-text me-2"></i>
+                                        Article Content
+                                        <span class="required">*</span>
+                                    </label>
+                                    {{ form.content }}
+                                    {% if form.content.errors %}
+                                    <div class="invalid-feedback">
+                                        {% for error in form.content.errors %}
+                                        <i class="fas fa-exclamation-circle me-1"></i>{{ error }}
+                                        {% endfor %}
+                                    </div>
+                                    {% endif %}
+                                    <div class="mt-2">
+                                        <small class="text-muted">
+                                            <i class="fas fa-info-circle me-1"></i>
+                                            Word count: <span id="word-count">0</span> words
+                                        </small>
+                                    </div>
+                                </div>
+
+                                <!-- Excerpt -->
+                                <div class="form-group">
+                                    <label for="{{ form.excerpt.id_for_label }}" class="form-label">
+                                        <i class="fas fa-quote-left me-2"></i>
+                                        Article Excerpt
+                                        <i class="fas fa-question-circle help-icon" 
+                                           title="A brief summary that appears in search results and previews"></i>
+                                    </label>
+                                    {{ form.excerpt }}
+                                    <div class="character-counter">
+                                        <div class="form-text">A brief summary of the article (appears in search results and previews)</div>
+                                        <span class="counter" id="excerpt-counter">0/500</span>
+                                    </div>
+                                    {% if form.excerpt.errors %}
+                                    <div class="invalid-feedback">
+                                        {% for error in form.excerpt.errors %}
+                                        <i class="fas fa-exclamation-circle me-1"></i>{{ error }}
+                                        {% endfor %}
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                            <!-- Categorization Tab -->
+                            <div class="tab-pane fade" id="categorization" role="tabpanel">
+                                <div class="row">
+                                    <!-- Categories -->
+                                    <div class="col-md-4 mb-4">
+                                        <div class="form-group">
+                                            <label for="{{ form.categories.id_for_label }}" class="form-label">
+                                                <i class="fas fa-folder me-2"></i>Categories
+                                            </label>
+                                            <div class="select-wrapper">
+                                                {{ form.categories }}
+                                            </div>
+                                            <div class="selected-tags" id="selected-categories"></div>
+                                            {% if form.categories.errors %}
+                                            <div class="invalid-feedback">
+                                                {% for error in form.categories.errors %}
+                                                <i class="fas fa-exclamation-circle me-1"></i>{{ error }}
+                                                {% endfor %}
+                                            </div>
+                                            {% endif %}
+                                            <div class="form-text">Hold Ctrl/Cmd to select multiple categories</div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Tags -->
+                                    <div class="col-md-4 mb-4">
+                                        <div class="form-group">
+                                            <label for="{{ form.tags.id_for_label }}" class="form-label">
+                                                <i class="fas fa-tags me-2"></i>Tags
+                                            </label>
+                                            <div class="select-wrapper">
+                                                {{ form.tags }}
+                                            </div>
+                                            <div class="selected-tags" id="selected-tags"></div>
+                                            {% if form.tags.errors %}
+                                            <div class="invalid-feedback">
+                                                {% for error in form.tags.errors %}
+                                                <i class="fas fa-exclamation-circle me-1"></i>{{ error }}
+                                                {% endfor %}
+                                            </div>
+                                            {% endif %}
+                                            <div class="form-text">Add relevant tags to help users find your article</div>
+                                        </div>
+                                    </div>
+
+                                    <!-- States -->
+                                    <div class="col-md-4 mb-4">
+                                        <div class="form-group">
+                                            <label for="{{ form.states.id_for_label }}" class="form-label">
+                                                <i class="fas fa-map-marker-alt me-2"></i>Related States
+                                            </label>
+                                            <div class="select-wrapper">
+                                                {{ form.states }}
+                                            </div>
+                                            <div class="selected-tags" id="selected-states"></div>
+                                            {% if form.states.errors %}
+                                            <div class="invalid-feedback">
+                                                {% for error in form.states.errors %}
+                                                <i class="fas fa-exclamation-circle me-1"></i>{{ error }}
+                                                {% endfor %}
+                                            </div>
+                                            {% endif %}
+                                            <div class="form-text">Select the Northeast Indian states related to this article</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Media & SEO Tab -->
+                            <div class="tab-pane fade" id="media-seo" role="tabpanel">
+                                <!-- Featured Image -->
+                                <div class="form-group">
+                                    <label for="{{ form.featured_image.id_for_label }}" class="form-label">
+                                        <i class="fas fa-image me-2"></i>Featured Image
+                                    </label>
+                                    
+                                    <div class="image-upload-area" id="image-upload-area">
+                                        <div class="upload-placeholder">
+                                            <i class="fas fa-cloud-upload-alt fa-2x mb-3 text-muted"></i>
+                                            <p class="mb-2">Drag and drop an image here, or click to select</p>
+                                            <small class="text-muted">Supported formats: JPG, PNG, GIF (Max 5MB)</small>
+                                        </div>
+                                        {{ form.featured_image }}
+                                    </div>
+                                    
+                                    {% if article.featured_image %}
+                                    <div class="image-preview">
+                                        <img src="{{ article.featured_image.url }}" alt="Current featured image" class="img-fluid">
+                                        <div class="mt-2">
+                                            <small class="text-muted">Current featured image</small>
+                                        </div>
+                                    </div>
+                                    {% endif %}
+                                    
+                                    {% if form.featured_image.errors %}
+                                    <div class="invalid-feedback">
+                                        {% for error in form.featured_image.errors %}
+                                        <i class="fas fa-exclamation-circle me-1"></i>{{ error }}
+                                        {% endfor %}
+                                    </div>
+                                    {% endif %}
+                                    <div class="form-text">Upload an image to be displayed at the top of the article (optional)</div>
+                                </div>
+
+                                <!-- Meta Description -->
+                                <div class="form-group">
+                                    <label for="{{ form.meta_description.id_for_label }}" class="form-label">
+                                        <i class="fas fa-search me-2"></i>
+                                        Meta Description
+                                        <i class="fas fa-question-circle help-icon" 
+                                           title="This description appears in search engine results"></i>
+                                    </label>
+                                    {{ form.meta_description }}
+                                    <div class="character-counter">
+                                        <div class="form-text">A brief description for search engines (appears in Google search results)</div>
+                                        <span class="counter" id="meta-counter">0/160</span>
+                                    </div>
+                                    {% if form.meta_description.errors %}
+                                    <div class="invalid-feedback">
+                                        {% for error in form.meta_description.errors %}
+                                        <i class="fas fa-exclamation-circle me-1"></i>{{ error }}
+                                        {% endfor %}
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                            <!-- History Tab (only for edits) -->
+                            {% if article %}
+                            <div class="tab-pane fade" id="history" role="tabpanel">
+                                <!-- Revision Comment -->
+                                <div class="form-group">
+                                    <label for="{{ form.revision_comment.id_for_label }}" class="form-label">
+                                        <i class="fas fa-comment me-2"></i>Revision Comment
+                                    </label>
+                                    {{ form.revision_comment }}
+                                    {% if form.revision_comment.errors %}
+                                    <div class="invalid-feedback">
+                                        {% for error in form.revision_comment.errors %}
+                                        <i class="fas fa-exclamation-circle me-1"></i>{{ error }}
+                                        {% endfor %}
+                                    </div>
+                                    {% endif %}
+                                    <div class="form-text">{{ form.revision_comment.help_text }}</div>
+                                </div>
+
+                                <!-- Recent Revisions -->
+                                {% if revisions %}
+                                <div class="recent-revisions">
+                                    <h6><i class="fas fa-history me-2"></i>Recent Revisions</h6>
+                                    <div class="table-responsive">
+                                        <table class="table table-sm">
+                                            <thead>
+                                                <tr>
+                                                    <th>Date</th>
+                                                    <th>User</th>
+                                                    <th>Comment</th>
+                                                    <th>Actions</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {% for rev in revisions|slice:":5" %}
+                                                <tr>
+                                                    <td>{{ rev.created_at|date:"M d, Y H:i" }}</td>
+                                                    <td>{{ rev.user.username }}</td>
+                                                    <td>{{ rev.comment|default:"No comment" }}</td>
+                                                    <td>
+                                                        <a href="{% url 'app:article-revision' slug=article.slug revision_id=rev.id %}" 
+                                                           class="btn btn-sm btn-outline-secondary" target="_blank">
+                                                            <i class="fas fa-eye me-1"></i>View
+                                                        </a>
+                                                    </td>
+                                                </tr>
+                                                {% endfor %}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    <a href="{% url 'app:article-history' slug=article.slug %}" class="btn btn-sm btn-outline-primary">
+                                        <i class="fas fa-list me-1"></i>View All Revisions
+                                    </a>
+                                </div>
+                                {% endif %}
                             </div>
                             {% endif %}
-                            <div class="form-text">{{ form.revision_comment.help_text }}</div>
                         </div>
-                        
-                        <!-- Revision history -->
-                        {% if revisions %}
-                        <div class="recent-revisions mb-3">
-                            <h6>Recent Revisions</h6>
-                            <div class="table-responsive">
-                                <table class="table table-sm">
-                                    <thead>
-                                        <tr>
-                                            <th>Date</th>
-                                            <th>User</th>
-                                            <th>Comment</th>
-                                            <th>Actions</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {% for rev in revisions|slice:":5" %}
-                                        <tr>
-                                            <td>{{ rev.created_at|date:"M d, Y H:i" }}</td>
-                                            <td>{{ rev.user.username }}</td>
-                                            <td>{{ rev.comment }}</td>
-                                            <td>
-                                                <a href="{% url 'app:article-revision' slug=article.slug revision_id=rev.id %}" class="btn btn-sm btn-outline-secondary" target="_blank">
-                                                    View
-                                                </a>
-                                            </td>
-                                        </tr>
-                                        {% endfor %}
-                                    </tbody>
-                                </table>
-                            </div>
-                            <a href="{% url 'app:article-history' slug=article.slug %}" class="btn btn-sm btn-link">
-                                View All Revisions
-                            </a>
+                    </div>
+
+                    <!-- Hidden Fields -->
+                    {% if not article %}
+                    <input type="hidden" name="content_type" value="article">
+                    {% else %}
+                    {{ form.content_type.as_hidden }}
+                    {% endif %}
+                </form>
+
+                <!-- Action Buttons -->
+                <div class="form-actions">
+                    <div class="d-flex align-items-center">
+                        <div class="auto-save-status" id="auto-save-status">
+                            <i class="fas fa-circle"></i>
+                            <span>Ready</span>
                         </div>
-                        {% endif %}
-                        {% endif %}
-                        
-                        <div class="form-group mt-4">
-                            <a href="{% if article %}{% url 'app:article-detail' slug=article.slug %}{% else %}{% url 'app:article-list' %}{% endif %}" class="btn btn-outline-secondary">
-                                Cancel
-                            </a>
-                            <button type="submit" class="btn btn-primary">
-                                {% if article %}Update{% else %}Create{% endif %} Article
-                            </button>
-                            <button type="submit" name="submit_for_review" value="true" class="btn btn-outline-primary">
-                                Submit for Review
-                            </button>
-                        </div>
-                    </form>
+                    </div>
+                    
+                    <div class="d-flex gap-2">
+                        <a href="{% if article %}{% url 'app:article-detail' slug=article.slug %}{% else %}{% url 'app:article-list' %}{% endif %}" 
+                           class="btn btn-outline-secondary">
+                            <i class="fas fa-times me-2"></i>Cancel
+                        </a>
+                        <button type="submit" form="article-form" name="submit_for_review" value="true" 
+                                class="btn btn-outline-primary">
+                            <i class="fas fa-paper-plane me-2"></i>Submit for Review
+                        </button>
+                        <button type="submit" form="article-form" class="btn btn-primary">
+                            <i class="fas fa-save me-2"></i>
+                            {% if article %}Update Article{% else %}Create Article{% endif %}
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -247,32 +994,464 @@
 {% block extra_js %}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Add Bootstrap classes to form elements
-    const formElements = document.querySelectorAll('#article-form input[type="text"], #article-form input[type="email"], #article-form input[type="url"], #article-form textarea, #article-form select');
-    formElements.forEach(function(element) {
-        if (!element.classList.contains('mce-textbox')) {
+    // Initialize form enhancements
+    initializeFormEnhancements();
+    initializeCharacterCounters();
+    initializeSlugPreview();
+    initializeImageUpload();
+    initializeMultiSelectTags();
+    initializeTabProgress();
+    initializeAutoSave();
+    
+    function initializeFormEnhancements() {
+        // Add Bootstrap classes to form elements
+        const formElements = document.querySelectorAll('#article-form input[type="text"], #article-form input[type="email"], #article-form input[type="url"], #article-form textarea, #article-form select');
+        formElements.forEach(function(element) {
+            if (!element.classList.contains('mce-textbox') && !element.classList.contains('form-control') && !element.classList.contains('form-select')) {
+                if (element.tagName === 'SELECT') {
+                    element.classList.add('form-select');
+                } else {
+                    element.classList.add('form-control');
+                }
+            }
+        });
+
+        const fileInputs = document.querySelectorAll('#article-form input[type="file"]');
+        fileInputs.forEach(function(element) {
             element.classList.add('form-control');
+            element.style.display = 'none';
+        });
+
+        const multiSelects = document.querySelectorAll('#article-form select[multiple]');
+        multiSelects.forEach(function(element) {
+            element.classList.add('form-select');
+            
+            if (element.name.includes('categories')) {
+                element.classList.add('category-select');
+            } else if (element.name.includes('tags')) {
+                element.classList.add('tag-select');
+            } else if (element.name.includes('states')) {
+                element.classList.add('state-select');
+            }
+        });
+    }
+
+    function initializeCharacterCounters() {
+        // Title counter
+        const titleField = document.querySelector('input[name="title"]');
+        const titleCounter = document.getElementById('title-counter');
+        if (titleField && titleCounter) {
+            updateCounter(titleField, titleCounter, 255);
+            titleField.addEventListener('input', () => updateCounter(titleField, titleCounter, 255));
         }
-    });
-    
-    const fileInputs = document.querySelectorAll('#article-form input[type="file"]');
-    fileInputs.forEach(function(element) {
-        element.classList.add('form-control');
-    });
-    
-    const multiSelects = document.querySelectorAll('#article-form select[multiple]');
-    multiSelects.forEach(function(element) {
-        element.classList.add('form-select');
+
+        // Excerpt counter
+        const excerptField = document.querySelector('textarea[name="excerpt"]');
+        const excerptCounter = document.getElementById('excerpt-counter');
+        if (excerptField && excerptCounter) {
+            updateCounter(excerptField, excerptCounter, 500);
+            excerptField.addEventListener('input', () => updateCounter(excerptField, excerptCounter, 500));
+        }
+
+        // Meta description counter
+        const metaField = document.querySelector('input[name="meta_description"]');
+        const metaCounter = document.getElementById('meta-counter');
+        if (metaField && metaCounter) {
+            updateCounter(metaField, metaCounter, 160);
+            metaField.addEventListener('input', () => updateCounter(metaField, metaCounter, 160));
+        }
+    }
+
+    function updateCounter(field, counter, maxLength) {
+        const currentLength = field.value.length;
+        counter.textContent = `${currentLength}/${maxLength}`;
         
-        // Add specific class based on field name
-        if (element.name.includes('categories')) {
-            element.classList.add('category-select');
-        } else if (element.name.includes('tags')) {
-            element.classList.add('tag-select');
-        } else if (element.name.includes('states')) {
-            element.classList.add('state-select');
+        // Update counter color based on usage
+        counter.classList.remove('warning', 'error');
+        if (currentLength > maxLength * 0.9) {
+            counter.classList.add('warning');
         }
-    });
+        if (currentLength > maxLength) {
+            counter.classList.add('error');
+        }
+    }
+
+    function initializeSlugPreview() {
+        const titleField = document.querySelector('input[name="title"]');
+        const slugPreview = document.getElementById('slug-preview');
+        
+        if (titleField && slugPreview) {
+            titleField.addEventListener('input', function() {
+                const slug = generateSlug(this.value);
+                slugPreview.textContent = slug || 'your-article-title';
+            });
+        }
+    }
+
+    function generateSlug(text) {
+        return text
+            .toLowerCase()
+            .replace(/[^\w\s-]/g, '')
+            .replace(/[\s_-]+/g, '-')
+            .replace(/^-+|-+$/g, '');
+    }
+
+    function initializeImageUpload() {
+        const uploadArea = document.getElementById('image-upload-area');
+        const fileInput = document.querySelector('input[name="featured_image"]');
+        
+        if (uploadArea && fileInput) {
+            // Click to upload
+            uploadArea.addEventListener('click', () => fileInput.click());
+
+            // Drag and drop
+            uploadArea.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                uploadArea.classList.add('dragover');
+            });
+
+            uploadArea.addEventListener('dragleave', () => {
+                uploadArea.classList.remove('dragover');
+            });
+
+            uploadArea.addEventListener('drop', (e) => {
+                e.preventDefault();
+                uploadArea.classList.remove('dragover');
+                
+                const files = e.dataTransfer.files;
+                if (files.length > 0) {
+                    fileInput.files = files;
+                    handleImagePreview(files[0]);
+                }
+            });
+
+            // File input change
+            fileInput.addEventListener('change', (e) => {
+                if (e.target.files.length > 0) {
+                    handleImagePreview(e.target.files[0]);
+                }
+            });
+        }
+    }
+
+    function handleImagePreview(file) {
+        if (file && file.type.startsWith('image/')) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const uploadArea = document.getElementById('image-upload-area');
+                const placeholder = uploadArea.querySelector('.upload-placeholder');
+                
+                // Create preview
+                const preview = document.createElement('div');
+                preview.className = 'upload-preview';
+                preview.innerHTML = `
+                    <img src="${e.target.result}" alt="Preview" style="max-height: 200px; border-radius: 8px;">
+                    <div class="mt-2">
+                        <small class="text-success">
+                            <i class="fas fa-check-circle me-1"></i>
+                            ${file.name} (${(file.size / 1024 / 1024).toFixed(2)} MB)
+                        </small>
+                    </div>
+                `;
+                
+                // Replace placeholder with preview
+                placeholder.style.display = 'none';
+                uploadArea.appendChild(preview);
+            };
+            reader.readAsDataURL(file);
+        }
+    }
+
+    function initializeMultiSelectTags() {
+        // Categories
+        initializeTagDisplay('categories', 'selected-categories');
+        // Tags
+        initializeTagDisplay('tags', 'selected-tags');
+        // States
+        initializeTagDisplay('states', 'selected-states');
+    }
+
+    function initializeTagDisplay(fieldName, containerId) {
+        const select = document.querySelector(`select[name="${fieldName}"]`);
+        const container = document.getElementById(containerId);
+        
+        if (select && container) {
+            updateTagDisplay();
+            select.addEventListener('change', updateTagDisplay);
+            
+            function updateTagDisplay() {
+                container.innerHTML = '';
+                const selectedOptions = Array.from(select.selectedOptions);
+                
+                selectedOptions.forEach(option => {
+                    const tag = document.createElement('span');
+                    tag.className = 'tag-item';
+                    tag.innerHTML = `
+                        ${option.text}
+                        <span class="remove" onclick="removeTag('${fieldName}', '${option.value}')">
+                            <i class="fas fa-times"></i>
+                        </span>
+                    `;
+                    container.appendChild(tag);
+                });
+            }
+        }
+    }
+
+    // Global function for removing tags
+    window.removeTag = function(fieldName, value) {
+        const select = document.querySelector(`select[name="${fieldName}"]`);
+        if (select) {
+            const option = select.querySelector(`option[value="${value}"]`);
+            if (option) {
+                option.selected = false;
+                select.dispatchEvent(new Event('change'));
+            }
+        }
+    };
+
+    function initializeTabProgress() {
+        const tabs = document.querySelectorAll('#form-tabs .nav-link');
+        const progressBar = document.getElementById('form-progress');
+        
+        // Set initial progress
+        const progress = (1 / tabs.length) * 100;
+        progressBar.style.width = progress + '%';
+        
+        // Add click event listeners for tab switching and progress updates
+        tabs.forEach((tab, index) => {
+            tab.addEventListener('click', function(e) {
+                e.preventDefault();
+                switchToTab(this, index, tabs.length, progressBar);
+            });
+            
+            // Add keyboard navigation
+            tab.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    switchToTab(this, index, tabs.length, progressBar);
+                }
+                
+                // Arrow key navigation
+                if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') {
+                    e.preventDefault();
+                    const direction = e.key === 'ArrowRight' ? 1 : -1;
+                    const nextIndex = (index + direction + tabs.length) % tabs.length;
+                    const nextTab = tabs[nextIndex];
+                    nextTab.focus();
+                    switchToTab(nextTab, nextIndex, tabs.length, progressBar);
+                }
+            });
+        });
+    }
+    
+    function switchToTab(tab, index, totalTabs, progressBar) {
+        // Update progress
+        const progress = ((index + 1) / totalTabs) * 100;
+        progressBar.style.width = progress + '%';
+        
+        // Show target tab content
+        const targetId = tab.getAttribute('data-mdb-target');
+        showTabContent(targetId);
+        
+        // Update active states
+        updateActiveTab(tab);
+    }
+    
+    function showTabContent(targetId) {
+        // Hide all tab panes
+        const allPanes = document.querySelectorAll('.tab-pane');
+        allPanes.forEach(pane => {
+            pane.classList.remove('show', 'active');
+        });
+        
+        // Show target pane
+        const targetPane = document.querySelector(targetId);
+        if (targetPane) {
+            targetPane.classList.add('show', 'active');
+        }
+    }
+    
+    function updateActiveTab(activeTab) {
+        // Remove active from all tabs
+        const allTabs = document.querySelectorAll('#form-tabs .nav-link');
+        allTabs.forEach(tab => {
+            tab.classList.remove('active');
+            tab.setAttribute('aria-selected', 'false');
+        });
+        
+        // Add active to clicked tab
+        activeTab.classList.add('active');
+        activeTab.setAttribute('aria-selected', 'true');
+    }
+
+    function initializeAutoSave() {
+        const form = document.getElementById('article-form');
+        const status = document.getElementById('auto-save-status');
+        let autoSaveTimeout;
+        
+        if (form && status) {
+            // Listen for form changes
+            form.addEventListener('input', function() {
+                updateAutoSaveStatus('saving');
+                
+                clearTimeout(autoSaveTimeout);
+                autoSaveTimeout = setTimeout(() => {
+                    // Here you would implement actual auto-save to localStorage or server
+                    saveFormData();
+                    updateAutoSaveStatus('saved');
+                }, 2000);
+            });
+        }
+        
+        function updateAutoSaveStatus(state) {
+            const icon = status.querySelector('i');
+            const text = status.querySelector('span');
+            
+            status.className = `auto-save-status ${state}`;
+            
+            switch(state) {
+                case 'saving':
+                    icon.className = 'fas fa-spinner fa-spin';
+                    text.textContent = 'Saving...';
+                    break;
+                case 'saved':
+                    icon.className = 'fas fa-check-circle';
+                    text.textContent = 'Saved';
+                    break;
+                case 'error':
+                    icon.className = 'fas fa-exclamation-circle';
+                    text.textContent = 'Save failed';
+                    break;
+                default:
+                    icon.className = 'fas fa-circle';
+                    text.textContent = 'Ready';
+            }
+        }
+        
+        function saveFormData() {
+            // Save form data to localStorage as backup
+            const formData = new FormData(form);
+            const data = {};
+            
+            for (let [key, value] of formData.entries()) {
+                data[key] = value;
+            }
+            
+            localStorage.setItem('article-form-backup', JSON.stringify(data));
+        }
+        
+        // Load saved data on page load
+        const savedData = localStorage.getItem('article-form-backup');
+        if (savedData && !document.querySelector('input[name="title"]').value) {
+            // Only load if form is empty (new article)
+            try {
+                const data = JSON.parse(savedData);
+                Object.keys(data).forEach(key => {
+                    const field = form.querySelector(`[name="${key}"]`);
+                    if (field && field.type !== 'file') {
+                        field.value = data[key];
+                    }
+                });
+            } catch (e) {
+                console.log('Could not restore form data');
+            }
+        }
+    }
+
+    // Word count for content
+    function updateWordCount() {
+        // This will be called after TinyMCE is initialized
+        if (typeof tinymce !== 'undefined') {
+            const editor = tinymce.get('id_content');
+            if (editor) {
+                const wordCountElement = document.getElementById('word-count');
+                if (wordCountElement) {
+                    const updateCount = () => {
+                        const content = editor.getContent({format: 'text'});
+                        const words = content.trim().split(/\s+/).filter(word => word.length > 0).length;
+                        wordCountElement.textContent = words;
+                    };
+                    
+                    editor.on('input keyup', updateCount);
+                    updateCount(); // Initial count
+                }
+            }
+        }
+    }
+
+    // Initialize word count after a short delay to ensure TinyMCE is loaded
+    setTimeout(updateWordCount, 1000);
+    
+    // Initialize tooltips for help icons
+    initializeTooltips();
+    
+    function initializeTooltips() {
+        const helpIcons = document.querySelectorAll('.help-icon');
+        helpIcons.forEach(icon => {
+            // Simple tooltip implementation
+            icon.addEventListener('mouseenter', function(e) {
+                const tooltip = document.createElement('div');
+                tooltip.className = 'custom-tooltip';
+                tooltip.textContent = this.getAttribute('title');
+                tooltip.style.cssText = `
+                    position: absolute;
+                    background: #151b25;
+                    color: white;
+                    padding: 0.5rem;
+                    border-radius: 4px;
+                    font-size: 0.8rem;
+                    max-width: 200px;
+                    z-index: 1000;
+                    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+                    pointer-events: none;
+                `;
+                
+                document.body.appendChild(tooltip);
+                
+                const rect = this.getBoundingClientRect();
+                tooltip.style.left = (rect.left + rect.width + 10) + 'px';
+                tooltip.style.top = (rect.top - tooltip.offsetHeight / 2 + rect.height / 2) + 'px';
+                
+                this.tooltipElement = tooltip;
+                
+                // Remove title to prevent browser tooltip
+                this.originalTitle = this.getAttribute('title');
+                this.removeAttribute('title');
+            });
+            
+            icon.addEventListener('mouseleave', function() {
+                if (this.tooltipElement) {
+                    this.tooltipElement.remove();
+                }
+                // Restore title
+                if (this.originalTitle) {
+                    this.setAttribute('title', this.originalTitle);
+                }
+            });
+        });
+    }
+});
+
+// Form submission with loading state
+document.addEventListener('submit', function(e) {
+    if (e.target.id === 'article-form') {
+        const submitButtons = document.querySelectorAll('button[type="submit"]');
+        submitButtons.forEach(button => {
+            button.disabled = true;
+            const icon = button.querySelector('i');
+            if (icon) {
+                icon.className = 'fas fa-spinner fa-spin';
+            }
+            
+            setTimeout(() => {
+                if (icon) {
+                    icon.className = 'fas fa-save';
+                }
+                button.disabled = false;
+            }, 3000);
+        });
+    }
 });
 </script>
-{% endblock %} 
+{% endblock %}
