@@ -3,7 +3,7 @@ from django.core.management.base import BaseCommand
 from django.contrib.auth.models import User
 from django.utils.text import slugify
 from django.utils import timezone
-from app.models import Article, Category, Tag, State, UserProfile, ArticleRevision
+from app.models import Content, Category, Tag, State, UserProfile
 
 class Command(BaseCommand):
     help = 'Creates dummy articles for testing purposes'
@@ -28,21 +28,23 @@ class Command(BaseCommand):
             slug = slugify(title)
             
             # Check if article with this slug already exists
-            if Article.objects.filter(slug=slug).exists():
+            if Content.objects.filter(slug=slug).exists():
                 self.stdout.write(self.style.WARNING(f"Article with slug '{slug}' already exists. Skipping."))
                 continue
             
             # Create the article
-            article = Article.objects.create(
+            article = Content.objects.create(
                 title=title,
                 slug=slug,
                 content=self._generate_content(),
                 excerpt=f"This is a sample article about {random.choice(self.sample_topics)} in Northeast India.",
+                content_type='article',
                 author=admin_user,
                 published=True,
                 published_at=timezone.now(),
                 review_status='approved',
-                meta_description=f"Learn about {random.choice(self.sample_topics)} in Northeast India."
+                meta_description=f"Learn about {random.choice(self.sample_topics)} in Northeast India.",
+                type_data={'references': 'Sample references for testing purposes'}
             )
             
             # Add categories, tags, and states
@@ -50,13 +52,7 @@ class Command(BaseCommand):
             article.tags.add(*random.sample(list(tags), k=random.randint(2, 5)))
             article.states.add(*random.sample(list(states), k=random.randint(1, 2)))
             
-            # Create an initial revision
-            ArticleRevision.objects.create(
-                article=article,
-                user=admin_user,
-                content=article.content,
-                comment="Initial version"
-            )
+            # Note: ArticleRevision model has been removed in favor of unified Content model
             
             articles_created += 1
             self.stdout.write(self.style.SUCCESS(f"Created article: {title}"))

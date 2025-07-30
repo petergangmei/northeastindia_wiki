@@ -1,8 +1,7 @@
 from django.contrib import admin
 from django.utils.html import format_html
 from .models import (
-    UserProfile, Category, Tag, State, Article, ArticleRevision, 
-    Personality, CulturalElement, MediaItem, Comment, Contribution, Notification
+    UserProfile, Category, Tag, State, MediaItem, Comment, Contribution, Notification, Content
 )
 
 class TimeStampedModelAdmin(admin.ModelAdmin):
@@ -41,109 +40,6 @@ class StateAdmin(TimeStampedModelAdmin):
     list_filter = ('created_at',)
 
 
-class ArticleRevisionInline(admin.TabularInline):
-    model = ArticleRevision
-    extra = 0
-    readonly_fields = ('user', 'created_at')
-    fields = ('user', 'comment', 'created_at')
-    can_delete = False
-
-
-@admin.register(Article)
-class ArticleAdmin(TimeStampedModelAdmin):
-    list_display = ('title', 'author', 'review_status', 'published', 'published_at')
-    list_filter = ('review_status', 'published', 'published_at', 'created_at', 'categories', 'states')
-    search_fields = ('title', 'content', 'excerpt', 'author__username')
-    prepopulated_fields = {'slug': ('title',)}
-    filter_horizontal = ('categories', 'tags', 'states')
-    inlines = [ArticleRevisionInline]
-    readonly_fields = ('created_at', 'updated_at', 'last_edited_by')
-    
-    fieldsets = (
-        (None, {
-            'fields': ('title', 'slug', 'author', 'content', 'excerpt')
-        }),
-        ('Publication', {
-            'fields': ('published', 'published_at')
-        }),
-        ('Categorization', {
-            'fields': ('categories', 'tags', 'states')
-        }),
-        ('SEO and Media', {
-            'fields': ('meta_description', 'featured_image')
-        }),
-        ('Review', {
-            'fields': ('review_status', 'review_notes')
-        }),
-        ('Additional Info', {
-            'fields': ('references', 'last_edited_by', 'created_at', 'updated_at')
-        }),
-    )
-    
-    def save_model(self, request, obj, form, change):
-        if change:
-            obj.last_edited_by = request.user
-        super().save_model(request, obj, form, change)
-
-
-@admin.register(Personality)
-class PersonalityAdmin(TimeStampedModelAdmin):
-    list_display = ('title', 'author', 'birth_date', 'death_date', 'review_status')
-    list_filter = ('review_status', 'published', 'birth_date', 'death_date', 'states')
-    search_fields = ('title', 'content', 'excerpt', 'birth_place', 'notable_works')
-    prepopulated_fields = {'slug': ('title',)}
-    filter_horizontal = ('categories', 'tags', 'states')
-    
-    fieldsets = (
-        (None, {
-            'fields': ('title', 'slug', 'author', 'content', 'excerpt')
-        }),
-        ('Biographical Info', {
-            'fields': ('birth_date', 'death_date', 'birth_place', 'notable_works')
-        }),
-        ('Publication', {
-            'fields': ('published', 'published_at')
-        }),
-        ('Categorization', {
-            'fields': ('categories', 'tags', 'states')
-        }),
-        ('SEO and Media', {
-            'fields': ('meta_description', 'featured_image')
-        }),
-        ('Review', {
-            'fields': ('review_status', 'review_notes')
-        }),
-    )
-
-
-@admin.register(CulturalElement)
-class CulturalElementAdmin(TimeStampedModelAdmin):
-    list_display = ('title', 'element_type', 'author', 'seasonal', 'review_status')
-    list_filter = ('element_type', 'seasonal', 'review_status', 'published', 'states')
-    search_fields = ('title', 'content', 'excerpt', 'season_or_period')
-    prepopulated_fields = {'slug': ('title',)}
-    filter_horizontal = ('categories', 'tags', 'states')
-    
-    fieldsets = (
-        (None, {
-            'fields': ('title', 'slug', 'author', 'content', 'excerpt')
-        }),
-        ('Cultural Info', {
-            'fields': ('element_type', 'seasonal', 'season_or_period')
-        }),
-        ('Publication', {
-            'fields': ('published', 'published_at')
-        }),
-        ('Categorization', {
-            'fields': ('categories', 'tags', 'states')
-        }),
-        ('SEO and Media', {
-            'fields': ('meta_description', 'featured_image')
-        }),
-        ('Review', {
-            'fields': ('review_status', 'review_notes')
-        }),
-    )
 
 
 @admin.register(MediaItem)
@@ -208,3 +104,82 @@ class NotificationAdmin(TimeStampedModelAdmin):
     list_filter = ('notification_type', 'read', 'created_at')
     search_fields = ('user__username', 'message')
     readonly_fields = ('created_at',)
+
+
+@admin.register(Content)
+class ContentAdmin(TimeStampedModelAdmin):
+    list_display = ('title', 'content_type', 'author', 'review_status', 'published', 'published_at')
+    list_filter = ('content_type', 'review_status', 'published', 'published_at', 'created_at', 'categories', 'states')
+    search_fields = ('title', 'content', 'excerpt', 'author__username')
+    prepopulated_fields = {'slug': ('title',)}
+    filter_horizontal = ('categories', 'tags', 'states')
+    readonly_fields = ('created_at', 'updated_at', 'last_edited_by')
+    
+    def get_fieldsets(self, request, obj=None):
+        """Dynamic fieldsets based on content type"""
+        base_fieldsets = [
+            (None, {
+                'fields': ('title', 'slug', 'author', 'content_type', 'content', 'excerpt')
+            }),
+            ('Publication', {
+                'fields': ('published', 'published_at')
+            }),
+            ('Categorization', {
+                'fields': ('categories', 'tags', 'states')
+            }),
+            ('SEO and Media', {
+                'fields': ('meta_description', 'featured_image')
+            }),
+            ('Review', {
+                'fields': ('review_status', 'review_notes')
+            }),
+        ]
+        
+        # Add type-specific fieldsets based on content_type
+        if obj and obj.content_type == 'personality':
+            base_fieldsets.insert(-2, ('Personality Data (JSON)', {
+                'fields': ('type_data',),
+                'description': 'Store personality-specific data: {"birth_date": "1963-06-09", "death_date": null, "birth_place": "Kentucky", "notable_works": "..."}'
+            }))
+        elif obj and obj.content_type == 'cultural':
+            base_fieldsets.insert(-2, ('Cultural Data (JSON)', {
+                'fields': ('type_data',),
+                'description': 'Store cultural-specific data: {"element_type": "festival", "seasonal": true, "season_or_period": "Winter"}'
+            }))
+        elif obj and obj.content_type == 'article':
+            base_fieldsets.insert(-2, ('Article Data (JSON)', {
+                'fields': ('type_data',),
+                'description': 'Store article-specific data: {"references": "..."}'
+            }))
+        else:
+            # For new objects or unknown types
+            base_fieldsets.insert(-2, ('Type-Specific Data (JSON)', {
+                'fields': ('type_data',),
+                'description': 'Store type-specific data as JSON. Format depends on content_type.'
+            }))
+        
+        base_fieldsets.append(('Metadata', {
+            'fields': ('last_edited_by', 'created_at', 'updated_at')
+        }))
+        
+        return base_fieldsets
+    
+    def save_model(self, request, obj, form, change):
+        if change:
+            obj.last_edited_by = request.user
+        super().save_model(request, obj, form, change)
+    
+    def get_form(self, request, obj=None, **kwargs):
+        """Customize form based on content type"""
+        form = super().get_form(request, obj, **kwargs)
+        
+        # Add help text for type_data field based on content_type
+        if obj:
+            if obj.content_type == 'personality':
+                form.base_fields['type_data'].help_text = 'Example: {"birth_date": "1963-06-09", "death_date": null, "birth_place": "Owensboro, Kentucky", "notable_works": "Pirates of the Caribbean, Edward Scissorhands"}'
+            elif obj.content_type == 'cultural':
+                form.base_fields['type_data'].help_text = 'Example: {"element_type": "festival", "seasonal": true, "season_or_period": "Winter solstice"}'
+            elif obj.content_type == 'article':
+                form.base_fields['type_data'].help_text = 'Example: {"references": "1. Source A\n2. Source B"}'
+        
+        return form

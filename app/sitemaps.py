@@ -8,7 +8,7 @@ helping search engines efficiently discover and index Northeast India cultural c
 from django.contrib.sitemaps import Sitemap
 from django.urls import reverse
 from django.utils import timezone
-from .models import Article, Category, Tag, State
+from .models import Content, Category, Tag, State
 
 
 class StaticViewSitemap(Sitemap):
@@ -62,7 +62,8 @@ class ArticleSitemap(Sitemap):
 
     def items(self):
         """Return published and approved articles"""
-        return Article.objects.filter(
+        return Content.objects.filter(
+            content_type='article',
             published=True,
             review_status__in=['approved', 'featured']
         ).select_related('author').order_by('-published_at')
@@ -96,13 +97,15 @@ class CategorySitemap(Sitemap):
     def items(self):
         """Return all categories that have published articles"""
         return Category.objects.filter(
-            article_items__published=True,
-            article_items__review_status__in=['approved', 'featured']
+            content_items__content_type='article',
+            content_items__published=True,
+            content_items__review_status__in=['approved', 'featured']
         ).distinct().order_by('name')
 
     def lastmod(self, obj):
         """Return the most recent update time of articles in this category"""
-        latest_article = obj.article_items.filter(
+        latest_article = obj.content_items.filter(
+            content_type='article',
             published=True,
             review_status__in=['approved', 'featured']
         ).order_by('-updated_at').first()
@@ -117,7 +120,8 @@ class CategorySitemap(Sitemap):
 
     def priority(self, obj):
         """Set priority based on number of articles in category"""
-        article_count = obj.article_items.filter(
+        article_count = obj.content_items.filter(
+            content_type='article',
             published=True,
             review_status__in=['approved', 'featured']
         ).count()
@@ -143,13 +147,15 @@ class TagSitemap(Sitemap):
     def items(self):
         """Return tags that are used by published articles"""
         return Tag.objects.filter(
-            article_items__published=True,
-            article_items__review_status__in=['approved', 'featured']
+            content_items__content_type='article',
+            content_items__published=True,
+            content_items__review_status__in=['approved', 'featured']
         ).distinct().order_by('name')
 
     def lastmod(self, obj):
         """Return the most recent update time of articles with this tag"""
-        latest_article = obj.article_items.filter(
+        latest_article = obj.content_items.filter(
+            content_type='article',
             published=True,
             review_status__in=['approved', 'featured']
         ).order_by('-updated_at').first()
@@ -164,7 +170,8 @@ class TagSitemap(Sitemap):
 
     def priority(self, obj):
         """Set priority based on number of articles with this tag"""
-        article_count = obj.article_items.filter(
+        article_count = obj.content_items.filter(
+            content_type='article',
             published=True,
             review_status__in=['approved', 'featured']
         ).count()
@@ -189,8 +196,8 @@ class PersonalitySitemap(Sitemap):
 
     def items(self):
         """Return published personality profiles"""
-        from .models import Personality
-        return Personality.objects.filter(
+        return Content.objects.filter(
+            content_type='personality',
             published=True,
             review_status__in=['approved', 'featured']
         ).order_by('-published_at')
@@ -223,8 +230,8 @@ class CulturalElementSitemap(Sitemap):
 
     def items(self):
         """Return published cultural elements"""
-        from .models import CulturalElement
-        return CulturalElement.objects.filter(
+        return Content.objects.filter(
+            content_type='cultural',
             published=True,
             review_status__in=['approved', 'featured']
         ).order_by('-published_at')
@@ -296,7 +303,8 @@ class SEOCategorySitemap(Sitemap):
                 category = Category.objects.get(slug=category_slug)
                 for state in states:
                     # Check if this combination has published articles
-                    article_count = Article.objects.filter(
+                    article_count = Content.objects.filter(
+                        content_type='article',
                         categories=category,
                         states=state,
                         published=True,

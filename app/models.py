@@ -178,310 +178,14 @@ class ContentItem(TimeStampedModel):
         super().save(*args, **kwargs)
 
 
-class Article(ContentItem):
-    """
-    Main content type for general articles
-    """
-    references = models.TextField(blank=True, help_text="Sources and references")
-    last_edited_by = models.ForeignKey(User, null=True, blank=True, on_delete=models.SET_NULL, related_name='edited_articles')
-    
-    def get_absolute_url(self):
-        """
-        Generate SEO-optimized URL based on primary category and state if available
-        Falls back to generic URL structure if no specific context
-        """
-        # Get primary category and state for URL generation
-        primary_category = self.categories.first()
-        primary_state = self.states.first()
-        
-        # Try to generate SEO-friendly URL based on category
-        if primary_category and primary_state:
-            category_slug = primary_category.slug
-            state_slug = primary_state.slug
-            
-            # Map categories to URL patterns - enhanced mapping
-            category_url_map = {
-                'personalities': 'app:seo-personalities-detail',
-                'culture': 'app:seo-culture-detail',
-                'festivals': 'app:seo-festivals-detail',
-                'places': 'app:seo-places-detail',
-                'heritage': 'app:seo-heritage-detail',
-                'history': 'app:seo-history-detail',
-                'traditional-crafts': 'app:seo-crafts-detail',
-                'traditional-arts': 'app:seo-crafts-detail',  # Alias for crafts
-                'food': 'app:seo-food-detail',
-                'cuisine': 'app:seo-food-detail',  # Alias for food
-                'music': 'app:seo-music-detail',
-                'folk-music': 'app:seo-music-detail',  # Alias for music
-                'dance': 'app:seo-dance-detail',
-                'literature': 'app:seo-literature-detail',
-                'tribal-culture': 'app:seo-culture-detail',  # Alias for culture
-                'historical-sites': 'app:seo-heritage-detail',  # Alias for heritage
-            }
-            
-            url_name = category_url_map.get(category_slug)
-            if url_name:
-                try:
-                    return reverse(url_name, kwargs={
-                        'state_slug': state_slug,
-                        'slug': self.slug
-                    })
-                except:
-                    pass
-        
-        # If we have a category but no state, try category-only URLs
-        elif primary_category:
-            category_slug = primary_category.slug
-            
-            # For certain categories, we can still generate good URLs without state
-            category_only_patterns = {
-                'personalities': f'/personalities/{self.slug}/',
-                'culture': f'/culture/{self.slug}/',
-                'festivals': f'/festivals/{self.slug}/',
-                'places': f'/places/{self.slug}/',
-                'heritage': f'/heritage/{self.slug}/',
-                'traditional-crafts': f'/traditional-crafts/{self.slug}/',
-            }
-            
-            category_url = category_only_patterns.get(category_slug)
-            if category_url:
-                return category_url
-        
-        # Fallback to original URL structure
-        return reverse('app:article-detail', kwargs={'slug': self.slug})
-    
-    def get_seo_url(self):
-        """
-        Get the SEO-optimized URL for this article
-        Returns the new URL structure if conditions are met
-        """
-        return self.get_absolute_url()
-    
-    def get_canonical_url(self):
-        """
-        Get canonical URL for SEO purposes
-        Always returns the SEO-optimized URL
-        """
-        return self.get_absolute_url()
-    
-    def get_breadcrumb_data(self):
-        """
-        Generate breadcrumb data for SEO structured data
-        """
-        breadcrumbs = [
-            {'name': 'Home', 'url': '/'},
-            {'name': 'Northeast India', 'url': '/northeast-india/'}
-        ]
-        
-        # Add state if available
-        primary_state = self.states.first()
-        if primary_state:
-            breadcrumbs.append({
-                'name': primary_state.name,
-                'url': f'/states/{primary_state.slug}/'
-            })
-        
-        # Add category if available
-        primary_category = self.categories.first()
-        if primary_category:
-            category_name = primary_category.name.title()
-            if primary_state:
-                breadcrumbs.append({
-                    'name': f'{category_name} in {primary_state.name}',
-                    'url': f'/{primary_category.slug}/{primary_state.slug}/'
-                })
-            else:
-                breadcrumbs.append({
-                    'name': category_name,
-                    'url': f'/{primary_category.slug}/'
-                })
-        
-        # Add current article
-        breadcrumbs.append({
-            'name': self.title,
-            'url': self.get_absolute_url()
-        })
-        
-        return breadcrumbs
-    
-    def get_seo_title(self):
-        """
-        Generate SEO-optimized title for the article
-        """
-        components = [self.title]
-        
-        # Add state context
-        primary_state = self.states.first()
-        if primary_state:
-            components.append(primary_state.name)
-        
-        # Add category context
-        primary_category = self.categories.first()
-        if primary_category:
-            components.append(primary_category.name.title())
-        
-        # Add regional context
-        components.append('Northeast India')
-        
-        return ' | '.join(components)
-    
-    def get_seo_description(self):
-        """
-        Generate SEO-optimized meta description
-        """
-        if self.meta_description:
-            return self.meta_description
-        
-        # Fallback to excerpt or truncated content
-        if self.excerpt:
-            return self.excerpt[:155] + '...' if len(self.excerpt) > 155 else self.excerpt
-        
-        # Generate from content (strip HTML)
-        import re
-        clean_content = re.sub(r'<[^>]+>', '', self.content)
-        return (clean_content[:150] + '...') if len(clean_content) > 150 else clean_content
 
 
-class ArticleRevision(TimeStampedModel):
-    """
-    Revision history for articles
-    """
-    article = models.ForeignKey(Article, on_delete=models.CASCADE, related_name='revisions')
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='article_revisions')
-    content = models.TextField()
-    comment = models.CharField(max_length=255, blank=True, help_text="Brief explanation of the changes")
-    
-    class Meta:
-        ordering = ['-created_at']
-    
-    def __str__(self):
-        return f"Revision of {self.article.title} at {self.created_at}"
 
 
-class PendingEdit(TimeStampedModel):
-    """
-    Stores pending edits for already approved articles
-    """
-    article = models.OneToOneField(Article, on_delete=models.CASCADE, related_name='pending_edit')
-    title = models.CharField(max_length=255, blank=True)
-    content = HTMLField()
-    excerpt = models.TextField(blank=True)
-    meta_description = models.CharField(max_length=160, blank=True)
-    references = models.TextField(blank=True)
-    featured_image = models.ImageField(upload_to='content/pending/', blank=True, null=True)
-    
-    # Relationships - stored as IDs to avoid M2M complexity
-    categories_ids = models.JSONField(default=list, blank=True)
-    tags_ids = models.JSONField(default=list, blank=True)
-    states_ids = models.JSONField(default=list, blank=True)
-    
-    # Edit metadata
-    editor = models.ForeignKey(User, on_delete=models.CASCADE, related_name='pending_edits')
-    revision_comment = models.CharField(max_length=255, blank=True, help_text="Brief explanation of the changes")
-    
-    def __str__(self):
-        return f"Pending edit for {self.article.title}"
-    
-    def apply_edit(self):
-        """Apply this pending edit to the article"""
-        # Store original values for reverting if needed
-        original_review_status = self.article.review_status
-        
-        # Update basic fields
-        if self.title:
-            self.article.title = self.title
-        self.article.content = self.content
-        self.article.excerpt = self.excerpt
-        self.article.meta_description = self.meta_description
-        self.article.references = self.references
-        
-        # Update featured image if provided
-        if self.featured_image:
-            # If there was a previous image, mark it for deletion or archive it
-            if self.article.featured_image:
-                pass  # Handle old image if needed
-            
-            # Set the new image
-            self.article.featured_image = self.featured_image
-        
-        # Update the article's last_edited_by
-        self.article.last_edited_by = self.editor
-        
-        # Set review status back to pending
-        self.article.review_status = 'pending'
-        
-        # Save the article
-        self.article.save()
-        
-        # Update M2M relationships if IDs are provided
-        if self.categories_ids:
-            self.article.categories.clear()
-            categories = Category.objects.filter(id__in=self.categories_ids)
-            self.article.categories.add(*categories)
-            
-        if self.tags_ids:
-            self.article.tags.clear()
-            tags = Tag.objects.filter(id__in=self.tags_ids)
-            self.article.tags.add(*tags)
-            
-        if self.states_ids:
-            self.article.states.clear()
-            states = State.objects.filter(id__in=self.states_ids)
-            self.article.states.add(*states)
-        
-        # Create a revision record
-        ArticleRevision.objects.create(
-            article=self.article,
-            user=self.editor,
-            content=self.content,
-            comment=self.revision_comment or "Applied pending edit"
-        )
-        
-        # Delete this pending edit
-        self.delete()
-        
-        return True
 
 
-class Personality(ContentItem):
-    """
-    Content type for notable personalities
-    """
-    birth_date = models.DateField(null=True, blank=True)
-    death_date = models.DateField(null=True, blank=True)
-    birth_place = models.CharField(max_length=255, blank=True)
-    notable_works = models.TextField(blank=True)
-    
-    class Meta:
-        verbose_name_plural = 'Personalities'
-    
-    def get_absolute_url(self):
-        return reverse('personality-detail', kwargs={'slug': self.slug})
 
 
-class CulturalElement(ContentItem):
-    """
-    Content type for cultural elements like festivals, traditions, etc.
-    """
-    element_type = models.CharField(max_length=50, 
-        choices=(
-            ('festival', 'Festival'),
-            ('tradition', 'Tradition'),
-            ('art_form', 'Art Form'),
-            ('craft', 'Craft'),
-            ('cuisine', 'Cuisine'),
-            ('attire', 'Traditional Attire'),
-            ('music', 'Music'),
-            ('dance', 'Dance'),
-            ('language', 'Language'),
-            ('other', 'Other'),
-        )
-    )
-    seasonal = models.BooleanField(default=False, help_text="Is this element seasonal or periodic?")
-    season_or_period = models.CharField(max_length=100, blank=True, help_text="If seasonal, specify when it occurs")
-    
-    def get_absolute_url(self):
-        return reverse('cultural-element-detail', kwargs={'slug': self.slug})
 
 
 class MediaItem(TimeStampedModel):
@@ -612,3 +316,221 @@ class Notification(TimeStampedModel):
     
     def __str__(self):
         return f"{self.notification_type} for {self.user.username}"
+
+
+class Content(TimeStampedModel):
+    """
+    Unified content model for all content types (articles, personalities, cultural elements)
+    Optimized for scalability and performance
+    """
+    CONTENT_TYPES = (
+        ('article', 'Article'),
+        ('personality', 'Personality'),
+        ('cultural', 'Cultural Element'),
+    )
+    
+    REVIEW_STATUS_CHOICES = (
+        ('draft', 'Draft'),
+        ('pending', 'Pending Review'),
+        ('approved', 'Approved'),
+        ('rejected', 'Rejected'),
+        ('featured', 'Featured'),
+    )
+    
+    # Core fields (used by all content types)
+    title = models.CharField(max_length=255)
+    slug = models.SlugField(max_length=280, unique=True)
+    content = HTMLField()
+    excerpt = models.TextField(blank=True, help_text="A short summary of the content")
+    content_type = models.CharField(max_length=20, choices=CONTENT_TYPES)
+    
+    # Publishing and status
+    published = models.BooleanField(default=False)
+    published_at = models.DateTimeField(null=True, blank=True)
+    review_status = models.CharField(max_length=20, choices=REVIEW_STATUS_CHOICES, default='draft')
+    review_notes = models.TextField(blank=True)
+    
+    # Relationships
+    author = models.ForeignKey(User, on_delete=models.PROTECT, related_name='content_items')
+    categories = models.ManyToManyField(Category, blank=True, related_name='content_items')
+    tags = models.ManyToManyField(Tag, blank=True, related_name='content_items')
+    states = models.ManyToManyField(State, blank=True, related_name='content_items')
+    
+    # SEO and metadata
+    meta_description = models.CharField(max_length=160, blank=True, help_text="SEO meta description")
+    featured_image = models.ImageField(upload_to='content/', blank=True, null=True)
+    
+    # Type-specific data stored as JSON
+    type_data = models.JSONField(default=dict, blank=True, help_text="Type-specific fields stored as JSON")
+    
+    # Legacy support fields (will be moved to type_data eventually)
+    last_edited_by = models.ForeignKey(User, null=True, blank=True, on_delete=models.SET_NULL, related_name='edited_content')
+    
+    class Meta:
+        ordering = ['-published_at', '-created_at']
+        indexes = [
+            models.Index(fields=['content_type', 'published']),
+            models.Index(fields=['published_at']),
+            models.Index(fields=['review_status']),
+            models.Index(fields=['slug']),
+        ]
+    
+    def __str__(self):
+        return f"{self.title} ({self.get_content_type_display()})"
+    
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            self.slug = slugify(self.title)
+        
+        if self.published and not self.published_at:
+            self.published_at = timezone.now()
+            
+        super().save(*args, **kwargs)
+    
+    def get_absolute_url(self):
+        """
+        Generate URL based on content type and context
+        """
+        # Get primary category and state for URL generation
+        primary_category = self.categories.first()
+        primary_state = self.states.first()
+        
+        # Content type specific URL patterns
+        if self.content_type == 'personality':
+            return reverse('app:personality-detail', kwargs={'slug': self.slug})
+        elif self.content_type == 'cultural':
+            return reverse('app:cultural-element-detail', kwargs={'slug': self.slug})
+        else:  # article or default
+            # Try to generate SEO-friendly URL based on category
+            if primary_category and primary_state:
+                category_slug = primary_category.slug
+                state_slug = primary_state.slug
+                
+                # Map categories to URL patterns
+                category_url_map = {
+                    'personalities': 'app:seo-personalities-detail',
+                    'culture': 'app:seo-culture-detail',
+                    'festivals': 'app:seo-festivals-detail',
+                    'places': 'app:seo-places-detail',
+                    'heritage': 'app:seo-heritage-detail',
+                    'history': 'app:seo-history-detail',
+                    'traditional-crafts': 'app:seo-crafts-detail',
+                    'traditional-arts': 'app:seo-crafts-detail',
+                    'food': 'app:seo-food-detail',
+                    'cuisine': 'app:seo-food-detail',
+                    'music': 'app:seo-music-detail',
+                    'folk-music': 'app:seo-music-detail',
+                    'dance': 'app:seo-dance-detail',
+                    'literature': 'app:seo-literature-detail',
+                    'tribal-culture': 'app:seo-culture-detail',
+                    'historical-sites': 'app:seo-heritage-detail',
+                }
+                
+                url_name = category_url_map.get(category_slug)
+                if url_name:
+                    try:
+                        return reverse(url_name, kwargs={
+                            'state_slug': state_slug,
+                            'slug': self.slug
+                        })
+                    except:
+                        pass
+            
+            # Fallback to basic article URL
+            return reverse('app:article-detail', kwargs={'slug': self.slug})
+    
+    def get_seo_title(self):
+        """Generate SEO-optimized title"""
+        components = [self.title]
+        
+        # Add state context
+        primary_state = self.states.first()
+        if primary_state:
+            components.append(primary_state.name)
+        
+        # Add category context
+        primary_category = self.categories.first()
+        if primary_category:
+            components.append(primary_category.name.title())
+        
+        # Add regional context
+        components.append('Northeast India')
+        
+        return ' | '.join(components)
+    
+    def get_seo_description(self):
+        """Generate SEO-optimized meta description"""
+        if self.meta_description:
+            return self.meta_description
+        
+        # Fallback to excerpt or truncated content
+        if self.excerpt:
+            return self.excerpt[:155] + '...' if len(self.excerpt) > 155 else self.excerpt
+        
+        # Generate from content (strip HTML)
+        import re
+        clean_content = re.sub(r'<[^>]+>', '', self.content)
+        return (clean_content[:150] + '...') if len(clean_content) > 150 else clean_content
+    
+    # Helper methods for type-specific data access
+    @property
+    def birth_date(self):
+        """For personality content type"""
+        if self.content_type == 'personality':
+            birth_date_str = self.type_data.get('birth_date')
+            if birth_date_str:
+                from datetime import datetime
+                return datetime.strptime(birth_date_str, '%Y-%m-%d').date()
+        return None
+    
+    @property
+    def death_date(self):
+        """For personality content type"""
+        if self.content_type == 'personality':
+            death_date_str = self.type_data.get('death_date')
+            if death_date_str:
+                from datetime import datetime
+                return datetime.strptime(death_date_str, '%Y-%m-%d').date()
+        return None
+    
+    @property
+    def birth_place(self):
+        """For personality content type"""
+        if self.content_type == 'personality':
+            return self.type_data.get('birth_place', '')
+        return ''
+    
+    @property
+    def notable_works(self):
+        """For personality content type"""
+        if self.content_type == 'personality':
+            return self.type_data.get('notable_works', '')
+        return ''
+    
+    @property
+    def element_type(self):
+        """For cultural content type"""
+        if self.content_type == 'cultural':
+            return self.type_data.get('element_type', '')
+        return ''
+    
+    @property
+    def seasonal(self):
+        """For cultural content type"""
+        if self.content_type == 'cultural':
+            return self.type_data.get('seasonal', False)
+        return False
+    
+    @property
+    def season_or_period(self):
+        """For cultural content type"""
+        if self.content_type == 'cultural':
+            return self.type_data.get('season_or_period', '')
+        return ''
+    
+    @property
+    def references(self):
+        """For article content type"""
+        if self.content_type == 'article':
+            return self.type_data.get('references', '')
+        return ''

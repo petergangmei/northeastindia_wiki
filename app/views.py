@@ -18,7 +18,10 @@ from difflib import ndiff
 import bleach
 import string
 import random
-from .models import UserProfile, Contribution, Article, ArticleRevision, Category, Tag, State, PendingEdit, Notification
+from .models import UserProfile, Contribution, Content, Category, Tag, State, Notification
+
+# Create alias for backward compatibility since views use Article extensively
+Article = Content
 from .forms import ArticleForm, CustomUserCreationForm
 
 # Notification utility functions
@@ -50,12 +53,14 @@ def home(request):
     # For simplicity, we'll get a random approved and published article
     # In a real implementation, you might have a specific selection process
     article_of_the_day = Article.objects.filter(
+        content_type='article',
         published=True, 
         review_status='approved'
     ).order_by('?').first()
     
     # Get latest articles (for "Trending" section)
     latest_articles = Article.objects.filter(
+        content_type='article',
         published=True, 
         review_status='approved'
     ).order_by('-published_at')[:4]
@@ -67,6 +72,7 @@ def home(request):
     categories_with_counts = []
     for category in categories[:6]:  # Limit to 6 categories
         article_count = Article.objects.filter(
+            content_type='article',
             categories=category,
             published=True,
             review_status='approved'
@@ -190,7 +196,7 @@ def article_list(request):
     """
     List all published articles with filtering options
     """
-    articles = Article.objects.filter(published=True, review_status='approved')
+    articles = Article.objects.filter(content_type='article', published=True, review_status='approved')
     
     # Filtering by category, tag, state, or search query
     category_slug = request.GET.get('category')
@@ -241,10 +247,10 @@ def article_search(request):
     Handle article search with enhanced UI
     """
     query = request.GET.get('q', '')
-    articles = Article.objects.filter(published=True, review_status='approved')
+    articles = Article.objects.filter(content_type='article', published=True, review_status='approved')
     
     if query:
-        # Search in title, content and excerpt
+        # Search in title, content and excerpt across all content types
         articles = articles.filter(
             Q(title__icontains=query) | 
             Q(content__icontains=query) | 
@@ -279,7 +285,7 @@ def article_search_htmx(request):
     articles = None
     
     if query:
-        # Search in title, content and excerpt
+        # Search in title, content and excerpt across all content types
         articles = Article.objects.filter(
             Q(title__icontains=query) | 
             Q(content__icontains=query) | 
@@ -480,12 +486,13 @@ def article_create(request):
             form.save_m2m()
             
             # Create initial revision
-            ArticleRevision.objects.create(
-                article=article,
-                user=request.user,
-                content=article.content,
-                comment="Initial version"
-            )
+            # TODO: Implement revision tracking with new Content model
+            # ArticleRevision.objects.create(
+            #     article=article,
+            #     user=request.user,
+            #     content=article.content,
+            #     comment="Initial version"
+            # )
             
             # Record the contribution
             Contribution.objects.create(
@@ -529,11 +536,12 @@ def article_edit(request, slug):
         return redirect('app:article-detail', slug=article.slug)
     
     # Check if there's already a pending edit for this article
+    # TODO: Implement pending edits with new Content model
     pending_edit = None
-    try:
-        pending_edit = article.pending_edit
-    except:
-        pass
+    # try:
+    #     pending_edit = article.pending_edit
+    # except:
+    #     pass
     
     if request.method == 'POST':
         form = ArticleForm(request.POST, request.FILES, instance=article)
@@ -579,54 +587,37 @@ def article_edit(request, slug):
                 tags_ids = [tag.id for tag in form.cleaned_data.get('tags', [])]
                 states_ids = [state.id for state in form.cleaned_data.get('states', [])]
                 
-                # Create or update the pending edit
-                if pending_edit:
-                    # Update existing pending edit
-                    pending_edit.title = title
-                    pending_edit.content = cleaned_content
-                    pending_edit.excerpt = excerpt
-                    pending_edit.meta_description = meta_description
-                    pending_edit.references = references
-                    pending_edit.categories_ids = categories_ids
-                    pending_edit.tags_ids = tags_ids
-                    pending_edit.states_ids = states_ids
-                    pending_edit.editor = request.user
-                    pending_edit.revision_comment = revision_comment
-                    
-                    # Handle featured image
-                    if 'featured_image' in request.FILES:
-                        pending_edit.featured_image = request.FILES['featured_image']
-                        
-                    pending_edit.save()
-                else:
-                    # Create new pending edit
-                    pending_edit = PendingEdit.objects.create(
-                        article=article,
-                        title=title,
-                        content=cleaned_content,
-                        excerpt=excerpt,
-                        meta_description=meta_description,
-                        references=references,
-                        editor=request.user,
-                        revision_comment=revision_comment,
-                        categories_ids=categories_ids,
-                        tags_ids=tags_ids,
-                        states_ids=states_ids
-                    )
-                    
-                    # Handle featured image
-                    if 'featured_image' in request.FILES:
-                        pending_edit.featured_image = request.FILES['featured_image']
-                        pending_edit.save()
+                # TODO: Implement pending edits with new Content model
+                # For now, directly update the article
+                updated_article = form.save(commit=False)
+                updated_article.last_edited_by = request.user
+                
+                # Clean HTML content
+                allowed_tags = [
+                    'p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'strong', 'em', 
+                    'u', 'a', 'img', 'blockquote', 'code', 'pre', 'ul', 'ol', 'li', 
+                    'table', 'thead', 'tbody', 'tr', 'th', 'td', 'br', 'hr'
+                ]
+                allowed_attrs = {
+                    'a': ['href', 'title', 'target'],
+                    'img': ['src', 'alt', 'title', 'width', 'height'],
+                }
+                updated_article.content = bleach.clean(
+                    updated_article.content, 
+                    tags=allowed_tags, 
+                    attributes=allowed_attrs,
+                    strip=True
+                )
                 
                 # Check if the user is submitting for review
                 submit_for_review = request.POST.get('submit_for_review') == 'true'
                 if submit_for_review:
-                    # Apply the pending edit and set the article to pending review
-                    pending_edit.apply_edit()
-                    messages.success(request, 'Article edit submitted for review!')
-                else:
-                    messages.success(request, 'Draft changes saved! Submit for review when ready.')
+                    updated_article.review_status = 'pending'
+                
+                updated_article.save()
+                form.save_m2m()
+                
+                messages.success(request, 'Article updated successfully!')
                 
                 # Record the contribution
                 Contribution.objects.create(
@@ -687,12 +678,14 @@ def article_edit(request, slug):
                 
                 # Create revision if content changed
                 if original_content != updated_article.content:
-                    ArticleRevision.objects.create(
-                        article=updated_article,
-                        user=request.user,
-                        content=updated_article.content,
-                        comment=revision_comment
-                    )
+                    # TODO: Implement revision tracking with new Content model
+                    # ArticleRevision.objects.create(
+                    #     article=updated_article,
+                    #     user=request.user,
+                    #     content=updated_article.content,
+                    #     comment=revision_comment
+                    # )
+                    pass
                     
                     # Record the contribution
                     Contribution.objects.create(
@@ -734,7 +727,8 @@ def article_edit(request, slug):
             form = ArticleForm(instance=article)
     
     # Get revision history
-    revisions = ArticleRevision.objects.filter(article=article).order_by('-created_at')
+    # TODO: Implement revision tracking with new Content model
+    revisions = []  # ArticleRevision.objects.filter(article=article).order_by('-created_at')
     
     context = {
         'form': form,
@@ -751,7 +745,8 @@ def article_history(request, slug):
     View the revision history of an article
     """
     article = get_object_or_404(Article, slug=slug)
-    revisions = ArticleRevision.objects.filter(article=article).order_by('-created_at')
+    # TODO: Implement revision tracking with new Content model
+    revisions = []  # ArticleRevision.objects.filter(article=article).order_by('-created_at')
     
     context = {
         'article': article,
@@ -765,7 +760,9 @@ def article_revision(request, slug, revision_id):
     View a specific revision of an article
     """
     article = get_object_or_404(Article, slug=slug)
-    revision = get_object_or_404(ArticleRevision, id=revision_id, article=article)
+    # TODO: Implement revision tracking with new Content model
+    # revision = get_object_or_404(ArticleRevision, id=revision_id, article=article)
+    revision = None
     
     context = {
         'article': article,
@@ -777,91 +774,13 @@ def article_revision(request, slug, revision_id):
 def article_compare(request, slug):
     """
     Compare two different revisions of an article
+    TODO: Implement revision comparison with new Content model
     """
     article = get_object_or_404(Article, slug=slug)
     
-    # Get the revision IDs from request parameters
-    from_revision_id = request.GET.get('from_revision')
-    to_revision_id = request.GET.get('to_revision')
-    
-    # Get all revisions for the article for the dropdown
-    all_revisions = article.revisions.all()
-    
-    # If no revisions are specified in the URL, default to the two most recent
-    if not all_revisions.exists() or all_revisions.count() < 2:
-        messages.warning(request, "At least two revisions are needed to compare.")
-        return redirect('app:article-history', slug=slug)
-    
-    if not from_revision_id or not to_revision_id:
-        # Default to comparing the two most recent revisions
-        to_revision = all_revisions.order_by('-created_at')[0]
-        from_revision = all_revisions.order_by('-created_at')[1]
-    else:
-        # Get the specified revisions
-        from_revision = get_object_or_404(ArticleRevision, id=from_revision_id, article=article)
-        to_revision = get_object_or_404(ArticleRevision, id=to_revision_id, article=article)
-    
-    # Simple diff implementation - more sophisticated diffing can be added
-    from difflib import ndiff
-    
-    # Split content by lines for diffing
-    from_lines = from_revision.content.splitlines()
-    to_lines = to_revision.content.splitlines()
-    
-    # Generate diff
-    diff = list(ndiff(from_lines, to_lines))
-    
-    # Format the diff for display
-    content_diff_lines = []
-    line_num_old = 1
-    line_num_new = 1
-    
-    for line in diff:
-        if line.startswith('  '):  # unchanged
-            content_diff_lines.append({
-                'type': 'unchanged',
-                'content': line[2:],
-                'line_num_old': line_num_old,
-                'line_num_new': line_num_new,
-            })
-            line_num_old += 1
-            line_num_new += 1
-        elif line.startswith('- '):  # removed
-            content_diff_lines.append({
-                'type': 'removed',
-                'content': line[2:],
-                'line_num_old': line_num_old,
-                'line_num_new': None,
-            })
-            line_num_old += 1
-        elif line.startswith('+ '):  # added
-            content_diff_lines.append({
-                'type': 'added',
-                'content': line[2:],
-                'line_num_old': None,
-                'line_num_new': line_num_new,
-            })
-            line_num_new += 1
-    
-    # Get categories and tags for each revision if available
-    from_categories = []
-    to_categories = []
-    from_tags = []
-    to_tags = []
-    
-    context = {
-        'article': article,
-        'from_revision': from_revision,
-        'to_revision': to_revision,
-        'all_revisions': all_revisions,
-        'content_diff_lines': content_diff_lines,
-        'from_categories': from_categories,
-        'to_categories': to_categories,
-        'from_tags': from_tags,
-        'to_tags': to_tags,
-    }
-    
-    return render(request, 'articles/article_compare.html', context)
+    # TODO: Implement revision tracking and comparison with new Content model
+    messages.info(request, "Revision comparison is not yet implemented with the new content model.")
+    return redirect('app:article-detail', slug=slug)
 
 def category_list(request):
     """
@@ -872,17 +791,17 @@ def category_list(request):
     
     # Add article count to each category
     for category in main_categories:
-        category.article_count = Article.objects.filter(categories=category, published=True).count()
+        category.article_count = Article.objects.filter(content_type='article', categories=category, published=True).count()
         category.subcategories = Category.objects.filter(parent=category)
         
         # Get the most recent article in this category
-        latest_article = Article.objects.filter(categories=category, published=True).order_by('-published_at').first()
+        latest_article = Article.objects.filter(content_type='article', categories=category, published=True).order_by('-published_at').first()
         category.latest_article = latest_article
     
     # Get popular categories based on article count
     popular_categories = []
     for category in Category.objects.all():
-        category.article_count = Article.objects.filter(categories=category, published=True).count()
+        category.article_count = Article.objects.filter(content_type='article', categories=category, published=True).count()
         if category.article_count > 0:
             popular_categories.append(category)
     
@@ -897,7 +816,7 @@ def category_list(request):
         
         # Add article count to each category
         for category in categories:
-            category.article_count = Article.objects.filter(categories=category, published=True).count()
+            category.article_count = Article.objects.filter(content_type='article', categories=category, published=True).count()
         
         if categories.exists():
             categories_by_letter.append({
@@ -909,7 +828,7 @@ def category_list(request):
     featured_category = None
     if popular_categories:
         featured_category = popular_categories[0]
-        featured_category.article_count = Article.objects.filter(categories=featured_category, published=True).count()
+        featured_category.article_count = Article.objects.filter(content_type='article', categories=featured_category, published=True).count()
         featured_category.subcategories = Category.objects.filter(parent=featured_category)
     
     context = {
@@ -935,7 +854,7 @@ def category_articles(request, slug):
     date_to = request.GET.get('date_to')
     
     # Start with all published articles in this category
-    articles = Article.objects.filter(categories=category, published=True)
+    articles = Article.objects.filter(content_type='article', categories=category, published=True)
     
     # Filter by subcategories if selected
     if selected_subcategories:
@@ -1044,7 +963,7 @@ def tag_list(request):
     
     # Add article count and styling info to each tag
     for tag in tags:
-        tag.count = Article.objects.filter(tags=tag, published=True).count()
+        tag.count = Article.objects.filter(content_type='article', tags=tag, published=True).count()
         
         # Assign a size class based on count for the tag cloud
         if tag.count == 0:
@@ -1101,7 +1020,7 @@ def tag_articles(request, slug):
     date_to = request.GET.get('date_to')
     
     # Start with all published articles with this tag
-    articles = Article.objects.filter(tags=tag, published=True)
+    articles = Article.objects.filter(content_type='article', tags=tag, published=True)
     
     # Filter by categories if selected
     if selected_categories:
@@ -1274,13 +1193,14 @@ def user_contributions(request):
     active_tab = request.GET.get('tab', 'articles')
     
     # Get all articles created by the user
-    user_articles = Article.objects.filter(author=user).order_by('-created_at')
+    user_articles = Article.objects.filter(content_type='article', author=user).order_by('-created_at')
     
     # Get only draft articles
     drafts = user_articles.filter(review_status='draft').order_by('-updated_at')
     
     # Get recent article revisions by the user
-    recent_edits = ArticleRevision.objects.filter(user=user).order_by('-created_at')
+    # TODO: Implement revision tracking with new Content model
+    recent_edits = []  # ArticleRevision.objects.filter(user=user).order_by('-created_at')
     
     # Calculate total contributions
     contributions_count = user_articles.count() + recent_edits.count()
@@ -1360,7 +1280,7 @@ def article_review_queue(request):
     sort = request.GET.get('sort', 'newest')
     
     # Get all pending articles
-    pending_articles = Article.objects.filter(review_status='pending')
+    pending_articles = Article.objects.filter(content_type='article', review_status='pending')
     
     # Apply search if provided
     if query:
@@ -1378,10 +1298,10 @@ def article_review_queue(request):
         pending_articles = pending_articles.order_by('-created_at')
     
     # Get counts for dashboard stats
-    pending_count = Article.objects.filter(review_status='pending').count()
-    approved_count = Article.objects.filter(review_status='approved', published=True).count()
-    rejected_count = Article.objects.filter(review_status='rejected').count()
-    draft_count = Article.objects.filter(review_status='draft').count()
+    pending_count = Article.objects.filter(content_type='article', review_status='pending').count()
+    approved_count = Article.objects.filter(content_type='article', review_status='approved', published=True).count()
+    rejected_count = Article.objects.filter(content_type='article', review_status='rejected').count()
+    draft_count = Article.objects.filter(content_type='article', review_status='draft').count()
     
     # Pagination
     paginator = Paginator(pending_articles, 10)
@@ -1416,7 +1336,8 @@ def article_review(request, slug):
     article = get_object_or_404(Article, slug=slug)
     
     # Get revision history
-    revisions = ArticleRevision.objects.filter(article=article).order_by('-created_at')
+    # TODO: Implement revision tracking with new Content model
+    revisions = []  # ArticleRevision.objects.filter(article=article).order_by('-created_at')
     
     context = {
         'article': article,
@@ -1499,10 +1420,12 @@ def article_review_action(request, slug):
             
             # Check if this is an edit of an already approved article
             was_previously_approved = False
-            previous_revisions = ArticleRevision.objects.filter(article=article).order_by('-created_at')
-            if previous_revisions.count() > 1:
-                # Check if this article was previously approved
-                was_previously_approved = Article.objects.filter(id=article.id, review_status='approved').exists()
+            # TODO: Implement revision tracking with new Content model
+            # previous_revisions = ArticleRevision.objects.filter(article=article).order_by('-created_at')
+            # For now, assume it's a new article
+            # if previous_revisions.count() > 1:
+            #     # Check if this article was previously approved
+            #     was_previously_approved = Article.objects.filter(id=article.id, review_status='approved').exists()
             
             if was_previously_approved:
                 # This is an edit to an already approved article that's being rejected
@@ -1806,6 +1729,7 @@ def state_detail(request, state_slug):
     
     # Get articles related to this state
     articles = Article.objects.filter(
+        content_type='article',
         states=state,
         published=True,
         review_status='approved'
@@ -1816,6 +1740,7 @@ def state_detail(request, state_slug):
     category_counts = {}
     for category in categories:
         count = Article.objects.filter(
+            content_type='article',
             states=state,
             categories=category,
             published=True,
@@ -1840,6 +1765,7 @@ def northeast_overview(request):
     """
     states = State.objects.all().order_by('name')
     featured_articles = Article.objects.filter(
+        content_type='article',
         published=True,
         review_status='featured'
     ).order_by('-published_at')[:6]
@@ -1874,6 +1800,7 @@ def northeast_culture(request):
     Cultural overview of Northeast India
     """
     cultural_articles = Article.objects.filter(
+        content_type='article',
         categories__slug='culture',
         published=True,
         review_status='approved'
@@ -1895,6 +1822,7 @@ def northeast_heritage(request):
     Heritage sites and traditions of Northeast India
     """
     heritage_articles = Article.objects.filter(
+        content_type='article',
         categories__slug='heritage',
         published=True,
         review_status='approved'
@@ -1915,6 +1843,7 @@ def category_articles_list(request, category_slug):
     category = get_object_or_404(Category, slug=category_slug)
     
     articles = Article.objects.filter(
+        content_type='article',
         categories=category,
         published=True,
         review_status='approved'
@@ -1930,6 +1859,7 @@ def category_articles_list(request, category_slug):
     state_counts = {}
     for state in states:
         count = Article.objects.filter(
+            content_type='article',
             categories=category,
             states=state,
             published=True,
@@ -1956,6 +1886,7 @@ def state_category_articles(request, state_slug, category_slug):
     category = get_object_or_404(Category, slug=category_slug)
     
     articles = Article.objects.filter(
+        content_type='article',
         categories=category,
         states=state,
         published=True,
@@ -2008,6 +1939,7 @@ def personalities_landing(request):
     
     # Get featured personalities (latest published)
     featured_personalities = Article.objects.filter(
+        content_type='article',
         categories=personality_category,
         published=True
     ).select_related('author').prefetch_related('categories', 'states')[:6]
@@ -2016,6 +1948,7 @@ def personalities_landing(request):
     personalities_by_state = {}
     for state in states:
         state_personalities = Article.objects.filter(
+            content_type='article',
             categories=personality_category,
             states=state,
             published=True
@@ -2050,6 +1983,7 @@ def culture_landing(request):
     
     # Get featured cultural articles
     featured_culture = Article.objects.filter(
+        content_type='article',
         categories=culture_category,
         published=True
     ).select_related('author').prefetch_related('categories', 'states')[:6]
@@ -2058,6 +1992,7 @@ def culture_landing(request):
     culture_by_state = {}
     for state in states:
         state_culture = Article.objects.filter(
+            content_type='article',
             categories=culture_category,
             states=state,
             published=True
@@ -2092,6 +2027,7 @@ def festivals_landing(request):
     
     # Get featured festivals
     featured_festivals = Article.objects.filter(
+        content_type='article',
         categories=festivals_category,
         published=True
     ).select_related('author').prefetch_related('categories', 'states')[:6]
@@ -2100,6 +2036,7 @@ def festivals_landing(request):
     festivals_by_state = {}
     for state in states:
         state_festivals = Article.objects.filter(
+            content_type='article',
             categories=festivals_category,
             states=state,
             published=True
@@ -2134,6 +2071,7 @@ def places_landing(request):
     
     # Get featured places
     featured_places = Article.objects.filter(
+        content_type='article',
         categories=places_category,
         published=True
     ).select_related('author').prefetch_related('categories', 'states')[:6]
@@ -2142,6 +2080,7 @@ def places_landing(request):
     places_by_state = {}
     for state in states:
         state_places = Article.objects.filter(
+            content_type='article',
             categories=places_category,
             states=state,
             published=True
@@ -2176,6 +2115,7 @@ def heritage_landing(request):
     
     # Get featured heritage sites
     featured_heritage = Article.objects.filter(
+        content_type='article',
         categories=heritage_category,
         published=True
     ).select_related('author').prefetch_related('categories', 'states')[:6]
@@ -2184,6 +2124,7 @@ def heritage_landing(request):
     heritage_by_state = {}
     for state in states:
         state_heritage = Article.objects.filter(
+            content_type='article',
             categories=heritage_category,
             states=state,
             published=True
@@ -2221,6 +2162,7 @@ def seven_sisters(request):
     for state in sister_states:
         # Get the most comprehensive article about this state
         overview = Article.objects.filter(
+            content_type='article',
             states=state,
             published=True
         ).select_related('author').prefetch_related('categories').first()
@@ -2254,6 +2196,7 @@ def personalities_list(request):
     
     if personalities_category:
         articles = Article.objects.filter(
+            content_type='article',
             categories=personalities_category,
             published=True,
             review_status='approved'
@@ -2261,6 +2204,7 @@ def personalities_list(request):
     else:
         # Fallback: filter by content type or title patterns
         articles = Article.objects.filter(
+            content_type='article',
             published=True,
             review_status='approved'
         ).filter(
@@ -2291,6 +2235,7 @@ def culture_list(request):
     
     if culture_category:
         articles = Article.objects.filter(
+            content_type='article',
             categories=culture_category,
             published=True,
             review_status='approved'
@@ -2298,6 +2243,7 @@ def culture_list(request):
     else:
         # Fallback: filter by content patterns
         articles = Article.objects.filter(
+            content_type='article',
             published=True,
             review_status='approved'
         ).filter(

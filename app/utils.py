@@ -237,14 +237,15 @@ def get_enhanced_related_articles(article, limit=6):
     
     Returns articles with scores for better relevance ranking.
     """
-    from .models import Article
+    from .models import Content
     from .templatetags.schema_tags import detect_content_type
     
     if not article.published or article.review_status != 'approved':
         return []
     
     # Get base queryset of published, approved articles excluding current article
-    base_queryset = Article.objects.filter(
+    base_queryset = Content.objects.filter(
+        content_type='article',
         published=True, 
         review_status='approved'
     ).exclude(id=article.id)
@@ -409,7 +410,7 @@ def get_contextual_links_data(article):
     Generate contextual linking data for use in templates.
     Returns structured data for different types of related content.
     """
-    from .models import Article, Personality, CulturalElement, State
+    from .models import Content, State
     from .templatetags.schema_tags import detect_content_type
     
     data = {
@@ -427,7 +428,8 @@ def get_contextual_links_data(article):
     # More from same states
     if article_states:
         for state in article_states[:2]:  # Limit to 2 states to avoid overwhelming
-            state_articles = Article.objects.filter(
+            state_articles = Content.objects.filter(
+                content_type='article',
                 states=state,
                 published=True,
                 review_status='approved'
@@ -442,7 +444,8 @@ def get_contextual_links_data(article):
     # Related personalities (if current article is not about a person)
     if content_type != 'Person' and article_states:
         state_ids = [s.id for s in article_states]
-        related_personalities = Article.objects.filter(
+        related_personalities = Content.objects.filter(
+            content_type='article',
             states__id__in=state_ids,
             published=True,
             review_status='approved'
@@ -461,7 +464,8 @@ def get_contextual_links_data(article):
     # Cultural connections (festivals to traditions, arts to crafts, etc.)
     if content_type in ['Cultural', 'Event'] and article_categories:
         category_ids = [c.id for c in article_categories]
-        cultural_articles = Article.objects.filter(
+        cultural_articles = Content.objects.filter(
+            content_type='article',
             categories__id__in=category_ids,
             published=True,
             review_status='approved'
@@ -485,7 +489,7 @@ def get_discover_more_suggestions(context_type, context_object, limit=5):
     Get discovery suggestions based on context (category page, tag page, etc.).
     Helps users discover related content they might not find otherwise.
     """
-    from .models import Article, Category, Tag
+    from .models import Content, Category, Tag
     from .templatetags.schema_tags import detect_content_type
     
     suggestions = []
@@ -504,7 +508,8 @@ def get_discover_more_suggestions(context_type, context_object, limit=5):
             related_categories.extend(children)
         
         for related_cat in related_categories:
-            article_count = Article.objects.filter(
+            article_count = Content.objects.filter(
+                content_type='article',
                 categories=related_cat,
                 published=True,
                 review_status='approved'
@@ -521,18 +526,20 @@ def get_discover_more_suggestions(context_type, context_object, limit=5):
         tag = context_object
         
         # Find tags that co-occur with this tag
-        articles_with_tag = Article.objects.filter(
+        articles_with_tag = Content.objects.filter(
+            content_type='article',
             tags=tag,
             published=True,
             review_status='approved'
         )
         
         related_tags = Tag.objects.filter(
-            article_items__in=articles_with_tag
+            content_items__in=articles_with_tag
         ).exclude(id=tag.id).distinct()[:limit]
         
         for related_tag in related_tags:
-            article_count = Article.objects.filter(
+            article_count = Content.objects.filter(
+                content_type='article',
                 tags=related_tag,
                 published=True,
                 review_status='approved'

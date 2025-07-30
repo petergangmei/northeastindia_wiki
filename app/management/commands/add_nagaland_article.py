@@ -3,7 +3,7 @@ from django.core.management.base import BaseCommand
 from django.contrib.auth.models import User
 from django.utils.text import slugify
 from django.utils import timezone
-from app.models import Article, Category, Tag, State, UserProfile, ArticleRevision
+from app.models import Content, Category, Tag, State, UserProfile
 
 class Command(BaseCommand):
     help = 'Adds comprehensive Nagaland article with structured Wikipedia-style content'
@@ -18,12 +18,13 @@ class Command(BaseCommand):
         nagaland_state = self._get_or_create_nagaland_state()
         
         # Check if Nagaland article already exists
-        if Article.objects.filter(slug='nagaland').exists():
+        if Content.objects.filter(slug='nagaland').exists():
             self.stdout.write(self.style.WARNING("Nagaland article already exists. Skipping creation."))
             return
         
         # Create Nagaland article
-        article = Article.objects.create(
+        article = Content.objects.create(
+            content_type='article',
             title="Nagaland",
             slug="nagaland",
             content=self._get_nagaland_content(),
@@ -328,12 +329,13 @@ class Command(BaseCommand):
         nagaland_state = self._get_or_create_nagaland_state()
         
         # Check if Nagaland article already exists
-        if Article.objects.filter(slug='nagaland').exists():
+        if Content.objects.filter(slug='nagaland').exists():
             self.stdout.write(self.style.WARNING("Nagaland article already exists. Skipping creation."))
             return
         
         # Create Nagaland article
-        article = Article.objects.create(
+        article = Content.objects.create(
+            content_type='article',
             title="Nagaland",
             slug="nagaland",
             content=self._get_nagaland_content(),

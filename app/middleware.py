@@ -5,7 +5,7 @@ Handles automatic redirects from old URL structure to new SEO-optimized URLs
 from django.shortcuts import redirect, get_object_or_404
 from django.urls import resolve, Resolver404
 from django.http import Http404
-from .models import Article
+from .models import Content
 import re
 
 
@@ -55,9 +55,9 @@ class SEORedirectMiddleware:
         Redirect old article URL to new SEO-optimized URL
         """
         try:
-            article = Article.objects.select_related().prefetch_related(
+            article = Content.objects.select_related().prefetch_related(
                 'categories', 'states'
-            ).get(slug=slug, published=True)
+            ).get(slug=slug, published=True, content_type='article')
             
             # Get the SEO-optimized URL
             seo_url = article.get_absolute_url()
@@ -71,7 +71,7 @@ class SEORedirectMiddleware:
                 
                 return redirect(seo_url, permanent=True)
                 
-        except Article.DoesNotExist:
+        except Content.DoesNotExist:
             # Article doesn't exist, let Django handle the 404
             pass
         except Exception:

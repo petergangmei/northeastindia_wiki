@@ -3,7 +3,7 @@ from django.utils.text import slugify
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
 from tinymce.widgets import TinyMCE
-from .models import Article, ArticleRevision, Category, Tag, State
+from .models import Content, Category, Tag, State
 
 class CustomUserCreationForm(UserCreationForm):
     """
@@ -39,15 +39,16 @@ class ArticleForm(forms.ModelForm):
     )
     
     class Meta:
-        model = Article
+        model = Content
         fields = [
             'title', 'content', 'excerpt', 'categories', 'tags', 
-            'states', 'featured_image', 'meta_description', 'references'
+            'states', 'featured_image', 'meta_description', 'content_type', 'type_data'
         ]
         widgets = {
             'excerpt': forms.Textarea(attrs={'rows': 3}),
             'meta_description': forms.TextInput(attrs={'placeholder': 'Brief description for search engines'}),
-            'references': forms.Textarea(attrs={'rows': 3, 'placeholder': 'List your sources and references here'}),
+            'type_data': forms.Textarea(attrs={'rows': 3, 'placeholder': 'JSON data for type-specific fields (e.g., {"references": "..."})'}),
+            'content_type': forms.Select(choices=Content.CONTENT_TYPES),
         }
     
     def clean_title(self):
@@ -59,10 +60,10 @@ class ArticleForm(forms.ModelForm):
         instance = getattr(self, 'instance', None)
         if instance and instance.pk:
             # Check if any other article has the same slug
-            existing = Article.objects.filter(slug=slug).exclude(pk=instance.pk).exists()
+            existing = Content.objects.filter(slug=slug).exclude(pk=instance.pk).exists()
         else:
             # For new articles, simply check if the slug exists
-            existing = Article.objects.filter(slug=slug).exists()
+            existing = Content.objects.filter(slug=slug).exists()
             
         if existing:
             raise forms.ValidationError("An article with a similar title already exists. Please choose a different title.")

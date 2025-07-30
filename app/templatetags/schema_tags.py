@@ -792,9 +792,10 @@ def truncate_title(title, max_length=60):
 @register.simple_tag
 def get_state_articles(state, exclude_article=None, limit=4):
     """Get articles from a specific state, excluding current article"""
-    from ..models import Article
+    from ..models import Content
     
-    articles = Article.objects.filter(
+    articles = Content.objects.filter(
+        content_type='article',
         states=state,
         published=True,
         review_status='approved'
@@ -809,13 +810,14 @@ def get_state_articles(state, exclude_article=None, limit=4):
 @register.simple_tag 
 def get_personality_articles_from_states(states, exclude_article=None, limit=3):
     """Get personality articles from specific states"""
-    from ..models import Article
+    from ..models import Content
     
     if not states:
         return []
     
     state_ids = [s.id for s in states]
-    articles = Article.objects.filter(
+    articles = Content.objects.filter(
+        content_type='article',
         states__id__in=state_ids,
         published=True,
         review_status='approved'
@@ -835,13 +837,14 @@ def get_personality_articles_from_states(states, exclude_article=None, limit=3):
 @register.simple_tag
 def get_cultural_articles_by_category(categories, exclude_article=None, limit=3):
     """Get cultural/event articles from specific categories"""
-    from ..models import Article
+    from ..models import Content
     
     if not categories:
         return []
     
     category_ids = [c.id for c in categories]
-    articles = Article.objects.filter(
+    articles = Content.objects.filter(
+        content_type='article',
         categories__id__in=category_ids,
         published=True,
         review_status='approved'
@@ -863,9 +866,10 @@ def get_cultural_articles_by_category(categories, exclude_article=None, limit=3)
 @register.simple_tag
 def get_random_articles_by_type(content_type, exclude_article=None, limit=3):
     """Get random articles of a specific content type"""
-    from ..models import Article
+    from ..models import Content
     
-    articles = Article.objects.filter(
+    articles = Content.objects.filter(
+        content_type='article',
         published=True,
         review_status='approved'
     ).exclude(id=exclude_article.id if exclude_article else None).order_by('?')
@@ -883,7 +887,7 @@ def get_random_articles_by_type(content_type, exclude_article=None, limit=3):
 @register.simple_tag
 def suggest_related_categories(current_category, limit=4):
     """Suggest related categories based on hierarchy and co-occurrence"""
-    from ..models import Category, Article
+    from ..models import Category, Content
     
     suggestions = []
     
@@ -902,7 +906,8 @@ def suggest_related_categories(current_category, limit=4):
     # Add article counts to suggestions
     final_suggestions = []
     for category in suggestions[:limit]:
-        article_count = Article.objects.filter(
+        article_count = Content.objects.filter(
+            content_type='article',
             categories=category,
             published=True,
             review_status='approved'
@@ -920,10 +925,11 @@ def suggest_related_categories(current_category, limit=4):
 @register.simple_tag
 def suggest_related_tags(current_tag, limit=5):
     """Suggest tags that co-occur with the current tag"""
-    from ..models import Tag, Article
+    from ..models import Tag, Content
     
     # Get articles that have the current tag
-    articles_with_tag = Article.objects.filter(
+    articles_with_tag = Content.objects.filter(
+        content_type='article',
         tags=current_tag,
         published=True,
         review_status='approved'
@@ -937,13 +943,15 @@ def suggest_related_tags(current_tag, limit=5):
     # Add article counts and co-occurrence info
     suggestions = []
     for tag in related_tags[:limit]:
-        article_count = Article.objects.filter(
+        article_count = Content.objects.filter(
+            content_type='article',
             tags=tag,
             published=True,
             review_status='approved'
         ).count()
         
-        co_occurrence_count = Article.objects.filter(
+        co_occurrence_count = Content.objects.filter(
+            content_type='article',
             tags__in=[current_tag, tag],
             published=True,
             review_status='approved'
@@ -963,7 +971,7 @@ def suggest_related_tags(current_tag, limit=5):
 @register.simple_tag
 def get_cross_state_connections(current_states, exclude_article=None, limit=4):
     """Get articles from other Northeast states for cross-regional discovery"""
-    from ..models import State, Article
+    from ..models import State, Content
     
     if not current_states:
         return []
@@ -975,7 +983,8 @@ def get_cross_state_connections(current_states, exclude_article=None, limit=4):
     
     cross_connections = []
     for state in other_states:
-        articles = Article.objects.filter(
+        articles = Content.objects.filter(
+        content_type='article',
             states=state,
             published=True,
             review_status='approved'
@@ -993,7 +1002,7 @@ def get_cross_state_connections(current_states, exclude_article=None, limit=4):
 @register.simple_tag
 def get_seasonal_content(current_month=None, limit=3):
     """Get seasonal content relevant to the current time or specified month"""
-    from ..models import Article
+    from ..models import Content
     import datetime
     
     if not current_month:
@@ -1025,8 +1034,9 @@ def get_seasonal_content(current_month=None, limit=3):
     for keyword in keywords:
         query |= Q(title__icontains=keyword) | Q(content__icontains=keyword) | Q(tags__name__icontains=keyword)
     
-    seasonal_articles = Article.objects.filter(
+    seasonal_articles = Content.objects.filter(
         query,
+        content_type='article',
         published=True,
         review_status='approved'
     ).distinct().order_by('-published_at')[:limit]
@@ -1043,12 +1053,13 @@ def add_internal_links(content, current_article=None):
     if not content:
         return content
     
-    from ..models import Article, State
+    from ..models import Content, State
     import re
     
     # Get potential link targets
     states = State.objects.all()
-    articles = Article.objects.filter(
+    articles = Content.objects.filter(
+        content_type='article',
         published=True,
         review_status='approved'
     ).exclude(id=current_article.id if current_article else None)[:50]  # Limit for performance

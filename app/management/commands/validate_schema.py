@@ -3,7 +3,7 @@ from django.core.management.base import BaseCommand
 from django.test import RequestFactory
 from django.template.loader import render_to_string
 from django.conf import settings
-from app.models import Article
+from app.models import Content
 
 class Command(BaseCommand):
     help = 'Validate Schema.org structured data for articles'
@@ -22,9 +22,9 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         if options['article_slug']:
-            articles = Article.objects.filter(slug=options['article_slug'], published=True)
+            articles = Content.objects.filter(content_type='article', slug=options['article_slug'], published=True)
         else:
-            articles = Article.objects.filter(published=True)[:5]  # Test first 5 articles
+            articles = Content.objects.filter(content_type='article', published=True)[:5]  # Test first 5 articles
 
         factory = RequestFactory()
         
