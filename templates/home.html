@@ -154,19 +154,23 @@
                 </div>
                 <div class="card-body p-2">
                     {% if categories_with_counts %}
-                        {% for category_data in categories_with_counts %}
-                        <a href="{% url 'app:article-category' slug=category_data.category.slug %}" class="text-decoration-none">
-                            <div class="d-flex align-items-center p-2 rounded hover-bg-light mb-1">
-                                <div class="me-3" style="width: 20px;">
-                                    <i class="fas fa-{% cycle 'book' 'map-marker-alt' 'users' 'landmark' 'music' 'drum' 'utensils' 'mountain' %} text-accent"></i>
-                                </div>
-                                <div class="flex-grow-1">
-                                    <div class="fw-medium small">{{ category_data.category.name }}</div>
-                                    <small class="text-muted">{{ category_data.count }} article{{ category_data.count|pluralize }}</small>
-                                </div>
+                        <div class="row">
+                            {% for category_data in categories_with_counts %}
+                            <div class="col-6">
+                                <a href="{% url 'app:article-category' slug=category_data.category.slug %}" class="text-decoration-none">
+                                    <div class="d-flex align-items-center p-2 rounded hover-bg-light">
+                                        <div class="me-3" style="width: 20px;">
+                                            <i class="fas fa-{% cycle 'book' 'map-marker-alt' 'users' 'landmark' 'music' 'drum' 'utensils' 'mountain' %} text-accent"></i>
+                                        </div>
+                                        <div class="flex-grow-1">
+                                            <div class="fw-medium small">{{ category_data.category.name }}</div>
+                                            <small class="text-muted">{{ category_data.count }} article{{ category_data.count|pluralize }}</small>
+                                        </div>
+                                    </div>
+                                </a>
                             </div>
-                        </a>
-                        {% endfor %}
+                            {% endfor %}
+                        </div>
                     {% else %}
                         <p class="text-muted mb-0 p-2">No categories available yet.</p>
                     {% endif %}
@@ -180,19 +184,23 @@
                     <h3 class="h5 mb-0 text-white"><i class="fas fa-map me-2"></i>Browse by State</h3>
                 </div>
                 <div class="card-body p-2">
-                    {% for state in states %}
-                    <a href="{% url 'app:state-detail' state_slug=state.slug %}" class="text-decoration-none">
-                        <div class="d-flex align-items-center p-2 rounded hover-bg-light mb-1">
-                            <div class="me-3" style="width: 20px;">
-                                <i class="fas fa-map-pin text-primary"></i>
-                            </div>
-                            <div class="flex-grow-1">
-                                <div class="fw-medium small">{{ state.name }}</div>
-                                <small class="text-muted">{{ state.capital }}</small>
-                            </div>
+                    <div class="row">
+                        {% for state in states %}
+                        <div class="col-6">
+                            <a href="{% url 'app:state-detail' state_slug=state.slug %}" class="text-decoration-none">
+                                <div class="d-flex align-items-center p-2 rounded hover-bg-light">
+                                    <div class="me-3" style="width: 20px;">
+                                        <i class="fas fa-map-pin text-primary"></i>
+                                    </div>
+                                    <div class="flex-grow-1">
+                                        <div class="fw-medium small">{{ state.name }}</div>
+                                        <small class="text-muted">{{ state.capital }}</small>
+                                    </div>
+                                </div>
+                            </a>
                         </div>
-                    </a>
-                    {% endfor %}
+                        {% endfor %}
+                    </div>
                 </div>
             </div>
             {% endif %}
