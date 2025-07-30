@@ -7,168 +7,249 @@
 {% block title %}{% get_optimized_home_title latest_articles.count %}{% endblock %}
 
 {% block content %}
-<!-- Main container -->
-<div class="container my-5">
-    <!-- Wiki logo section -->
+<!-- Wikipedia-style Home Page -->
+<div class="container py-3">
+    <!-- Welcome Header -->
     <div class="text-center mb-4">
-        <div class="d-inline-block bg-accent p-3 rounded-circle mb-3">
-            <i class="fas fa-book-open fa-3x text-white"></i>
+        <h1 class="display-6 mb-2">Welcome to Northeast India Wiki</h1>
+        <p class="lead text-muted mb-3">The free encyclopedia of Northeast India that anyone can edit</p>
+        
+        <!-- Site Statistics -->
+        <div class="row justify-content-center mb-4">
+            <div class="col-auto">
+                <div class="d-flex gap-4 text-center small text-muted">
+                    <div>
+                        <strong class="text-primary">{{ total_articles|default:"0" }}</strong>
+                        <div>articles</div>
+                    </div>
+                    <div>
+                        <strong class="text-primary">{{ total_categories|default:"0" }}</strong>
+                        <div>categories</div>
+                    </div>
+                    <div>
+                        <strong class="text-primary">{{ total_contributors|default:"0" }}</strong>
+                        <div>contributors</div>
+                    </div>
+                </div>
+            </div>
         </div>
-        <h1 class="display-5 mb-0">Northeast India Wiki</h1>
-        <p class="text-muted">The Free Encyclopedia of the Northeast</p>
-    </div>
-
-    <!-- Search Bar -->
-    <div class="row justify-content-center mb-5">
-        <div class="col-md-8">
-            <form class="d-flex input-group w-auto w-100">
-                <div class="input-group">
-                    <span class="input-group-text bg-secondary border-0 ps-3">
-                        <i class="fas fa-search text-light"></i>
+        
+        <!-- Enhanced Search Bar -->
+        <div class="row justify-content-center">
+            <div class="col-md-6">
+                <form class="d-flex input-group">
+                    <span class="input-group-text bg-accent border-0">
+                        <i class="fas fa-search text-white"></i>
                     </span>
                     <input type="search" name="q" id="search-input"
-                           class="form-control border-1 shadow-none" 
+                           class="form-control border-0 shadow-sm" 
                            placeholder="Search Northeast India Wiki..." 
                            aria-label="Search"
                            hx-get="{% url 'app:article-search-htmx' %}"
                            hx-trigger="keyup changed delay:500ms, search"
                            hx-target="#search-results"
                            hx-indicator="#search-indicator">
-                    <button class="btn btn-primary px-3" type="button"
+                    <button class="btn btn-primary px-4" type="button"
                             hx-get="{% url 'app:article-search-htmx' %}"
                             hx-include="#search-input"
                             hx-target="#search-results">
                         Search
                     </button>
+                </form>
+                
+                <!-- Search loading indicator -->
+                <div id="search-indicator" class="htmx-indicator text-center mt-2">
+                    <div class="spinner-border spinner-border-sm text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <span class="ms-2 small text-muted">Searching...</span>
                 </div>
-            </form>
-            
-            <!-- Search loading indicator -->
-            <div id="search-indicator" class="htmx-indicator text-center mt-2">
-                <div class="spinner-border spinner-border-sm text-primary" role="status">
-                    <span class="visually-hidden">Loading...</span>
-                </div>
-                <span class="ms-2 small text-muted">Searching...</span>
+                
+                <!-- Search results container -->
+                <div id="search-results"></div>
             </div>
-            
-            <!-- Search results container -->
-            <div id="search-results"></div>
         </div>
     </div>
 
-    <!-- Article of the day -->
-    <div class="mb-5">
-        <h2 class="h4 mb-4">Article of the Day</h2>
-        {% if article_of_the_day %}
-            <div class="card border-0 shadow-sm">
+    <!-- Main Content Grid -->
+    <div class="row g-4">
+        <!-- Left Column -->
+        <div class="col-lg-8">
+            <!-- Featured Article (Article of the Day) -->
+            {% if article_of_the_day %}
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="h5 mb-0"><i class="fas fa-star me-2"></i>Today's Featured Article</h3>
+                </div>
                 <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-start mb-2">
-                        <h3 class="card-title h5">{{ article_of_the_day.title }}</h3>
-                        <span class="text-muted small">
-                            <i class="far fa-star me-1"></i> Featured
-                        </span>
-                    </div>
-                    <p class="card-text mb-2 small">
-                        <span class="text-muted">Last edited: {{ article_of_the_day.updated_at|date:"F j, Y" }} </span>
-                        {% if article_of_the_day.categories.all %}
-                            • <span class="text-muted">Category:</span>
-                            {% for category in article_of_the_day.categories.all|slice:":1" %}
-                                <a href="{% url 'app:article-category' slug=category.slug %}" class="text-decoration-none">{{ category.name }}</a>{% if not forloop.last %}, {% endif %}
-                            {% endfor %}
-                        {% endif %}
-                    </p>
-                    <p class="card-text">{{ article_of_the_day.excerpt|default:article_of_the_day.content|striptags|truncatewords:50 }}</p>
-                    <div class="d-flex justify-content-end">
-                        <a href="{% url 'app:article-detail' slug=article_of_the_day.slug %}" class="btn btn-sm btn-primary">Read More</a>
-                    </div>
-                </div>
-            </div>
-        {% else %}
-            <div class="card border-0 shadow-sm">
-                <div class="card-body text-center py-5">
-                    <i class="fas fa-newspaper fa-3x text-muted mb-3"></i>
-                    <h3 class="h5">No featured article available</h3>
-                    <p class="text-muted">Check back later for our article of the day.</p>
-                </div>
-            </div>
-        {% endif %}
-    </div>
-
-    <!-- Latest Articles section -->
-    <div class="mb-5">
-        <div class="d-flex align-items-center mb-4">
-            <h2 class="h4 mb-0 me-2">Latest Articles</h2>
-        </div>
-        
-        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-4 g-4">
-            {% if latest_articles %}
-                {% for article in latest_articles %}
-                    <div class="col">
-                        <div class="card h-100 border-0 shadow-sm">
-                            <div class="card-body">
-                               
-                                <h5 class="card-title">{{ article.title|truncatechars:40 }}</h5>
-                                <p class="card-text small">{{ article.excerpt|default:article.content|striptags|truncatewords:15 }}</p>
-                                <div class="mt-auto">
-                                    <a href="{% url 'app:article-detail' slug=article.slug %}" class="btn btn-sm btn-outline-primary mt-2 stretched-link">Read Article</a>
-                                </div>
+                    <div class="row">
+                        <div class="col-md-8">
+                            <h4 class="card-title">{{ article_of_the_day.title }}</h4>
+                            <p class="card-text">{{ article_of_the_day.excerpt|default:article_of_the_day.content|striptags|truncatewords:80 }}</p>
+                            <div class="d-flex align-items-center text-muted small mb-2">
+                                <span>Last updated: {{ article_of_the_day.updated_at|date:"F j, Y" }}</span>
+                                {% if article_of_the_day.categories.all %}
+                                    <span class="mx-2">•</span>
+                                    <span>Category: 
+                                        {% for category in article_of_the_day.categories.all|slice:":1" %}
+                                            <a href="{% url 'app:article-category' slug=category.slug %}" class="text-decoration-none">{{ category.name }}</a>
+                                        {% endfor %}
+                                    </span>
+                                {% endif %}
+                            </div>
+                            <a href="{% url 'app:article-detail' slug=article_of_the_day.slug %}" class="btn btn-outline-primary btn-sm">Read full article →</a>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="bg-light rounded p-3 text-center">
+                                <i class="fas fa-image fa-3x text-muted mb-2"></i>
+                                <small class="text-muted">Featured image placeholder</small>
                             </div>
                         </div>
                     </div>
-                {% endfor %}
-            {% else %}
-                <div class="col-12">
-                    <div class="alert alert-light text-center" role="alert">
-                        <i class="fas fa-info-circle me-2"></i> No articles available yet. Check back soon!
-                    </div>
                 </div>
+            </div>
             {% endif %}
-        </div>
-    </div>
 
-    <!-- Thematic categories -->
-    <div class="mb-5">
-        <div class="d-flex align-items-center mb-4">
-            <h2 class="h4 mb-0 me-2">Categories</h2>
-            <i class="fas fa-bookmark text-secondary"></i>
-        </div>
-        
-        <div class="row row-cols-1 row-cols-md-2 g-4">
-            {% if categories_with_counts %}
-                {% for category_data in categories_with_counts %}
-                    <div class="col">
-                        <div class="card border-0 shadow-sm">
-                            <div class="card-body d-flex align-items-center">
-                                <div class="me-3">
-                                    <div class="bg-{% cycle 'accent' 'secondary' %} p-3 rounded-circle">
-                                        <i class="fas fa-{% cycle 'book' 'map-marker-alt' 'users' 'landmark' 'music' 'drum' %} fa-2x text-white"></i>
+
+            <!-- Recent Additions -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-secondary text-white">
+                    <h3 class="h5 mb-0"><i class="fas fa-clock me-2"></i>Recent Additions</h3>
+                </div>
+                <div class="card-body">
+                    {% if latest_articles %}
+                        <div class="row row-cols-1 row-cols-md-2 g-3">
+                            {% for article in latest_articles %}
+                            <div class="col">
+                                <div class="d-flex">
+                                    <div class="flex-shrink-0 me-3">
+                                        <div class="bg-light rounded p-2" style="width: 50px; height: 50px;">
+                                            <i class="fas fa-file-alt fa-lg text-muted"></i>
+                                        </div>
+                                    </div>
+                                    <div class="flex-grow-1">
+                                        <h6 class="mb-1">
+                                            <a href="{% url 'app:article-detail' slug=article.slug %}" class="text-decoration-none">{{ article.title|truncatechars:40 }}</a>
+                                        </h6>
+                                        <p class="text-muted small mb-1">{{ article.excerpt|default:article.content|striptags|truncatewords:10 }}</p>
+                                        <small class="text-muted">{{ article.published_at|date:"M j" }}</small>
                                     </div>
                                 </div>
-                                <div>
-                                    <h5 class="card-title mb-1">{{ category_data.category.name }}</h5>
-                                    <p class="card-text text-muted mb-2 small">{{ category_data.category.description|truncatechars:60 }}</p>
-                                    <p class="mb-0"><strong>{{ category_data.count }}</strong> article{% if category_data.count != 1 %}s{% endif %}</p>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <p class="text-muted mb-0">No recent articles available.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Column -->
+        <div class="col-lg-4">
+            <!-- Browse by Topic -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-primary-dark text-white">
+                    <h3 class="h5 mb-0"><i class="fas fa-th-large me-2"></i>Browse by Topic</h3>
+                </div>
+                <div class="card-body p-2">
+                    {% if categories_with_counts %}
+                        {% for category_data in categories_with_counts %}
+                        <a href="{% url 'app:article-category' slug=category_data.category.slug %}" class="text-decoration-none">
+                            <div class="d-flex align-items-center p-2 rounded hover-bg-light mb-1">
+                                <div class="me-3" style="width: 20px;">
+                                    <i class="fas fa-{% cycle 'book' 'map-marker-alt' 'users' 'landmark' 'music' 'drum' 'utensils' 'mountain' %} text-accent"></i>
+                                </div>
+                                <div class="flex-grow-1">
+                                    <div class="fw-medium small">{{ category_data.category.name }}</div>
+                                    <small class="text-muted">{{ category_data.count }} article{{ category_data.count|pluralize }}</small>
                                 </div>
                             </div>
-                            <a href="{% url 'app:article-category' slug=category_data.category.slug %}" class="stretched-link"></a>
+                        </a>
+                        {% endfor %}
+                    {% else %}
+                        <p class="text-muted mb-0 p-2">No categories available yet.</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Browse by State -->
+            {% if states %}
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-accent text-white">
+                    <h3 class="h5 mb-0"><i class="fas fa-map me-2"></i>Browse by State</h3>
+                </div>
+                <div class="card-body p-2">
+                    {% for state in states %}
+                    <a href="{% url 'app:state-detail' state_slug=state.slug %}" class="text-decoration-none">
+                        <div class="d-flex align-items-center p-2 rounded hover-bg-light mb-1">
+                            <div class="me-3" style="width: 20px;">
+                                <i class="fas fa-map-pin text-primary"></i>
+                            </div>
+                            <div class="flex-grow-1">
+                                <div class="fw-medium small">{{ state.name }}</div>
+                                <small class="text-muted">{{ state.capital }}</small>
+                            </div>
                         </div>
-                    </div>
-                {% endfor %}
-            {% else %}
-                <div class="col-12">
-                    <div class="alert alert-light text-center" role="alert">
-                        <i class="fas fa-info-circle me-2"></i> No categories available yet.
+                    </a>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Community Highlights -->
+            {% if recent_contributors %}
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-secondary text-white">
+                    <h3 class="h5 mb-0"><i class="fas fa-users me-2"></i>Recent Contributors</h3>
+                </div>
+                <div class="card-body">
+                    {% for contributor in recent_contributors %}
+                        <div class="d-flex align-items-center mb-2">
+                            <div class="me-2">
+                                <div class="bg-primary rounded-circle d-flex align-items-center justify-content-center" style="width: 30px; height: 30px;">
+                                    <small class="text-white fw-bold">{{ contributor.first_name|first|default:contributor.username|first|upper }}</small>
+                                </div>
+                            </div>
+                            <div>
+                                <div class="fw-medium small">{{ contributor.get_full_name|default:contributor.username }}</div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                    <div class="mt-3">
+                        <a href="{% url 'app:register' %}" class="btn btn-outline-primary btn-sm w-100">
+                            <i class="fas fa-plus me-1"></i>Join Our Community
+                        </a>
                     </div>
                 </div>
+            </div>
             {% endif %}
-        </div>
-    </div>
 
-    <!-- Wiki logo at the bottom -->
-    <div class="text-center mb-4">
-        <div class="d-inline-block bg-accent p-2 rounded-circle">
-            <i class="fas fa-book-open fa-2x text-white"></i>
+            <!-- How to Contribute -->
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="h5 mb-0"><i class="fas fa-edit me-2"></i>How to Contribute</h3>
+                </div>
+                <div class="card-body">
+                    <ul class="list-unstyled small mb-3">
+                        <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Create new articles</li>
+                        <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Edit existing content</li>
+                        <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Add references and sources</li>
+                        <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Upload images and media</li>
+                    </ul>
+                    <a href="{% url 'app:article-create' %}" class="btn btn-primary btn-sm w-100">
+                        <i class="fas fa-plus me-1"></i>Create Article
+                    </a>
+                </div>
+            </div>
         </div>
     </div>
 </div>
+
+<style>
+.hover-bg-light:hover {
+    background-color: #f8f9fa !important;
+    transition: background-color 0.2s ease;
+}
+</style>
 {% endblock %}

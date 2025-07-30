@@ -47,18 +47,16 @@ def create_notification(user, notification_type, message, content_type='', objec
 
 def home(request):
     """
-    Home page view
+    Enhanced home page view with Wikipedia-style content
     """
-    # Get Article of the Day
-    # For simplicity, we'll get a random approved and published article
-    # In a real implementation, you might have a specific selection process
+    # Get Article of the Day (Featured Article)
     article_of_the_day = Article.objects.filter(
         content_type='article',
         published=True, 
         review_status='approved'
     ).order_by('?').first()
     
-    # Get latest articles (for "Trending" section)
+    # Get latest articles (Recent additions)
     latest_articles = Article.objects.filter(
         content_type='article',
         published=True, 
@@ -70,7 +68,7 @@ def home(request):
     
     # Prepare categories with article counts
     categories_with_counts = []
-    for category in categories[:6]:  # Limit to 6 categories
+    for category in categories[:8]:  # Increased to 8 for better display
         article_count = Article.objects.filter(
             content_type='article',
             categories=category,
@@ -83,10 +81,42 @@ def home(request):
             'count': article_count
         })
     
+    # Get statistics for the site
+    total_articles = Article.objects.filter(
+        content_type='article',
+        published=True,
+        review_status='approved'
+    ).count()
+    
+    total_categories = Category.objects.count()
+    total_contributors = User.objects.filter(profile__isnull=False).count()
+    
+    # Get recent contributors (last 30 days)
+    from datetime import datetime, timedelta
+    recent_contributors = User.objects.filter(
+        contributions__created_at__gte=timezone.now() - timedelta(days=30)
+    ).distinct()[:5]
+    
+    # Did you know facts (random approved articles for interesting facts)
+    did_you_know_articles = Article.objects.filter(
+        content_type='article',
+        published=True,
+        review_status='approved'
+    ).exclude(id=article_of_the_day.id if article_of_the_day else None).order_by('?')[:3]
+    
+    # Get states for state-wise browsing
+    states = State.objects.all()[:8]
+    
     context = {
         'article_of_the_day': article_of_the_day,
         'latest_articles': latest_articles,
-        'categories_with_counts': categories_with_counts
+        'categories_with_counts': categories_with_counts,
+        'total_articles': total_articles,
+        'total_categories': total_categories,
+        'total_contributors': total_contributors,
+        'recent_contributors': recent_contributors,
+        'did_you_know_articles': did_you_know_articles,
+        'states': states,
     }
     
     return render(request, 'home.html', context)
