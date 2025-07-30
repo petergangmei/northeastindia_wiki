@@ -165,18 +165,25 @@
                             <div class="form-text">A brief description for search engines (max 160 characters)</div>
                         </div>
                         
-                        <!-- References field -->
+                        <!-- Hidden content_type field -->
+                        {% if not article %}
+                        <input type="hidden" name="content_type" value="article">
+                        {% else %}
+                        {{ form.content_type.as_hidden }}
+                        {% endif %}
+                        
+                        <!-- Type-specific data (JSON) field -->
                         <div class="mb-3">
-                            <label for="{{ form.references.id_for_label }}" class="form-label">References</label>
-                            {{ form.references }}
-                            {% if form.references.errors %}
+                            <label for="{{ form.type_data.id_for_label }}" class="form-label">Additional Data (JSON)</label>
+                            {{ form.type_data }}
+                            {% if form.type_data.errors %}
                             <div class="invalid-feedback d-block">
-                                {% for error in form.references.errors %}
+                                {% for error in form.type_data.errors %}
                                 {{ error }}
                                 {% endfor %}
                             </div>
                             {% endif %}
-                            <div class="form-text">List your sources and references</div>
+                            <div class="form-text">Optional JSON data for article-specific fields like references: {"references": "1. Source A\n2. Source B"}</div>
                         </div>
                         
                         {% if article %}

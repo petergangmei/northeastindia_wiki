@@ -492,6 +492,7 @@ def article_create(request):
             article = form.save(commit=False)
             article.author = request.user
             article.review_status = 'draft'
+            article.content_type = 'article'  # Ensure content_type is set
             
             # Clean HTML content with bleach to prevent XSS attacks
             allowed_tags = [

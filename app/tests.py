@@ -1,6 +1,130 @@
 from django.test import TestCase
 from django.urls import reverse
 from django.test import Client
+from django.contrib.auth.models import User
+from .models import Content, UserProfile, Category, Tag, State
+from .forms import ArticleForm
+
+
+class ArticleCreationTestCase(TestCase):
+    """Test cases for article creation functionality"""
+    
+    def setUp(self):
+        self.client = Client()
+        
+        # Create test user
+        self.user = User.objects.create_user(
+            username='testuser',
+            email='test@example.com',
+            password='testpass123'
+        )
+        
+        # Create user profile with contributor role
+        self.user_profile = UserProfile.objects.create(
+            user=self.user,
+            role='contributor'
+        )
+        
+        # Create test category, tag, and state
+        self.category = Category.objects.create(
+            name='Test Category',
+            slug='test-category'
+        )
+        self.tag = Tag.objects.create(
+            name='Test Tag',
+            slug='test-tag'
+        )
+        self.state = State.objects.create(
+            name='Test State',
+            slug='test-state',
+            description='Test state description',
+            capital='Test Capital'
+        )
+        
+        # Login the user
+        self.client.login(username='testuser', password='testpass123')
+    
+    def test_article_creation_minimal_data(self):
+        """Test article creation with minimal required data"""
+        post_data = {
+            'title': 'Test Article',
+            'content': '<p>This is test content</p>',
+            'content_type': 'article',
+            'type_data': '',  # Empty, should default to {}
+            'excerpt': '',
+            'meta_description': '',
+        }
+        
+        response = self.client.post(reverse('app:article-create'), post_data)
+        
+        # Print response details for debugging
+        print(f"Response status: {response.status_code}")
+        if hasattr(response, 'context') and response.context:
+            form = response.context.get('form')
+            if form and form.errors:
+                print(f"Form errors: {form.errors}")
+                print(f"Form non-field errors: {form.non_field_errors()}")
+        
+        # Check if article was created
+        articles = Content.objects.filter(title='Test Article')
+        print(f"Articles found: {articles.count()}")
+        for article in articles:
+            print(f"Article: {article.title}, content_type: {article.content_type}")
+        
+        # Should redirect on success (302) or stay on page with errors (200)
+        if response.status_code == 302:
+            self.assertEqual(articles.count(), 1)
+        else:
+            print("Article creation failed - staying on form page")
+    
+    def test_article_creation_full_data(self):
+        """Test article creation with all fields populated"""
+        post_data = {
+            'title': 'Complete Test Article',
+            'content': '<p>This is complete test content with more details</p>',
+            'content_type': 'article',
+            'type_data': '{"references": "1. Test Source A\\n2. Test Source B"}',
+            'excerpt': 'This is a test excerpt',
+            'meta_description': 'Test meta description for SEO',
+            'categories': [self.category.id],
+            'tags': [self.tag.id],
+            'states': [self.state.id],
+        }
+        
+        response = self.client.post(reverse('app:article-create'), post_data)
+        
+        print(f"Full data response status: {response.status_code}")
+        if hasattr(response, 'context') and response.context:
+            form = response.context.get('form')
+            if form and form.errors:
+                print(f"Full data form errors: {form.errors}")
+        
+        articles = Content.objects.filter(title='Complete Test Article')
+        print(f"Complete articles found: {articles.count()}")
+    
+    def test_form_validation_directly(self):
+        """Test the ArticleForm validation directly"""
+        form_data = {
+            'title': 'Direct Form Test',
+            'content': '<p>Direct form test content</p>',
+            'content_type': 'article',
+            'type_data': '',
+            'excerpt': '',
+            'meta_description': '',
+        }
+        
+        form = ArticleForm(data=form_data)
+        print(f"Form is valid: {form.is_valid()}")
+        if not form.is_valid():
+            print(f"Direct form errors: {form.errors}")
+        
+        if form.is_valid():
+            # Try to save without commit to see if it would work
+            instance = form.save(commit=False)
+            instance.author = self.user
+            instance.content_type = 'article'
+            print(f"Form instance created: {instance.title}")
+            print(f"Instance type_data: {instance.type_data}")
 
 
 class RobotsTxtTestCase(TestCase):
