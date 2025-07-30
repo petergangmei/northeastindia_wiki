@@ -6,11 +6,11 @@
 
 /* Color Theme Variables */
 :root {
-    /* New color theme */
-    --primary-color: #647c90; /* Blue Gray */
-    --secondary-color: #746c70; /* Gray */
-    --accent-color: #4e4f50; /* Cool Gray */
-    --light-color: #e2ded0; /* Ivory */
+    /* New warm color theme */
+    --primary-color: #f79489; /* Coral */
+    --secondary-color: #f8afa6; /* Dusty Rose */
+    --accent-color: #fadcd9; /* Rose Quartz */
+    --light-color: #f9f1f0; /* Cream */
     --dark-color: #333333; /* Darker Gray for contrast */
     --text-color: #333333;
     --light-text: #ffffff;
@@ -127,8 +127,8 @@ img {
 }
 
 .btn-primary:hover, .btn-primary:focus {
-    background-color: #536879;
-    border-color: #536879;
+    background-color: #f56c5e;
+    border-color: #f56c5e;
 }
 
 .btn-outline {
@@ -156,12 +156,13 @@ img {
 .btn-accent {
     background-color: var(--accent-color);
     border-color: var(--accent-color);
-    color: white;
+    color: var(--dark-color);
 }
 
 .btn-accent:hover, .btn-accent:focus {
-    background-color: #3d3d3e;
-    border-color: #3d3d3e;
+    background-color: #f7c7be;
+    border-color: #f7c7be;
+    color: var(--dark-color);
 }
 
 /* Header Styles */
@@ -692,6 +693,25 @@ img {
 
 .bg-light {
     background-color: var(--light-color) !important;
+}
+
+/* Bootstrap Override Classes */
+.navbar.bg-primary {
+    background-color: var(--primary-color) !important;
+}
+
+.navbar.bg-secondary {
+    background-color: var(--secondary-color) !important;
+}
+
+.btn.btn-primary {
+    background-color: var(--primary-color) !important;
+    border-color: var(--primary-color) !important;
+}
+
+.btn.btn-secondary {
+    background-color: var(--secondary-color) !important;
+    border-color: var(--secondary-color) !important;
 }
 
 /* Additional styling for components */
