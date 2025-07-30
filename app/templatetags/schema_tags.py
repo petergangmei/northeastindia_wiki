@@ -937,7 +937,7 @@ def suggest_related_tags(current_tag, limit=5):
     
     # Find other tags that appear in these articles
     related_tags = Tag.objects.filter(
-        article_items__in=articles_with_tag
+        content_items__in=articles_with_tag
     ).exclude(id=current_tag.id).distinct()
     
     # Add article counts and co-occurrence info

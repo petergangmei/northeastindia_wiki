@@ -973,11 +973,11 @@ def category_articles(request, slug):
     subcategories = Category.objects.filter(parent=category)
     
     # Get associated tags for this category's articles
-    tags = Tag.objects.filter(article_items__categories=category).distinct()
+    tags = Tag.objects.filter(content_items__categories=category).distinct()
     
     # Get statistics for sidebar
     total_articles = articles.count()
-    contributors = User.objects.filter(article_items__categories=category).distinct()
+    contributors = User.objects.filter(content_items__categories=category).distinct()
     contributors_count = contributors.count()
     last_updated = articles.order_by('-updated_at').values_list('updated_at', flat=True).first()
     
@@ -1128,17 +1128,17 @@ def tag_articles(request, slug):
     is_filtered = bool(selected_categories or date_from or date_to or sort != 'newest')
     
     # Get categories for filtering
-    categories = Category.objects.filter(article_items__tags=tag).distinct()
+    categories = Category.objects.filter(content_items__tags=tag).distinct()
     
     # Get statistics for sidebar
     total_articles = articles.count()
-    contributors = User.objects.filter(article_items__tags=tag).distinct()
+    contributors = User.objects.filter(content_items__tags=tag).distinct()
     contributors_count = contributors.count()
     last_updated = articles.order_by('-updated_at').values_list('updated_at', flat=True).first()
     
     # Get related tags based on co-occurrence in articles
     article_ids = articles.values_list('id', flat=True)
-    related_tags = Tag.objects.filter(article_items__id__in=article_ids).exclude(id=tag.id).distinct()[:10]
+    related_tags = Tag.objects.filter(content_items__id__in=article_ids).exclude(id=tag.id).distinct()[:10]
     
     # Get discovery suggestions for better cross-linking
     tag_suggestions = get_discover_more_suggestions('tag', tag, limit=5)
