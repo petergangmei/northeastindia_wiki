@@ -1,0 +1,138 @@
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+[30/Jul/2025 06:21:52] "GET /wiki/nagaland/ HTTP/1.1" 200 91275
+[30/Jul/2025 06:22:38] "GET /wiki/nagaland/ HTTP/1.1" 200 94472
+[30/Jul/2025 06:22:38] "GET /static/css/main.css HTTP/1.1" 304 0
+[30/Jul/2025 06:23:03] code 400, message Bad request version ('\x00*ªª\x13\x01\x13\x02\x13\x03À,À+Ì©À0À/Ì¨À')
+[30/Jul/2025 06:23:03] You're accessing the development server over HTTPS, but it only supports HTTP.
+[30/Jul/2025 06:23:03] code 400, message Bad request version ('\x8fø1æ¬\x06\x89é+ÅÈí§\x0eÖ\x88Ja-U\\\x08W%;£~-;\x9a\x18/\x00,\x1a\x1a\x13\x01\x13\x02\x13\x03À,À+Ì©À0À/Ì¨À')
+[30/Jul/2025 06:23:03] You're accessing the development server over HTTPS, but it only supports HTTP.
+[30/Jul/2025 06:23:03] code 400, message Bad request version ('jÞ3\x00\x00\x14À')
+[30/Jul/2025 06:23:03] You're accessing the development server over HTTPS, but it only supports HTTP.
+Internal Server Error: /wiki/
+Traceback (most recent call last):
+  File "/Users/petergangmei/Developer/Crossplatform/django/northeastindia_wiki/venv/lib/python3.13/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/Users/petergangmei/Developer/Crossplatform/django/northeastindia_wiki/venv/lib/python3.13/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/Users/petergangmei/Developer/Crossplatform/django/northeastindia_wiki/app/views.py", line 237, in article_list
+    return render(request, 'articles/article_list.html', context)
+  File "/Users/petergangmei/Developer/Crossplatform/django/northeastindia_wiki/venv/lib/python3.13/site-packages/django/shortcuts.py", line 25, in render
+    content = loader.render_to_string(template_name, context, request, using=using)
+  File "/Users/petergangmei/Developer/Crossplatform/django/northeastindia_wiki/venv/lib/python3.13/site-packages/django/template/loader.py", line 62, in render_to_string
+    return template.render(context, request)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "/Users/petergangmei/Developer/Crossplatform/django/northeastindia_wiki/venv/lib/python3.13/site-packages/django/template/backends/django.py", line 107, in render
+    return self.template.render(context)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/Users/petergangmei/Developer/Crossplatform/django/northeastindia_wiki/venv/lib/python3.13/site-packages/django/template/base.py", line 171, in render
+    return self._render(context)
+           ~~~~~~~~~~~~^^^^^^^^^
+  File "/Users/petergangmei/Developer/Crossplatform/django/northeastindia_wiki/venv/lib/python3.13/site-packages/django/template/base.py", line 163, in _render
+    return self.nodelist.render(context)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/Users/petergangmei/Developer/Crossplatform/django/northeastindia_wiki/venv/lib/python3.13/site-packages/django/template/base.py", line 1016, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+                               ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/Users/petergangmei/Developer/Crossplatform/django/northeastindia_wiki/venv/lib/python3.13/site-packages/django/template/base.py", line 977, in render_annotated
+    return self.render(context)
+           ~~~~~~~~~~~^^^^^^^^^
+  File "/Users/petergangmei/Developer/Crossplatform/django/northeastindia_wiki/venv/lib/python3.13/site-packages/django/template/loader_tags.py", line 159, in render
+    return compiled_parent._render(context)
+           ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/Users/petergangmei/Developer/Crossplatform/django/northeastindia_wiki/venv/lib/python3.13/site-packages/django/template/base.py", line 163, in _render
+    return self.nodelist.render(context)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/Users/petergangmei/Developer/Crossplatform/django/northeastindia_wiki/venv/lib/python3.13/site-packages/django/template/base.py", line 1016, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+                               ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/Users/petergangmei/Developer/Crossplatform/django/northeastindia_wiki/venv/lib/python3.13/site-packages/django/template/base.py", line 977, in render_annotated
+    return self.render(context)
+           ~~~~~~~~~~~^^^^^^^^^
+  File "/Users/petergangmei/Developer/Crossplatform/django/northeastindia_wiki/venv/lib/python3.13/site-packages/django/template/loader_tags.py", line 65, in render
+    result = block.nodelist.render(context)
+  File "/Users/petergangmei/Developer/Crossplatform/django/northeastindia_wiki/venv/lib/python3.13/site-packages/django/template/base.py", line 1016, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+                               ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/Users/petergangmei/Developer/Crossplatform/django/northeastindia_wiki/venv/lib/python3.13/site-packages/django/template/base.py", line 977, in render_annotated
+    return self.render(context)
+           ~~~~~~~~~~~^^^^^^^^^
+  File "/Users/petergangmei/Developer/Crossplatform/django/northeastindia_wiki/venv/lib/python3.13/site-packages/django/template/defaulttags.py", line 327, in render
+    return nodelist.render(context)
+           ~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/Users/petergangmei/Developer/Crossplatform/django/northeastindia_wiki/venv/lib/python3.13/site-packages/django/template/base.py", line 1016, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+                               ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/Users/petergangmei/Developer/Crossplatform/django/northeastindia_wiki/venv/lib/python3.13/site-packages/django/template/base.py", line 977, in render_annotated
+    return self.render(context)
+           ~~~~~~~~~~~^^^^^^^^^
+  File "/Users/petergangmei/Developer/Crossplatform/django/northeastindia_wiki/venv/lib/python3.13/site-packages/django/template/library.py", line 321, in render
+    output = self.func(*resolved_args, **resolved_kwargs)
+  File "/Users/petergangmei/Developer/Crossplatform/django/northeastindia_wiki/app/templatetags/schema_tags.py", line 680, in get_optimized_tag_title
+    return f"'{tag.name}' Articles ({article_count}) | NE India Wiki"
+               ^^^^^^^^
+AttributeError: 'str' object has no attribute 'name'
+Internal Server Error: /wiki/
+Traceback (most recent call last):
+  File "/Users/petergangmei/Developer/Crossplatform/django/northeastindia_wiki/venv/lib/python3.13/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/Users/petergangmei/Developer/Crossplatform/django/northeastindia_wiki/venv/lib/python3.13/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/Users/petergangmei/Developer/Crossplatform/django/northeastindia_wiki/app/views.py", line 237, in article_list
+    return render(request, 'articles/article_list.html', context)
+  File "/Users/petergangmei/Developer/Crossplatform/django/northeastindia_wiki/venv/lib/python3.13/site-packages/django/shortcuts.py", line 25, in render
+    content = loader.render_to_string(template_name, context, request, using=using)
+  File "/Users/petergangmei/Developer/Crossplatform/django/northeastindia_wiki/venv/lib/python3.13/site-packages/django/template/loader.py", line 62, in render_to_string
+    return template.render(context, request)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "/Users/petergangmei/Developer/Crossplatform/django/northeastindia_wiki/venv/lib/python3.13/site-packages/django/template/backends/django.py", line 107, in render
+    return self.template.render(context)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/Users/petergangmei/Developer/Crossplatform/django/northeastindia_wiki/venv/lib/python3.13/site-packages/django/template/base.py", line 171, in render
+    return self._render(context)
+           ~~~~~~~~~~~~^^^^^^^^^
+  File "/Users/petergangmei/Developer/Crossplatform/django/northeastindia_wiki/venv/lib/python3.13/site-packages/django/template/base.py", line 163, in _render
+    return self.nodelist.render(context)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/Users/petergangmei/Developer/Crossplatform/django/northeastindia_wiki/venv/lib/python3.13/site-packages/django/template/base.py", line 1016, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+                               ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/Users/petergangmei/Developer/Crossplatform/django/northeastindia_wiki/venv/lib/python3.13/site-packages/django/template/base.py", line 977, in render_annotated
+    return self.render(context)
+           ~~~~~~~~~~~^^^^^^^^^
+  File "/Users/petergangmei/Developer/Crossplatform/django/northeastindia_wiki/venv/lib/python3.13/site-packages/django/template/loader_tags.py", line 159, in render
+    return compiled_parent._render(context)
+           ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/Users/petergangmei/Developer/Crossplatform/django/northeastindia_wiki/venv/lib/python3.13/site-packages/django/template/base.py", line 163, in _render
+    return self.nodelist.render(context)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/Users/petergangmei/Developer/Crossplatform/django/northeastindia_wiki/venv/lib/python3.13/site-packages/django/template/base.py", line 1016, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+                               ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/Users/petergangmei/Developer/Crossplatform/django/northeastindia_wiki/venv/lib/python3.13/site-packages/django/template/base.py", line 977, in render_annotated
+    return self.render(context)
+           ~~~~~~~~~~~^^^^^^^^^
+  File "/Users/petergangmei/Developer/Crossplatform/django/northeastindia_wiki/venv/lib/python3.13/site-packages/django/template/loader_tags.py", line 65, in render
+    result = block.nodelist.render(context)
+  File "/Users/petergangmei/Developer/Crossplatform/django/northeastindia_wiki/venv/lib/python3.13/site-packages/django/template/base.py", line 1016, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+                               ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/Users/petergangmei/Developer/Crossplatform/django/northeastindia_wiki/venv/lib/python3.13/site-packages/django/template/base.py", line 977, in render_annotated
+    return self.render(context)
+           ~~~~~~~~~~~^^^^^^^^^
+  File "/Users/petergangmei/Developer/Crossplatform/django/northeastindia_wiki/venv/lib/python3.13/site-packages/django/template/defaulttags.py", line 327, in render
+    return nodelist.render(context)
+           ~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/Users/petergangmei/Developer/Crossplatform/django/northeastindia_wiki/venv/lib/python3.13/site-packages/django/template/base.py", line 1016, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+                               ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/Users/petergangmei/Developer/Crossplatform/django/northeastindia_wiki/venv/lib/python3.13/site-packages/django/template/base.py", line 977, in render_annotated
+    return self.render(context)
+           ~~~~~~~~~~~^^^^^^^^^
+  File "/Users/petergangmei/Developer/Crossplatform/django/northeastindia_wiki/venv/lib/python3.13/site-packages/django/template/library.py", line 321, in render
+    output = self.func(*resolved_args, **resolved_kwargs)
+  File "/Users/petergangmei/Developer/Crossplatform/django/northeastindia_wiki/app/templatetags/schema_tags.py", line 680, in get_optimized_tag_title
+    return f"'{tag.name}' Articles ({article_count}) | NE India Wiki"
+               ^^^^^^^^
+AttributeError: 'str' object has no attribute 'name'
+[30/Jul/2025 06:24:11] "GET /wiki/?tag=british-india HTTP/1.1" 500 180910

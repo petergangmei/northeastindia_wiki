@@ -13,7 +13,7 @@ from django.utils.encoding import force_bytes, force_str
 from django.contrib.auth.tokens import default_token_generator
 from django.template.loader import render_to_string
 from django.core.mail import send_mail, BadHeaderError
-from django.http import HttpResponse
+from django.http import HttpResponse, Http404
 from difflib import ndiff
 import bleach
 import string
@@ -315,9 +315,13 @@ def article_detail(request, slug, state_slug=None):
     has_review_permission = False
     
     if request.user.is_authenticated:
-        user_profile = get_object_or_404(UserProfile, user=request.user)
+        try:
+            user_profile = request.user.profile
+        except UserProfile.DoesNotExist:
+            user_profile = None
+        
         is_author = article.author == request.user
-        is_editor_or_admin = user_profile.role in ['editor', 'admin'] or request.user.is_staff
+        is_editor_or_admin = (user_profile and user_profile.role in ['editor', 'admin']) or request.user.is_staff
         
         # Article is visible to authenticated users who are the author or editors/admins
         is_visible_to_user = is_visible_to_user or is_author or is_editor_or_admin

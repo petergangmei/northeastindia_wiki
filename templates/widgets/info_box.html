@@ -1,0 +1,316 @@
+{% comment %}
+Wikipedia-style info box widget for articles about places, states, people, etc.
+Usage: {% include 'widgets/info_box.html' with title="Nagaland" type="state" data=info_data %}
+{% endcomment %}
+
+<div class="info-box card border shadow-sm" style="width: 100%; max-width: 350px;">
+    <!-- Info box header -->
+    <div class="card-header bg-light border-bottom p-3">
+        <h5 class="mb-0 fw-bold text-center">{{ title|default:"Information" }}</h5>
+        {% if subtitle %}
+        <p class="text-muted text-center mb-0 small">{{ subtitle }}</p>
+        {% endif %}
+    </div>
+
+    <!-- Info box image -->
+    {% if image %}
+    <div class="text-center p-2 bg-light">
+        <img src="{{ image }}" alt="{{ title }}" class="img-fluid rounded" style="max-height: 200px; object-fit: cover;">
+        {% if image_caption %}
+        <div class="small text-muted mt-1">{{ image_caption }}</div>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    <!-- Info box content -->
+    <div class="card-body p-0">
+        <table class="table table-sm mb-0" style="font-size: 0.9rem;">
+            {% if type == "state" %}
+                <!-- State-specific information -->
+                {% if data.status %}
+                <tr>
+                    <td class="fw-semibold text-muted bg-light px-3 py-2" style="width: 40%;">Status</td>
+                    <td class="px-3 py-2">{{ data.status }}</td>
+                </tr>
+                {% endif %}
+
+                {% if data.capital %}
+                <tr>
+                    <td class="fw-semibold text-muted bg-light px-3 py-2">Capital</td>
+                    <td class="px-3 py-2">
+                        <a href="#" class="text-decoration-none">{{ data.capital }}</a>
+                    </td>
+                </tr>
+                {% endif %}
+
+                {% if data.largest_city %}
+                <tr>
+                    <td class="fw-semibold text-muted bg-light px-3 py-2">Largest city</td>
+                    <td class="px-3 py-2">
+                        <a href="#" class="text-decoration-none">{{ data.largest_city }}</a>
+                    </td>
+                </tr>
+                {% endif %}
+
+                {% if data.districts %}
+                <tr>
+                    <td class="fw-semibold text-muted bg-light px-3 py-2">Districts</td>
+                    <td class="px-3 py-2">{{ data.districts }}</td>
+                </tr>
+                {% endif %}
+
+                {% if data.government %}
+                <tr>
+                    <td class="fw-semibold text-muted bg-light px-3 py-2">Government</td>
+                    <td class="px-3 py-2">
+                        {% for role, person in data.government.items %}
+                        <div><span class="text-muted">• {{ role }}:</span> {{ person }}</div>
+                        {% endfor %}
+                    </td>
+                </tr>
+                {% endif %}
+
+                {% if data.state_legislature %}
+                <tr>
+                    <td class="fw-semibold text-muted bg-light px-3 py-2">State Legislature</td>
+                    <td class="px-3 py-2">{{ data.state_legislature }}</td>
+                </tr>
+                {% endif %}
+
+                {% if data.parliament_seats %}
+                <tr>
+                    <td class="fw-semibold text-muted bg-light px-3 py-2">National Parliament</td>
+                    <td class="px-3 py-2">
+                        {% for seat_type, count in data.parliament_seats.items %}
+                        <div>• {{ seat_type }}: {{ count }}</div>
+                        {% endfor %}
+                    </td>
+                </tr>
+                {% endif %}
+
+                {% if data.high_court %}
+                <tr>
+                    <td class="fw-semibold text-muted bg-light px-3 py-2">High Court</td>
+                    <td class="px-3 py-2">{{ data.high_court }}</td>
+                </tr>
+                {% endif %}
+
+                <!-- Area section -->
+                {% if data.area %}
+                <tr>
+                    <td class="fw-semibold text-muted bg-light px-3 py-2">Area</td>
+                    <td class="px-3 py-2">
+                        {% if data.area.total %}
+                        <div><span class="text-muted">• Total:</span> {{ data.area.total }}</div>
+                        {% endif %}
+                        {% if data.area.rank %}
+                        <div><span class="text-muted">• Rank:</span> {{ data.area.rank }}</div>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endif %}
+
+                {% if data.elevation %}
+                <tr>
+                    <td class="fw-semibold text-muted bg-light px-3 py-2">Elevation</td>
+                    <td class="px-3 py-2">
+                        {% for elevation_type, value in data.elevation.items %}
+                        <div><span class="text-muted">• {{ elevation_type }}:</span> {{ value }}</div>
+                        {% endfor %}
+                    </td>
+                </tr>
+                {% endif %}
+
+                <!-- Population section -->
+                {% if data.population %}
+                <tr>
+                    <td class="fw-semibold text-muted bg-light px-3 py-2">Population</td>
+                    <td class="px-3 py-2">
+                        {% if data.population.total %}
+                        <div><span class="text-muted">• Total:</span> {{ data.population.total }}</div>
+                        {% endif %}
+                        {% if data.population.rank %}
+                        <div><span class="text-muted">• Rank:</span> {{ data.population.rank }}</div>
+                        {% endif %}
+                        {% if data.population.density %}
+                        <div><span class="text-muted">• Density:</span> {{ data.population.density }}</div>
+                        {% endif %}
+                        {% if data.population.urban %}
+                        <div><span class="text-muted">• Urban:</span> {{ data.population.urban }}</div>
+                        {% endif %}
+                        {% if data.population.rural %}
+                        <div><span class="text-muted">• Rural:</span> {{ data.population.rural }}</div>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endif %}
+
+                {% if data.demonym %}
+                <tr>
+                    <td class="fw-semibold text-muted bg-light px-3 py-2">Demonym</td>
+                    <td class="px-3 py-2">{{ data.demonym }}</td>
+                </tr>
+                {% endif %}
+
+                {% if data.languages %}
+                <tr>
+                    <td class="fw-semibold text-muted bg-light px-3 py-2">Languages</td>
+                    <td class="px-3 py-2">
+                        {% for lang_type, languages in data.languages.items %}
+                        <div><span class="text-muted">• {{ lang_type }}:</span> {{ languages }}</div>
+                        {% endfor %}
+                    </td>
+                </tr>
+                {% endif %}
+
+                {% if data.time_zone %}
+                <tr>
+                    <td class="fw-semibold text-muted bg-light px-3 py-2">Time zone</td>
+                    <td class="px-3 py-2">{{ data.time_zone }}</td>
+                </tr>
+                {% endif %}
+
+                {% if data.iso_code %}
+                <tr>
+                    <td class="fw-semibold text-muted bg-light px-3 py-2">ISO 3166 code</td>
+                    <td class="px-3 py-2">{{ data.iso_code }}</td>
+                </tr>
+                {% endif %}
+
+                {% if data.vehicle_registration %}
+                <tr>
+                    <td class="fw-semibold text-muted bg-light px-3 py-2">Vehicle registration</td>
+                    <td class="px-3 py-2">{{ data.vehicle_registration }}</td>
+                </tr>
+                {% endif %}
+
+                {% if data.hdi %}
+                <tr>
+                    <td class="fw-semibold text-muted bg-light px-3 py-2">HDI</td>
+                    <td class="px-3 py-2">
+                        <div>{{ data.hdi.value }} ({{ data.hdi.year }})</div>
+                        {% if data.hdi.rank %}
+                        <div><span class="text-muted">• Rank:</span> {{ data.hdi.rank }}</div>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endif %}
+
+                {% if data.literacy %}
+                <tr>
+                    <td class="fw-semibold text-muted bg-light px-3 py-2">Literacy</td>
+                    <td class="px-3 py-2">{{ data.literacy }}</td>
+                </tr>
+                {% endif %}
+
+                {% if data.sex_ratio %}
+                <tr>
+                    <td class="fw-semibold text-muted bg-light px-3 py-2">Sex ratio</td>
+                    <td class="px-3 py-2">{{ data.sex_ratio }}</td>
+                </tr>
+                {% endif %}
+
+                {% if data.website %}
+                <tr>
+                    <td class="fw-semibold text-muted bg-light px-3 py-2">Website</td>
+                    <td class="px-3 py-2">
+                        <a href="{{ data.website }}" target="_blank" class="text-decoration-none small">
+                            {{ data.website|slice:"8:" }}
+                        </a>
+                    </td>
+                </tr>
+                {% endif %}
+
+            {% elif type == "person" %}
+                <!-- Person-specific information -->
+                {% if data.born %}
+                <tr>
+                    <td class="fw-semibold text-muted bg-light px-3 py-2">Born</td>
+                    <td class="px-3 py-2">{{ data.born }}</td>
+                </tr>
+                {% endif %}
+
+                {% if data.died %}
+                <tr>
+                    <td class="fw-semibold text-muted bg-light px-3 py-2">Died</td>
+                    <td class="px-3 py-2">{{ data.died }}</td>
+                </tr>
+                {% endif %}
+
+                {% if data.occupation %}
+                <tr>
+                    <td class="fw-semibold text-muted bg-light px-3 py-2">Occupation</td>
+                    <td class="px-3 py-2">{{ data.occupation }}</td>
+                </tr>
+                {% endif %}
+
+                {% if data.known_for %}
+                <tr>
+                    <td class="fw-semibold text-muted bg-light px-3 py-2">Known for</td>
+                    <td class="px-3 py-2">{{ data.known_for }}</td>
+                </tr>
+                {% endif %}
+
+            {% else %}
+                <!-- Generic information display -->
+                {% for key, value in data.items %}
+                <tr>
+                    <td class="fw-semibold text-muted bg-light px-3 py-2">{{ key|title }}</td>
+                    <td class="px-3 py-2">{{ value }}</td>
+                </tr>
+                {% endfor %}
+            {% endif %}
+
+            <!-- Coordinates if available -->
+            {% if coordinates %}
+            <tr>
+                <td class="fw-semibold text-muted bg-light px-3 py-2">Coordinates</td>
+                <td class="px-3 py-2">
+                    <small>
+                        <a href="https://www.google.com/maps?q={{ coordinates.lat }},{{ coordinates.lng }}" 
+                           target="_blank" class="text-decoration-none">
+                            {{ coordinates.display }}
+                        </a>
+                    </small>
+                </td>
+            </tr>
+            {% endif %}
+        </table>
+    </div>
+
+    <!-- Footer with source attribution -->
+    <div class="card-footer bg-light text-center py-2">
+        <small class="text-muted">
+            <i class="fas fa-info-circle me-1"></i>
+            Information as of {{ current_date|default:"2024" }}
+        </small>
+    </div>
+</div>
+
+<style>
+.info-box {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+    font-size: 14px;
+    line-height: 1.4;
+}
+
+.info-box .table td {
+    border-top: 1px solid #dee2e6;
+    vertical-align: top;
+}
+
+.info-box .table tr:first-child td {
+    border-top: none;
+}
+
+.info-box .table td:first-child {
+    border-right: 1px solid #dee2e6;
+}
+
+@media (max-width: 768px) {
+    .info-box {
+        max-width: 100%;
+        margin-bottom: 1rem;
+    }
+}
+</style>

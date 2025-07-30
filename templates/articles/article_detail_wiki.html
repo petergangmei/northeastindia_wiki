@@ -1,0 +1,804 @@
+{% extends 'base.html' %}
+{% load schema_tags %}
+{% load social_media_tags %}
+{% load static %}
+
+<!-- Canonical URL for article -->
+{% block canonical_url %}{% article_canonical_url request article %}{% endblock %}
+
+{% block title %}{% get_optimized_article_title article %}{% endblock %}
+
+<!-- Enhanced Article-Specific Meta Tags -->
+{% block meta_description %}{% get_social_description article.title article.excerpt article.categories.all article.states.all %}{% endblock %}
+{% block meta_keywords %}{% get_social_keywords article.title article.categories.all article.states.all article.tags.all %}{% endblock %}
+{% block dc_title %}{% get_optimized_article_title article %}{% endblock %}
+
+<!-- Enhanced Open Graph Article-Specific Tags -->
+{% block og_type %}article{% endblock %}
+{% block og_title %}{% get_optimized_article_title article %} | Northeast India Wiki{% endblock %}
+{% block og_description %}{% get_social_description article.title article.excerpt article.categories.all article.states.all 155 %}{% endblock %}
+{% block og_image %}{% get_social_image article=article %}{% endblock %}
+{% block og_image_alt %}{{ article.title }} - Northeast India Cultural Heritage{% endblock %}
+
+{% block og_article-tags %}
+    <meta property="article:author" content="{{ article.author.get_full_name|default:article.author.username }}">
+    <meta property="article:published_time" content="{{ article.published_at|date:'c' }}">
+    <meta property="article:modified_time" content="{{ article.updated_at|date:'c' }}">
+    <meta property="article:section" content="Northeast India Culture">
+    {% for category in article.categories.all %}
+    <meta property="article:tag" content="{{ category.name }}">
+    {% endfor %}
+    {% for state in article.states.all %}
+    <meta property="article:tag" content="{{ state.name }}">
+    {% endfor %}
+    {% for tag in article.tags.all|slice:":10" %}
+    <meta property="article:tag" content="{{ tag.name }}">
+    {% endfor %}
+    <meta property="og:see_also" content="{{ request.scheme }}://{{ request.get_host }}/articles/">
+{% endblock %}
+
+<!-- Enhanced Twitter Card Article-Specific Tags -->
+{% block twitter_card_type %}summary_large_image{% endblock %}
+{% block twitter_title %}{% get_optimized_article_title article %}{% endblock %}
+{% block twitter_description %}{% get_social_description article.title article.excerpt article.categories.all article.states.all 200 %}{% endblock %}
+{% block twitter_image %}{% get_social_image article=article %}{% endblock %}
+{% block twitter_image_alt %}{{ article.title }} - Northeast India Cultural Heritage{% endblock %}
+{% block twitter_creator %}{% get_twitter_creator article %}{% endblock %}
+
+{% block twitter_additional %}
+    <meta name="twitter:label1" content="Reading time">
+    <meta name="twitter:data1" content="{% get_article_reading_time article %} min read">
+    <meta name="twitter:label2" content="Region">
+    <meta name="twitter:data2" content="{% for state in article.states.all|slice:':2' %}{{ state.name }}{% if not forloop.last %}, {% endif %}{% empty %}Northeast India{% endfor %}">
+{% endblock %}
+
+{% block content %}
+<!-- Wikipedia-style article layout -->
+<div class="wiki-container">
+    <!-- Wikipedia-style header -->
+    <div class="wiki-header">
+        <div class="container-fluid">
+            <!-- Article title with languages -->
+            <div class="d-flex justify-content-between align-items-start mb-2">
+                <h1 class="wiki-title mb-0">{{ article.title }}</h1>
+                <div class="wiki-language-selector">
+                    <span class="badge bg-light text-dark">
+                        <i class="fas fa-globe me-1"></i>
+                        {% get_article_reading_time article %} languages
+                    </span>
+                </div>
+            </div>
+            
+            <!-- Wikipedia-style navigation tabs -->
+            <div class="wiki-tabs border-bottom">
+                <nav class="nav nav-tabs border-0">
+                    <a class="nav-link active" href="#" id="article-tab">Article</a>
+                    <a class="nav-link" href="#" id="talk-tab">Talk</a>
+                </nav>
+                
+                <!-- Article actions -->
+                <div class="wiki-actions d-flex align-items-center">
+                    <nav class="nav">
+                        <a class="nav-link" href="#" id="read-tab">Read</a>
+                        {% if request.user.is_authenticated and request.user == article.author or user_profile.role == 'editor' or user_profile.role == 'admin' %}
+                        <a class="nav-link" href="{% url 'app:article-edit' slug=article.slug %}" id="edit-tab">Edit</a>
+                        <a class="nav-link" href="{% url 'app:article-history' slug=article.slug %}" id="history-tab">View history</a>
+                        {% endif %}
+                    </nav>
+                    
+                    <div class="dropdown ms-3">
+                        <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" id="toolsDropdown" data-bs-toggle="dropdown">
+                            Tools
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="toolsDropdown">
+                            <li><a class="dropdown-item" href="#" onclick="window.print()"><i class="fas fa-print me-2"></i>Print</a></li>
+                            <li><a class="dropdown-item" href="#" onclick="copyToClipboard()"><i class="fas fa-link me-2"></i>Copy link</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="#references"><i class="fas fa-book me-2"></i>References</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Article content area -->
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Main article content -->
+            <div class="col-md-8 col-lg-9">
+                <div class="wiki-content">
+                    <!-- Source attribution -->
+                    <div class="wiki-source mb-3">
+                        <small class="text-muted">
+                            <i class="fas fa-book me-1"></i>
+                            From Northeast India Wiki, the free encyclopedia
+                        </small>
+                    </div>
+
+                    <!-- Coordinates (if available) -->
+                    {% if coordinates %}
+                    <div class="wiki-coordinates text-end mb-3">
+                        <small>
+                            <a href="https://www.google.com/maps?q={{ coordinates.lat }},{{ coordinates.lng }}" 
+                               target="_blank" class="text-decoration-none">
+                                Coordinates: {{ coordinates.display }}
+                            </a>
+                        </small>
+                    </div>
+                    {% endif %}
+
+                    <!-- Article excerpt/lead -->
+                    {% if article.excerpt %}
+                    <div class="wiki-lead mb-4">
+                        <p class="lead">{{ article.excerpt }}</p>
+                    </div>
+                    {% endif %}
+
+                    <!-- Table of Contents -->
+                    <div id="wiki-toc" class="wiki-toc mb-4" style="display: none;">
+                        <div class="card border">
+                            <div class="card-header bg-light py-2">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <strong>Contents</strong>
+                                    <button class="btn btn-sm btn-link p-0" onclick="toggleTOC()" id="toc-toggle">
+                                        [hide]
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="card-body py-2" id="toc-content">
+                                <!-- TOC will be generated by JavaScript -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Main article content -->
+                    <div class="wiki-article-content" id="article-content">
+                        {{ article.content|safe }}
+                    </div>
+
+                    <!-- References section -->
+                    {% if article.references %}
+                    <div class="wiki-references mt-5" id="references">
+                        <h2 class="wiki-section-heading">References</h2>
+                        <div class="references-content">
+                            {{ article.references|linebreaks }}
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <!-- Categories -->
+                    {% if article.categories.exists or article.tags.exists %}
+                    <div class="wiki-categories mt-5 pt-3 border-top">
+                        {% if article.categories.exists %}
+                        <div class="mb-2">
+                            <strong>Categories:</strong>
+                            {% for category in article.categories.all %}
+                            <a href="{% url 'app:article-list' %}?category={{ category.slug }}" class="wiki-category-link">{{ category.name }}</a>{% if not forloop.last %} | {% endif %}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                        
+                        {% if article.tags.exists %}
+                        <div class="mb-2">
+                            <strong>Tags:</strong>
+                            {% for tag in article.tags.all %}
+                            <a href="{% url 'app:article-list' %}?tag={{ tag.slug }}" class="wiki-tag-link">{{ tag.name }}</a>{% if not forloop.last %} | {% endif %}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+
+                    <!-- Article metadata -->
+                    <div class="wiki-metadata mt-4 pt-3 border-top">
+                        <small class="text-muted">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    By {{ article.author.username }} • {{ article.published_at|date:"F j, Y" }}
+                                    {% if article.last_edited_by %}
+                                    <br>Last edited by {{ article.last_edited_by.username }} on {{ article.updated_at|date:"F j, Y" }}
+                                    {% endif %}
+                                </div>
+                                <div class="col-md-6 text-md-end">
+                                    This page was last edited on {{ article.updated_at|date:"j F Y" }}, at {{ article.updated_at|time:"H:i" }}.
+                                </div>
+                            </div>
+                        </small>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Info box sidebar -->
+            <div class="col-md-4 col-lg-3">
+                <div class="wiki-sidebar">
+                    <!-- Info box for states/places -->
+                    {% if article.states.exists and info_box_data %}
+                    {% with article.states.first as state %}
+                    {% include 'widgets/info_box.html' with title=state.name type="state" data=info_box_data coordinates=coordinates %}
+                    {% endwith %}
+                    {% endif %}
+
+                    <!-- Featured image -->
+                    {% if article.featured_image and article.featured_image.name and article.featured_image.name != '' %}
+                    <div class="card border shadow-sm mb-4">
+                        <img src="{{ article.featured_image.url }}" class="card-img-top" alt="{{ article.title }}">
+                        <div class="card-body py-2">
+                            <small class="text-muted">{{ article.title }} - Featured Image</small>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <!-- Related articles -->
+                    {% if related_articles %}
+                    <div class="card border shadow-sm mb-4">
+                        <div class="card-header bg-light py-2">
+                            <h6 class="mb-0">Related Articles</h6>
+                        </div>
+                        <div class="card-body py-2">
+                            {% for related in related_articles|slice:":5" %}
+                            <div class="mb-2">
+                                <a href="{% url 'app:article-detail' slug=related.slug %}" class="text-decoration-none small">
+                                    {{ related.title|truncatechars:50 }}
+                                </a>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <!-- More from State Widget -->
+                    {% for state_data in contextual_data.more_from_states %}
+                    {% include 'widgets/more_from_state.html' with state=state_data.state state_articles=state_data.articles %}
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Wikipedia-style CSS -->
+<style>
+.wiki-container {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+    line-height: 1.6;
+}
+
+.wiki-header {
+    background: #f8f9fa;
+    border-bottom: 1px solid #ddd;
+    padding: 1rem 0 0;
+}
+
+.wiki-title {
+    font-size: 2.2rem;
+    font-weight: 400;
+    color: #000;
+    border-bottom: 3px solid #a2a9b1;
+    padding-bottom: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.wiki-language-selector {
+    margin-top: 0.5rem;
+}
+
+.wiki-tabs {
+    background: #f8f9fa;
+    padding: 0.5rem 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.wiki-tabs .nav-link {
+    color: #0645ad;
+    text-decoration: none;
+    padding: 0.25rem 0.75rem;
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: 3px 3px 0 0;
+}
+
+.wiki-tabs .nav-link.active {
+    background: white;
+    border-color: #a2a9b1;
+    border-bottom-color: white;
+    font-weight: 500;
+}
+
+.wiki-tabs .nav-link:hover {
+    text-decoration: underline;
+}
+
+.wiki-content {
+    padding: 1rem;
+    background: white;
+}
+
+.wiki-source {
+    font-style: italic;
+}
+
+.wiki-coordinates {
+    position: absolute;
+    right: 1rem;
+    top: 1rem;
+}
+
+.wiki-lead {
+    font-size: 1.1rem;
+    line-height: 1.7;
+}
+
+.wiki-toc {
+    float: right;
+    clear: right;
+    width: 300px;
+    margin: 0 0 1rem 1rem;
+}
+
+.wiki-article-content {
+    text-align: justify;
+}
+
+.wiki-article-content h1,
+.wiki-article-content h2,
+.wiki-article-content h3,
+.wiki-article-content h4,
+.wiki-article-content h5,
+.wiki-article-content h6 {
+    font-family: 'Georgia', serif;
+    border-bottom: 1px solid #a2a9b1;
+    margin-top: 1.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.wiki-article-content h2 {
+    font-size: 1.5rem;
+    font-weight: 500;
+}
+
+.wiki-article-content h3 {
+    font-size: 1.3rem;
+    font-weight: 500;
+}
+
+.wiki-article-content p {
+    margin-bottom: 0.75rem;
+}
+
+.wiki-section-heading {
+    font-family: 'Georgia', serif;
+    font-size: 1.5rem;
+    font-weight: 500;
+    border-bottom: 1px solid #a2a9b1;
+    margin-top: 2rem;
+    margin-bottom: 1rem;
+}
+
+.wiki-categories {
+    background: #f8f9fa;
+    padding: 0.75rem;
+    border: 1px solid #ddd;
+}
+
+.wiki-category-link,
+.wiki-tag-link {
+    color: #0645ad;
+    text-decoration: none;
+}
+
+.wiki-category-link:hover,
+.wiki-tag-link:hover {
+    text-decoration: underline;
+}
+
+.wiki-metadata {
+    background: #f8f9fa;
+    padding: 0.75rem;
+    border: 1px solid #ddd;
+}
+
+.wiki-sidebar {
+    padding: 1rem 0;
+}
+
+@media (max-width: 768px) {
+    .wiki-title {
+        font-size: 1.8rem;
+    }
+    
+    .wiki-toc {
+        float: none;
+        width: 100%;
+        margin: 0 0 1rem 0;
+    }
+    
+    .wiki-coordinates {
+        position: static;
+        text-align: left;
+        margin-bottom: 1rem;
+    }
+    
+    .wiki-tabs {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .wiki-actions {
+        margin-top: 0.5rem;
+        justify-content: space-between;
+    }
+}
+
+/* Table of Contents Styling */
+.wiki-toc ol {
+    counter-reset: item;
+    padding-left: 0;
+}
+
+.wiki-toc ol li {
+    display: block;
+    margin-bottom: 0.25rem;
+    padding-left: 1.5rem;
+    position: relative;
+    list-style: none;
+}
+
+.wiki-toc ol li:before {
+    content: counter(item, decimal) ". ";
+    counter-increment: item;
+    position: absolute;
+    left: 0;
+    font-weight: bold;
+}
+
+.wiki-toc ol ol li:before {
+    content: counter(item, decimal) "." counter(subitem, decimal) " ";
+    counter-increment: subitem;
+}
+
+.wiki-toc a {
+    color: #0645ad;
+    text-decoration: none;
+}
+
+.wiki-toc a:hover {
+    text-decoration: underline;
+}
+</style>
+
+<!-- JavaScript for Wikipedia-style functionality -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    generateTableOfContents();
+    addSmoothScrolling();
+});
+
+function generateTableOfContents() {
+    const articleContent = document.getElementById('article-content');
+    const tocContent = document.getElementById('toc-content');
+    const tocContainer = document.getElementById('wiki-toc');
+    const headings = articleContent.querySelectorAll('h1, h2, h3, h4, h5, h6');
+    
+    if (headings.length > 2) {
+        tocContainer.style.display = 'block';
+        
+        const tocList = document.createElement('ol');
+        let currentLevel = 2;
+        let currentList = tocList;
+        let listStack = [tocList];
+        
+        headings.forEach((heading, index) => {
+            // Add ID to heading if it doesn't have one
+            if (!heading.id) {
+                heading.id = 'heading-' + index;
+            }
+            
+            const level = parseInt(heading.tagName.substring(1));
+            const listItem = document.createElement('li');
+            const link = document.createElement('a');
+            link.href = '#' + heading.id;
+            link.textContent = heading.textContent;
+            listItem.appendChild(link);
+            
+            // Handle nested lists based on heading level
+            if (level > currentLevel) {
+                const newList = document.createElement('ol');
+                const lastItem = currentList.lastElementChild;
+                if (lastItem) {
+                    lastItem.appendChild(newList);
+                }
+                listStack.push(newList);
+                currentList = newList;
+            } else if (level < currentLevel) {
+                while (listStack.length > 1 && level < currentLevel) {
+                    listStack.pop();
+                    currentLevel--;
+                }
+                currentList = listStack[listStack.length - 1];
+            }
+            
+            currentList.appendChild(listItem);
+            currentLevel = level;
+        });
+        
+        tocContent.appendChild(tocList);
+    }
+}
+
+function toggleTOC() {
+    const tocContent = document.getElementById('toc-content');
+    const tocToggle = document.getElementById('toc-toggle');
+    
+    if (tocContent.style.display === 'none') {
+        tocContent.style.display = 'block';
+        tocToggle.textContent = '[hide]';
+    } else {
+        tocContent.style.display = 'none';
+        tocToggle.textContent = '[show]';
+    }
+}
+
+function addSmoothScrolling() {
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function (e) {
+            e.preventDefault();
+            const target = document.querySelector(this.getAttribute('href'));
+            if (target) {
+                target.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'start'
+                });
+            }
+        });
+    });
+}
+
+function copyToClipboard() {
+    navigator.clipboard.writeText(window.location.href).then(function() {
+        alert('Link copied to clipboard!');
+    });
+}
+</script>
+
+{% block extra_js %}
+<!-- Enhanced Schema.org Structured Data for Northeast India Content -->
+
+<!-- Organization Schema -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  "name": "Northeast India Wiki",
+  "alternateName": "NE India Wiki",  
+  "url": "{{ request.scheme }}://{{ request.get_host }}",
+  "logo": {
+    "@type": "ImageObject",
+    "url": "{{ request.scheme }}://{{ request.get_host }}{% static 'images/northeast-india-logo.jpg' %}",
+    "width": 200,
+    "height": 200
+  },
+  "description": "Comprehensive digital encyclopedia documenting the rich cultural heritage, history, and traditions of Northeast India's Seven Sisters states",
+  "foundingDate": "2024",
+  "areaServed": {
+    "@type": "Place",
+    "name": "Northeast India",
+    "addressRegion": "Northeast India",
+    "addressCountry": "India"
+  },
+  "knowsAbout": [
+    "Northeast India Culture",
+    "Seven Sisters States",
+    "Assam",
+    "Arunachal Pradesh", 
+    "Manipur",
+    "Meghalaya",
+    "Mizoram",
+    "Nagaland",
+    "Tripura",
+    "Sikkim",
+    "Indigenous Communities",
+    "Traditional Arts",
+    "Festivals",
+    "Languages",
+    "History"
+  ],
+  "sameAs": [
+    "https://en.wikipedia.org/wiki/Northeast_India"
+  ]
+}
+</script>
+
+<!-- Main Article Schema with Content Type Detection -->
+{% detect_content_type article as content_type %}
+{% is_person_article article as is_person %}
+{% is_place_article article as is_place %}
+{% is_event_article article as is_event %}
+{% is_cultural_article article as is_cultural %}
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": [
+    "Article"{% if is_person %}, "Person"{% endif %}{% if is_place %}, "Place"{% endif %}{% if is_event %}, "Event"{% endif %}{% if is_cultural %}, "CreativeWork"{% endif %}
+  ],
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "{{ request.build_absolute_uri }}"
+  },
+  "headline": "{{ article.title }}",
+  "description": "{{ article.meta_description|default:article.excerpt|default:article.title|add:' - Comprehensive guide to Northeast India culture and heritage' }}",
+  "alternativeHeadline": "{{ article.excerpt|truncatechars:110 }}",
+  {% if article.featured_image and article.featured_image.name and article.featured_image.name != '' %}
+  "image": {
+    "@type": "ImageObject",
+    "url": "{{ request.scheme }}://{{ request.get_host }}{{ article.featured_image.url }}",
+    "caption": "{{ article.title }}",
+    "width": 1200,
+    "height": 630,
+    "contentLocation": {
+      "@type": "Place",
+      "name": "Northeast India",
+      "addressRegion": "Northeast India",
+      "addressCountry": "India"
+    }
+  },
+  {% endif %}
+  "author": {
+    "@type": "Person",
+    "name": "{{ article.author.get_full_name|default:article.author.username }}",
+    "url": "{{ request.scheme }}://{{ request.get_host }}/profile/{{ article.author.username }}/",
+    "knowsAbout": "Northeast India Culture"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "Northeast India Wiki",
+    "url": "{{ request.scheme }}://{{ request.get_host }}",
+    "logo": {
+      "@type": "ImageObject", 
+      "url": "{{ request.scheme }}://{{ request.get_host }}{% static 'images/northeast-india-logo.jpg' %}"
+    }
+  },
+  "datePublished": "{{ article.published_at|date:'c' }}",
+  "dateModified": "{{ article.updated_at|date:'c' }}",
+  "wordCount": {{ article.content|length }},
+  {% get_article_reading_time article as reading_time %}
+  "timeRequired": "PT{{ reading_time }}M",
+  "articleSection": "{% for category in article.categories.all %}{{ category.name }}{% if not forloop.last %}, {% endif %}{% endfor %}",
+  {% get_cultural_context article as cultural_context %}
+  {% if cultural_context %}
+  "genre": {{ cultural_context|jsonify }},
+  {% endif %}
+  {% get_article_mentions article as mentions %}
+  {% if mentions.people %}
+  "mentions": [
+    {% for person in mentions.people %}
+    {
+      "@type": "Person",
+      "name": "{{ person }}",
+      "description": "Notable personality from Northeast India"
+    }{% if not forloop.last %},{% endif %}
+    {% endfor %}
+  ],
+  {% endif %}
+  "about": [
+    {
+      "@type": "Place",
+      "name": "Northeast India",
+      "alternateName": "Seven Sisters States",
+      "description": "A region in India comprising eight states known for their rich cultural diversity and natural beauty",
+      "addressRegion": "Northeast India",
+      "addressCountry": "India",
+      "containsPlace": [
+        {% get_northeast_states as ne_states %}
+        {% for state in ne_states %}
+        {
+          "@type": "Place",
+          "name": "{{ state }}",
+          "addressRegion": "Northeast India",
+          "addressCountry": "India"
+        }{% if not forloop.last %},{% endif %}
+        {% endfor %}
+      ]
+    }{% if article.categories.all or article.states.all %},{% endif %}
+    {% for category in article.categories.all %}
+    {
+      "@type": "Thing",
+      "name": "{{ category.name }}",
+      "description": "{{ category.description|default:'Northeast India '|add:category.name }}",
+      "about": "Northeast India Culture"
+    }{% if not forloop.last %},{% endif %}
+    {% endfor %}
+    {% if article.categories.all and article.states.all %},{% endif %}
+    {% for state in article.states.all %}
+    {
+      "@type": "Place",
+      "name": "{{ state.name }}",
+      "description": "{{ state.description|truncatechars:200 }}",
+      "addressRegion": "Northeast India",
+      "addressCountry": "India"{% if state.capital %},
+      "containsPlace": {
+        "@type": "Place",
+        "name": "{{ state.capital }}",
+        "addressRegion": "{{ state.name }}",
+        "addressCountry": "India"
+      }{% endif %}
+    }{% if not forloop.last %},{% endif %}
+    {% endfor %}
+  ],
+  {% generate_content_keywords article as content_keywords %}
+  "keywords": {{ content_keywords|jsonify }},
+  "inLanguage": "en-IN",
+  "isPartOf": {
+    "@type": "WebSite",
+    "name": "Northeast India Wiki",
+    "url": "{{ request.scheme }}://{{ request.get_host }}",
+    "potentialAction": {
+      "@type": "SearchAction",
+      "target": "{{ request.scheme }}://{{ request.get_host }}/search?q={search_term_string}",
+      "query-input": "required name=search_term_string"
+    }
+  },
+  "locationCreated": {
+    "@type": "Place",
+    "name": "Northeast India",
+    "addressRegion": "Northeast India", 
+    "addressCountry": "India",
+    "geo": {
+      "@type": "GeoCoordinates",
+      "latitude": 26.2006,
+      "longitude": 92.9376
+    }
+  },
+  "spatialCoverage": {
+    "@type": "Place",
+    "name": "Northeast India",
+    "geo": {
+      "@type": "GeoShape",
+      "box": "21.57 87.01 29.50 97.40"
+    }
+  }{% if is_person %},
+  {% extract_person_data article as person_data %}
+  "birthDate": "{{ person_data.birthDate }}",
+  "birthPlace": {
+    "@type": "Place",
+    "addressRegion": "Northeast India",
+    "addressCountry": "India"
+  },
+  "nationality": {
+    "@type": "Country",
+    "name": "India"
+  },
+  "knowsAbout": "Northeast India Culture"{% endif %}{% if is_place %},
+  {% extract_place_data article as place_data %}
+  "address": {
+    "@type": "PostalAddress",
+    "addressRegion": "{{ place_data.addressRegion }}",
+    "addressCountry": "{{ place_data.addressCountry }}"
+  },
+  "containedInPlace": {
+    "@type": "Place",
+    "name": "Northeast India",
+    "addressCountry": "India"
+  }{% endif %}{% if is_event %},
+  {% extract_event_data article as event_data %}
+  "eventStatus": "https://schema.org/EventScheduled",
+  "location": {
+    "@type": "Place",
+    "name": "Northeast India",
+    "addressRegion": "Northeast India",
+    "addressCountry": "India"
+  },
+  "organizer": {
+    "@type": "Thing",
+    "name": "Traditional Communities of Northeast India"
+  }{% endif %}{% if is_cultural %},
+  "culturalContext": "Northeast Indian Culture",
+  "artform": "Traditional Northeast Indian Art",
+  "genre": "Cultural Heritage"{% endif %}
+}
+</script>
+{% endblock %}
+{% endblock %}
