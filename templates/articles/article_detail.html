@@ -94,7 +94,6 @@
                             <li><a class="dropdown-item" href="#" onclick="window.print()"><i class="fas fa-print me-2"></i>Print</a></li>
                             <li><a class="dropdown-item" href="#" onclick="copyToClipboard()"><i class="fas fa-link me-2"></i>Copy link</a></li>
                             <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item" href="#references"><i class="fas fa-book me-2"></i>References</a></li>
                         </ul>
                     </div>
                 </div>
@@ -131,7 +130,7 @@
                     <!-- Article excerpt/lead -->
                     {% if article.excerpt %}
                     <div class="wiki-lead mb-4">
-                        <p class="lead">{{ article.excerpt }}</p>
+                        <p class="lead">{{ article.excerpt|safe }}</p>
                     </div>
                     {% endif %}
 
@@ -165,15 +164,6 @@
                         {{ article.content|safe }}
                     </div>
 
-                    <!-- References section -->
-                    {% if article.references %}
-                    <div class="wiki-references mt-5" id="references">
-                        <h2 class="wiki-section-heading">References</h2>
-                        <div class="references-content">
-                            {{ article.references|linebreaks }}
-                        </div>
-                    </div>
-                    {% endif %}
 
                     <!-- Categories -->
                     {% if article.categories.exists or article.tags.exists %}
