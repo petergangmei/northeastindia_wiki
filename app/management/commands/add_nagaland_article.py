@@ -150,7 +150,18 @@ class Command(BaseCommand):
                 'languages': 'English, Angami, Ao, Sumi, Lotha, Konyak'
             }
         )
-        if created:
+        
+        # If state already exists, update it with comprehensive data
+        if not created:
+            state.description = 'Known for Hornbill Festival and tribal heritage'
+            state.capital = 'Kohima'
+            state.formation_date = timezone.datetime(1963, 12, 1).date()
+            state.population = 1980602  # 2011 Census
+            state.area = 16579  # sq km
+            state.languages = 'English, Angami, Ao, Sumi, Lotha, Konyak'
+            state.save()
+            self.stdout.write(self.style.SUCCESS(f"Updated state: {state.name}"))
+        else:
             self.stdout.write(self.style.SUCCESS(f"Created state: {state.name}"))
         return state
 

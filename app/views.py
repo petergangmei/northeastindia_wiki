@@ -313,6 +313,7 @@ def article_detail(request, slug, state_slug=None):
     is_visible_to_user = article.published
     has_edit_permission = False
     has_review_permission = False
+    user_profile = None
     
     if request.user.is_authenticated:
         try:
@@ -350,6 +351,73 @@ def article_detail(request, slug, state_slug=None):
     except:
         pending_edit = None
     
+    # Generate info box data for states
+    info_box_data = None
+    coordinates = None
+    if article.states.exists():
+        state = article.states.first()
+        # Calculate area in square miles (1 km² = 0.386102 sq mi)
+        area_sq_miles = int(state.area * 0.386102) if state.area else None
+        # Calculate population density
+        pop_density = int(state.population / state.area) if state.population and state.area else None
+        
+        info_box_data = {
+            'status': 'State of India',
+            'capital': state.capital,
+            'largest_city': 'Chümoukedima–Dimapur' if state.name == 'Nagaland' else None,
+            'districts': '17 districts' if state.name == 'Nagaland' else f"{getattr(state, 'districts_count', 'N/A')} districts",
+            'government': {
+                'Governor': 'La. Ganesan' if state.name == 'Nagaland' else 'TBD',
+                'Chief Minister': 'Neiphiu Rio' if state.name == 'Nagaland' else 'TBD'
+            },
+            'state_legislature': '60 (Assembly seats)',
+            'parliament_seats': {
+                'Lok Sabha': '1',
+                'Rajya Sabha': '1'
+            },
+            'high_court': 'Gauhati High Court',
+            'area': {
+                'total': f"{state.area:,} km² ({area_sq_miles:,} sq mi)" if state.area and area_sq_miles else None,
+                'rank': '25th among Indian states' if state.name == 'Nagaland' else None
+            },
+            'elevation': {
+                'Highest': 'Mount Saramati 3,826 m (12,552 ft)' if state.name == 'Nagaland' else 'N/A',
+                'Lowest': 'Dhansiri Valley 194 m (636 ft)' if state.name == 'Nagaland' else 'N/A'
+            },
+            'population': {
+                'total': f"{state.population:,}" if state.population else None,
+                'rank': '25th among Indian states' if state.name == 'Nagaland' else None,
+                'density': f"{pop_density}/km²" if pop_density else None,
+                'urban': '28.6%' if state.name == 'Nagaland' else None,
+                'rural': '71.4%' if state.name == 'Nagaland' else None
+            },
+            'demonym': 'Naga' if state.name == 'Nagaland' else f"{state.name}se",
+            'languages': {
+                'Official': state.languages if state.languages else 'English',
+                'Additional official': None
+            },
+            'time_zone': 'IST (UTC+05:30)',
+            'iso_code': f"IN-{state.name[:2].upper()}",
+            'vehicle_registration': f"{state.name[:2].upper()}",
+            'hdi': {
+                'value': '0.679 (medium)' if state.name == 'Nagaland' else 'N/A',
+                'year': '2021',
+                'rank': '20th among Indian states' if state.name == 'Nagaland' else None
+            },
+            'literacy': '80.11%' if state.name == 'Nagaland' else None,
+            'sex_ratio': '931 ♀/1000 ♂' if state.name == 'Nagaland' else None,
+            'website': f"https://{state.name.lower()}.gov.in"
+        }
+        
+        # Add coordinates if available (example coordinates for Nagaland)
+        if state.name == 'Nagaland':
+            coordinates = {
+                'lat': 25.6751,
+                'lng': 94.1086,
+                'display': '25.67°N 94.10°E'
+            }
+        # Add more state coordinates as needed
+    
     context = {
         'article': article,
         'related_articles': related_articles,
@@ -357,6 +425,9 @@ def article_detail(request, slug, state_slug=None):
         'has_review_permission': has_review_permission,
         'has_pending_edit': has_pending_edit,
         'contextual_data': contextual_data,
+        'info_box_data': info_box_data,
+        'coordinates': coordinates,
+        'user_profile': user_profile,
     }
     
     return render(request, 'articles/article_detail.html', context)

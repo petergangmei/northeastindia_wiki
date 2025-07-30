@@ -136,3 +136,85 @@ Traceback (most recent call last):
                ^^^^^^^^
 AttributeError: 'str' object has no attribute 'name'
 [30/Jul/2025 06:24:11] "GET /wiki/?tag=british-india HTTP/1.1" 500 180910
+/Users/petergangmei/Developer/Crossplatform/django/northeastindia_wiki/app/views.py changed, reloading.
+/Users/petergangmei/Developer/Crossplatform/django/northeastindia_wiki/app/views.py changed, reloading.
+Performing system checks...
+
+System check identified no issues (0 silenced).
+July 30, 2025 - 06:21:39
+Django version 5.2.4, using settings 'core.settings.dev'
+Starting development server at http://127.0.0.1:8000/
+Quit the server with CONTROL-C.
+
+WARNING: This is a development server. Do not use it in a production setting. Use a production WSGI or ASGI server instead.
+For more information on production servers see: https://docs.djangoproject.com/en/5.2/howto/deployment/
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+[30/Jul/2025 06:28:22] "GET /wiki/nagaland/ HTTP/1.1" 200 94472
+[30/Jul/2025 06:28:22] "GET /static/css/main.css HTTP/1.1" 304 0
+[30/Jul/2025 06:28:24] "GET /wiki/nagaland/ HTTP/1.1" 200 94472
+[30/Jul/2025 06:28:25] "GET /wiki/nagaland/ HTTP/1.1" 200 94472
+[30/Jul/2025 06:29:59] "GET / HTTP/1.1" 200 39594
+Internal Server Error: /wiki/nagaland/
+Traceback (most recent call last):
+  File "/Users/petergangmei/Developer/Crossplatform/django/northeastindia_wiki/venv/lib/python3.13/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/Users/petergangmei/Developer/Crossplatform/django/northeastindia_wiki/venv/lib/python3.13/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/Users/petergangmei/Developer/Crossplatform/django/northeastindia_wiki/app/views.py", line 424, in article_detail
+    'user_profile': user_profile,
+                    ^^^^^^^^^^^^
+UnboundLocalError: cannot access local variable 'user_profile' where it is not associated with a value
+Internal Server Error: /wiki/nagaland/
+Traceback (most recent call last):
+  File "/Users/petergangmei/Developer/Crossplatform/django/northeastindia_wiki/venv/lib/python3.13/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/Users/petergangmei/Developer/Crossplatform/django/northeastindia_wiki/venv/lib/python3.13/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/Users/petergangmei/Developer/Crossplatform/django/northeastindia_wiki/app/views.py", line 424, in article_detail
+    'user_profile': user_profile,
+                    ^^^^^^^^^^^^
+UnboundLocalError: cannot access local variable 'user_profile' where it is not associated with a value
+[30/Jul/2025 06:30:24] "GET /wiki/nagaland/ HTTP/1.1" 500 69919
+/Users/petergangmei/Developer/Crossplatform/django/northeastindia_wiki/app/views.py changed, reloading.
+/Users/petergangmei/Developer/Crossplatform/django/northeastindia_wiki/app/views.py changed, reloading.
+Performing system checks...
+
+System check identified no issues (0 silenced).
+July 30, 2025 - 06:27:08
+Django version 5.2.4, using settings 'core.settings.dev'
+Starting development server at http://127.0.0.1:8000/
+Quit the server with CONTROL-C.
+
+WARNING: This is a development server. Do not use it in a production setting. Use a production WSGI or ASGI server instead.
+For more information on production servers see: https://docs.djangoproject.com/en/5.2/howto/deployment/
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+[30/Jul/2025 06:30:45] "GET /wiki/nagaland/ HTTP/1.1" 200 89156
+/Users/petergangmei/Developer/Crossplatform/django/northeastindia_wiki/app/views.py changed, reloading.
+/Users/petergangmei/Developer/Crossplatform/django/northeastindia_wiki/app/views.py changed, reloading.
+Performing system checks...
+
+System check identified no issues (0 silenced).
+July 30, 2025 - 06:30:39
+Django version 5.2.4, using settings 'core.settings.dev'
+Starting development server at http://127.0.0.1:8000/
+Quit the server with CONTROL-C.
+
+WARNING: This is a development server. Do not use it in a production setting. Use a production WSGI or ASGI server instead.
+For more information on production servers see: https://docs.djangoproject.com/en/5.2/howto/deployment/
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+[30/Jul/2025 06:32:07] "GET /wiki/nagaland/ HTTP/1.1" 200 90933
+[30/Jul/2025 06:32:35] "GET / HTTP/1.1" 200 39594
+[30/Jul/2025 06:32:35] "GET /static/css/normalize.css HTTP/1.1" 200 6138
+[30/Jul/2025 06:32:35] "GET /static/css/main.css HTTP/1.1" 200 25468
+[30/Jul/2025 06:32:35] "GET /static/js/main.js HTTP/1.1" 200 9640
+[30/Jul/2025 06:32:36] "GET /static/images/favicon.png HTTP/1.1" 200 0
+[30/Jul/2025 06:32:37] "GET /wiki/nagaland/ HTTP/1.1" 200 94117
+Not Found: /wiki/nagaland/edit/
+Not Found: /wiki/nagaland/edit/
+[30/Jul/2025 06:32:52] "GET /wiki/nagaland/edit/ HTTP/1.1" 404 9650
+Not Found: /favicon.ico
+Not Found: /favicon.ico
+[30/Jul/2025 06:32:52] "GET /favicon.ico HTTP/1.1" 404 16515
