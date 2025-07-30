@@ -475,9 +475,9 @@ def article_detail(request, slug, state_slug=None):
                 born_parts.append(article.birth_place)
             born_info = "\n".join(born_parts) + age_info
         
-        # Get additional data from type_data
-        occupation = article.type_data.get('occupation', 'Actor')
-        years_active = article.type_data.get('years_active', '1984–present')
+        # Default values for personality info
+        occupation = 'Actor'
+        years_active = '1984–present'
         
         personality_info_box_data = {
             'born': born_info if born_info else None,

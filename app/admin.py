@@ -113,38 +113,7 @@ class ContentAdminForm(forms.ModelForm):
     class Meta:
         model = Content
         fields = '__all__'
-        widgets = {
-            'type_data': forms.Textarea(attrs={
-                'rows': 6, 
-                'cols': 80,
-                'placeholder': 'Enter valid JSON (e.g., {"key": "value"}) or leave empty for default {}'
-            }),
-        }
     
-    def clean_type_data(self):
-        """Clean and validate the type_data field"""
-        import json
-        
-        data = self.cleaned_data.get('type_data')
-        
-        # Handle empty or whitespace-only input
-        if not data or not data.strip():
-            return {}  # Return empty dict as default
-        
-        # Try to parse as JSON
-        try:
-            # If it's already a dict/list (shouldn't happen with textarea but just in case)
-            if isinstance(data, (dict, list)):
-                return data
-            
-            # Parse the JSON string
-            parsed_data = json.loads(data.strip())
-            return parsed_data
-            
-        except json.JSONDecodeError as e:
-            raise forms.ValidationError(f"Invalid JSON format: {str(e)}")
-        except Exception as e:
-            raise forms.ValidationError(f"Error processing JSON data: {str(e)}")
 
 @admin.register(Content)
 class ContentAdmin(TimeStampedModelAdmin):
@@ -176,28 +145,6 @@ class ContentAdmin(TimeStampedModelAdmin):
             }),
         ]
         
-        # Add type-specific fieldsets based on content_type
-        if obj and obj.content_type == 'personality':
-            base_fieldsets.insert(-2, ('Personality Data (JSON)', {
-                'fields': ('type_data',),
-                'description': 'Store personality-specific data: {"birth_date": "1963-06-09", "death_date": null, "birth_place": "Kentucky", "notable_works": "..."}'
-            }))
-        elif obj and obj.content_type == 'cultural':
-            base_fieldsets.insert(-2, ('Cultural Data (JSON)', {
-                'fields': ('type_data',),
-                'description': 'Store cultural-specific data: {"element_type": "festival", "seasonal": true, "season_or_period": "Winter"}'
-            }))
-        elif obj and obj.content_type == 'article':
-            base_fieldsets.insert(-2, ('Article Data (JSON)', {
-                'fields': ('type_data',),
-                'description': 'Store article-specific data: {"references": "..."}'
-            }))
-        else:
-            # For new objects or unknown types
-            base_fieldsets.insert(-2, ('Type-Specific Data (JSON)', {
-                'fields': ('type_data',),
-                'description': 'Store type-specific data as JSON. Format depends on content_type.'
-            }))
         
         base_fieldsets.append(('Metadata', {
             'fields': ('last_edited_by', 'created_at', 'updated_at')
@@ -210,17 +157,3 @@ class ContentAdmin(TimeStampedModelAdmin):
             obj.last_edited_by = request.user
         super().save_model(request, obj, form, change)
     
-    def get_form(self, request, obj=None, **kwargs):
-        """Customize form based on content type"""
-        form = super().get_form(request, obj, **kwargs)
-        
-        # Add help text for type_data field based on content_type
-        if obj:
-            if obj.content_type == 'personality':
-                form.base_fields['type_data'].help_text = 'Example: {"birth_date": "1963-06-09", "death_date": null, "birth_place": "Owensboro, Kentucky", "notable_works": "Pirates of the Caribbean, Edward Scissorhands"}'
-            elif obj.content_type == 'cultural':
-                form.base_fields['type_data'].help_text = 'Example: {"element_type": "festival", "seasonal": true, "season_or_period": "Winter solstice"}'
-            elif obj.content_type == 'article':
-                form.base_fields['type_data'].help_text = 'Example: {"references": "1. Source A\n2. Source B"}'
-        
-        return form

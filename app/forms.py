@@ -42,12 +42,11 @@ class ArticleForm(forms.ModelForm):
         model = Content
         fields = [
             'title', 'content', 'excerpt', 'categories', 'tags', 
-            'states', 'featured_image', 'meta_description', 'content_type', 'type_data'
+            'states', 'featured_image', 'meta_description', 'content_type'
         ]
         widgets = {
             'excerpt': forms.Textarea(attrs={'rows': 3}),
             'meta_description': forms.TextInput(attrs={'placeholder': 'Brief description for search engines'}),
-            'type_data': forms.Textarea(attrs={'rows': 3, 'placeholder': 'JSON data for type-specific fields (e.g., {"references": "..."})'}),
             'content_type': forms.Select(choices=Content.CONTENT_TYPES),
         }
     
@@ -69,26 +68,3 @@ class ArticleForm(forms.ModelForm):
             raise forms.ValidationError("An article with a similar title already exists. Please choose a different title.")
         return title 
     
-    def clean_type_data(self):
-        """Clean and validate the type_data field"""
-        import json
-        
-        data = self.cleaned_data.get('type_data')
-        
-        # If it's already a dict/list, return as-is
-        if isinstance(data, (dict, list)):
-            return data
-        
-        # Handle None, empty string, or whitespace-only input
-        if not data or (isinstance(data, str) and not data.strip()):
-            return {}  # Return empty dict as default
-        
-        # Try to parse as JSON string
-        try:
-            parsed_data = json.loads(data.strip())
-            return parsed_data
-            
-        except json.JSONDecodeError as e:
-            raise forms.ValidationError(f"Invalid JSON format: {str(e)}")
-        except Exception as e:
-            raise forms.ValidationError(f"Error processing JSON data: {str(e)}")

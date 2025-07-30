@@ -172,19 +172,6 @@
                         {{ form.content_type.as_hidden }}
                         {% endif %}
                         
-                        <!-- Type-specific data (JSON) field -->
-                        <div class="mb-3">
-                            <label for="{{ form.type_data.id_for_label }}" class="form-label">Additional Data (JSON)</label>
-                            {{ form.type_data }}
-                            {% if form.type_data.errors %}
-                            <div class="invalid-feedback d-block">
-                                {% for error in form.type_data.errors %}
-                                {{ error }}
-                                {% endfor %}
-                            </div>
-                            {% endif %}
-                            <div class="form-text">Optional JSON data for article-specific fields like references: {"references": "1. Source A\n2. Source B"}</div>
-                        </div>
                         
                         {% if article %}
                         <!-- Revision comment field (for edits) -->

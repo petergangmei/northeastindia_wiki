@@ -360,8 +360,6 @@ class Content(TimeStampedModel):
     meta_description = models.CharField(max_length=160, blank=True, help_text="SEO meta description")
     featured_image = models.ImageField(upload_to='content/', blank=True, null=True)
     
-    # Type-specific data stored as JSON
-    type_data = models.JSONField(default=dict, blank=True, help_text="Type-specific fields stored as JSON")
     
     # Legacy support fields (will be moved to type_data eventually)
     last_edited_by = models.ForeignKey(User, null=True, blank=True, on_delete=models.SET_NULL, related_name='edited_content')
@@ -472,65 +470,3 @@ class Content(TimeStampedModel):
         clean_content = re.sub(r'<[^>]+>', '', self.content)
         return (clean_content[:150] + '...') if len(clean_content) > 150 else clean_content
     
-    # Helper methods for type-specific data access
-    @property
-    def birth_date(self):
-        """For personality content type"""
-        if self.content_type == 'personality':
-            birth_date_str = self.type_data.get('birth_date')
-            if birth_date_str:
-                from datetime import datetime
-                return datetime.strptime(birth_date_str, '%Y-%m-%d').date()
-        return None
-    
-    @property
-    def death_date(self):
-        """For personality content type"""
-        if self.content_type == 'personality':
-            death_date_str = self.type_data.get('death_date')
-            if death_date_str:
-                from datetime import datetime
-                return datetime.strptime(death_date_str, '%Y-%m-%d').date()
-        return None
-    
-    @property
-    def birth_place(self):
-        """For personality content type"""
-        if self.content_type == 'personality':
-            return self.type_data.get('birth_place', '')
-        return ''
-    
-    @property
-    def notable_works(self):
-        """For personality content type"""
-        if self.content_type == 'personality':
-            return self.type_data.get('notable_works', '')
-        return ''
-    
-    @property
-    def element_type(self):
-        """For cultural content type"""
-        if self.content_type == 'cultural':
-            return self.type_data.get('element_type', '')
-        return ''
-    
-    @property
-    def seasonal(self):
-        """For cultural content type"""
-        if self.content_type == 'cultural':
-            return self.type_data.get('seasonal', False)
-        return False
-    
-    @property
-    def season_or_period(self):
-        """For cultural content type"""
-        if self.content_type == 'cultural':
-            return self.type_data.get('season_or_period', '')
-        return ''
-    
-    @property
-    def references(self):
-        """For article content type"""
-        if self.content_type == 'article':
-            return self.type_data.get('references', '')
-        return ''

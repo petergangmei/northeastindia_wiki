@@ -50,7 +50,6 @@ class ArticleCreationTestCase(TestCase):
             'title': 'Test Article',
             'content': '<p>This is test content</p>',
             'content_type': 'article',
-            'type_data': '',  # Empty, should default to {}
             'excerpt': '',
             'meta_description': '',
         }
@@ -83,7 +82,6 @@ class ArticleCreationTestCase(TestCase):
             'title': 'Complete Test Article',
             'content': '<p>This is complete test content with more details</p>',
             'content_type': 'article',
-            'type_data': '{"references": "1. Test Source A\\n2. Test Source B"}',
             'excerpt': 'This is a test excerpt',
             'meta_description': 'Test meta description for SEO',
             'categories': [self.category.id],
@@ -108,7 +106,6 @@ class ArticleCreationTestCase(TestCase):
             'title': 'Direct Form Test',
             'content': '<p>Direct form test content</p>',
             'content_type': 'article',
-            'type_data': '',
             'excerpt': '',
             'meta_description': '',
         }
@@ -124,7 +121,6 @@ class ArticleCreationTestCase(TestCase):
             instance.author = self.user
             instance.content_type = 'article'
             print(f"Form instance created: {instance.title}")
-            print(f"Instance type_data: {instance.type_data}")
 
 
 class RobotsTxtTestCase(TestCase):
