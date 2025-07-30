@@ -6,13 +6,14 @@
 
 /* Color Theme Variables */
 :root {
-    /* New warm color theme */
-    --primary-color: #f79489; /* Coral */
-    --secondary-color: #f8afa6; /* Dusty Rose */
-    --accent-color: #fadcd9; /* Rose Quartz */
-    --light-color: #f9f1f0; /* Cream */
-    --dark-color: #333333; /* Darker Gray for contrast */
-    --text-color: #333333;
+    /* New sophisticated color theme */
+    --primary-color: #d3b1c2; /* Dusty Rose */
+    --primary-dark-color: #c197d2; /* Lavender */
+    --secondary-color: #211522; /* Black */
+    --accent-color: #613659; /* Orchid */
+    --light-color: #f9f9f9; /* Light Gray */
+    --dark-color: #211522; /* Black for consistency */
+    --text-color: #211522;
     --light-text: #ffffff;
     
     --border-radius-sm: 4px;
@@ -221,11 +222,13 @@ img {
 .btn-primary {
     background-color: var(--primary-color);
     border-color: var(--primary-color);
+    color: var(--light-text);
 }
 
 .btn-primary:hover, .btn-primary:focus {
-    background-color: #f56c5e;
-    border-color: #f56c5e;
+    background-color: var(--primary-dark-color);
+    border-color: var(--primary-dark-color);
+    color: var(--light-text);
 }
 
 .btn-outline {
@@ -253,13 +256,13 @@ img {
 .btn-accent {
     background-color: var(--accent-color);
     border-color: var(--accent-color);
-    color: var(--dark-color);
+    color: var(--light-text);
 }
 
 .btn-accent:hover, .btn-accent:focus {
-    background-color: #f7c7be;
-    border-color: #f7c7be;
-    color: var(--dark-color);
+    background-color: var(--primary-dark-color);
+    border-color: var(--primary-dark-color);
+    color: var(--light-text);
 }
 
 /* Header Styles */
@@ -374,9 +377,14 @@ img {
 .search-bar button {
     padding: var(--spacing-sm) var(--spacing-md);
     background: var(--accent-color);
+    color: var(--light-text);
     border: none;
     border-radius: 0 var(--border-radius-sm) var(--border-radius-sm) 0;
     cursor: pointer;
+}
+
+.search-bar button:hover {
+    background: var(--primary-dark-color);
 }
 
 /* Main Content Styles */
@@ -510,7 +518,7 @@ img {
 }
 
 .footer-bottom {
-    background-color: #212121;
+    background-color: var(--accent-color);
     padding: var(--spacing-md) 0;
     text-align: center;
 }
@@ -778,18 +786,27 @@ img {
 /* Background Utility Classes */
 .bg-primary {
     background-color: var(--primary-color) !important;
+    color: var(--light-text) !important;
+}
+
+.bg-primary-dark {
+    background-color: var(--primary-dark-color) !important;
+    color: var(--light-text) !important;
 }
 
 .bg-secondary {
     background-color: var(--secondary-color) !important;
+    color: var(--light-text) !important;
 }
 
 .bg-accent {
     background-color: var(--accent-color) !important;
+    color: var(--light-text) !important;
 }
 
 .bg-light {
     background-color: var(--light-color) !important;
+    color: var(--text-color) !important;
 }
 
 /* Bootstrap Override Classes */
@@ -804,11 +821,18 @@ img {
 .btn.btn-primary {
     background-color: var(--primary-color) !important;
     border-color: var(--primary-color) !important;
+    color: var(--light-text) !important;
 }
 
 .btn.btn-secondary {
     background-color: var(--secondary-color) !important;
     border-color: var(--secondary-color) !important;
+    color: var(--light-text) !important;
+}
+
+.btn.btn-primary:hover, .btn.btn-primary:focus {
+    background-color: var(--primary-dark-color) !important;
+    border-color: var(--primary-dark-color) !important;
 }
 
 /* Additional styling for components */
@@ -835,6 +859,18 @@ img {
     color: var(--accent-color) !important;
 }
 
+.text-primary {
+    color: var(--primary-color) !important;
+}
+
+.text-primary-dark {
+    color: var(--primary-dark-color) !important;
+}
+
+.text-secondary {
+    color: var(--secondary-color) !important;
+}
+
 /* Header specific styles */
 header.navbar {
     padding-top: 0.5rem;
@@ -848,7 +884,9 @@ footer a:hover {
 
 /* Form element styling */
 .input-group-text {
-    background-color: var(--secondary-color);
+    background-color: var(--accent-color);
+    color: var(--light-text);
+    border-color: var(--accent-color);
 }
 
 /* Custom helper classes */
