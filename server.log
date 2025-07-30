@@ -218,3 +218,52 @@ Not Found: /wiki/nagaland/edit/
 Not Found: /favicon.ico
 Not Found: /favicon.ico
 [30/Jul/2025 06:32:52] "GET /favicon.ico HTTP/1.1" 404 16515
+[30/Jul/2025 06:37:20] "GET / HTTP/1.1" 200 39594
+[30/Jul/2025 06:37:20] "GET /static/css/main.css HTTP/1.1" 304 0
+[30/Jul/2025 06:37:23] "GET / HTTP/1.1" 200 39594
+[30/Jul/2025 06:37:26] "GET /wiki/search-htmx/?q=johny HTTP/1.1" 200 407
+[30/Jul/2025 06:37:28] "GET /wiki/search-htmx/?q=joh HTTP/1.1" 200 405
+[30/Jul/2025 06:37:29] "GET /wiki/search-htmx/?q= HTTP/1.1" 200 3
+[30/Jul/2025 06:37:30] "GET /wiki/search-htmx/?q=naga HTTP/1.1" 200 1200
+[30/Jul/2025 06:37:33] "GET /wiki/nagaland/ HTTP/1.1" 200 94117
+[30/Jul/2025 06:37:53] "GET /wiki/nagaland/ HTTP/1.1" 200 94117
+[30/Jul/2025 06:37:53] "GET /static/css/normalize.css HTTP/1.1" 200 6138
+[30/Jul/2025 06:37:53] "GET /static/js/main.js HTTP/1.1" 200 9640
+[30/Jul/2025 06:37:53] "GET /static/css/main.css HTTP/1.1" 200 25468
+[30/Jul/2025 06:37:53] "GET /static/images/favicon.png HTTP/1.1" 200 0
+[30/Jul/2025 06:37:56] "GET / HTTP/1.1" 200 39594
+[30/Jul/2025 06:38:13] "GET / HTTP/1.1" 200 39594
+[30/Jul/2025 06:38:13] "GET /static/css/normalize.css HTTP/1.1" 200 6138
+[30/Jul/2025 06:38:13] "GET /static/js/main.js HTTP/1.1" 200 9640
+[30/Jul/2025 06:38:13] "GET /static/css/main.css HTTP/1.1" 200 25468
+[30/Jul/2025 06:38:13] "GET /static/images/favicon.png HTTP/1.1" 200 0
+[30/Jul/2025 06:38:16] "GET /admin/app/article/11/change/ HTTP/1.1" 200 69866
+[30/Jul/2025 06:38:16] "GET /admin/jsi18n/ HTTP/1.1" 200 3342
+[30/Jul/2025 06:38:16] "GET /static/tinymce/plugins/textcolor/plugin.min.js HTTP/1.1" 404 2044
+[30/Jul/2025 06:38:16] "GET /static/tinymce/plugins/print/plugin.min.js HTTP/1.1" 404 2032
+[30/Jul/2025 06:38:16] "GET /static/tinymce/plugins/contextmenu/plugin.min.js HTTP/1.1" 404 2050
+[30/Jul/2025 06:38:16] "GET /static/tinymce/plugins/hr/plugin.min.js HTTP/1.1" 404 2023
+Not Found: /favicon.ico
+Not Found: /favicon.ico
+[30/Jul/2025 06:38:16] "GET /favicon.ico HTTP/1.1" 404 16515
+[30/Jul/2025 06:38:18] "GET /admin/app/article/ HTTP/1.1" 200 20759
+[30/Jul/2025 06:38:18] "GET /admin/jsi18n/ HTTP/1.1" 200 3342
+[30/Jul/2025 06:38:26] "GET /admin/app/personality/ HTTP/1.1" 200 19251
+[30/Jul/2025 06:38:26] "GET /admin/jsi18n/ HTTP/1.1" 200 3342
+[30/Jul/2025 06:38:46] "GET /admin/app/personality/1/change/ HTTP/1.1" 200 37103
+[30/Jul/2025 06:38:46] "GET /admin/jsi18n/ HTTP/1.1" 200 3342
+[30/Jul/2025 06:38:46] "GET /static/tinymce/plugins/textcolor/plugin.min.js HTTP/1.1" 404 2044
+[30/Jul/2025 06:38:46] "GET /static/tinymce/plugins/hr/plugin.min.js HTTP/1.1" 404 2023
+[30/Jul/2025 06:38:46] "GET /static/tinymce/plugins/contextmenu/plugin.min.js HTTP/1.1" 404 2050
+[30/Jul/2025 06:38:46] "GET /static/tinymce/plugins/print/plugin.min.js HTTP/1.1" 404 2032
+Not Found: /wiki/johnny-depp/
+Not Found: /wiki/johnny-depp/
+[30/Jul/2025 06:38:53] "GET /wiki/johnny-depp/ HTTP/1.1" 404 9360
+[30/Jul/2025 06:39:06] "GET /admin/app/culturalelement/ HTTP/1.1" 200 16954
+[30/Jul/2025 06:39:06] "GET /admin/jsi18n/ HTTP/1.1" 200 3342
+[30/Jul/2025 06:39:08] "GET /admin/app/culturalelement/add/ HTTP/1.1" 200 34599
+[30/Jul/2025 06:39:08] "GET /admin/jsi18n/ HTTP/1.1" 200 3342
+[30/Jul/2025 06:39:08] "GET /static/tinymce/plugins/contextmenu/plugin.min.js HTTP/1.1" 404 2050
+[30/Jul/2025 06:39:08] "GET /static/tinymce/plugins/textcolor/plugin.min.js HTTP/1.1" 404 2044
+[30/Jul/2025 06:39:08] "GET /static/tinymce/plugins/print/plugin.min.js HTTP/1.1" 404 2032
+[30/Jul/2025 06:39:08] "GET /static/tinymce/plugins/hr/plugin.min.js HTTP/1.1" 404 2023
