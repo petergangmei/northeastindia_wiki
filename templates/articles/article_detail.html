@@ -228,6 +228,11 @@
                     {% endwith %}
                     {% endif %}
 
+                    <!-- Info box for personalities -->
+                    {% if article.content_type == 'personality' and personality_info_box_data %}
+                    {% include 'widgets/info_box.html' with title=article.title type="person" data=personality_info_box_data %}
+                    {% endif %}
+
                     <!-- Featured image -->
                     {% if article.featured_image and article.featured_image.name and article.featured_image.name != '' %}
                     <div class="card border shadow-sm mb-4">

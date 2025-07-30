@@ -424,6 +424,41 @@ def article_detail(request, slug, state_slug=None):
             }
         # Add more state coordinates as needed
     
+    # Generate info box data for personalities
+    personality_info_box_data = None
+    if article.content_type == 'personality':
+        # Calculate age if birth date is available
+        age_info = ""
+        if article.birth_date:
+            from datetime import date
+            today = date.today()
+            age = today.year - article.birth_date.year - ((today.month, today.day) < (article.birth_date.month, article.birth_date.day))
+            age_info = f" (age {age})"
+        
+        # Format birth information
+        born_info = ""
+        if article.birth_date or article.birth_place:
+            born_parts = []
+            if article.birth_date:
+                born_parts.append(article.birth_date.strftime("%B %d, %Y"))
+            if article.birth_place:
+                born_parts.append(article.birth_place)
+            born_info = "\n".join(born_parts) + age_info
+        
+        # Get additional data from type_data
+        occupation = article.type_data.get('occupation', 'Actor')
+        years_active = article.type_data.get('years_active', '1984–present')
+        
+        personality_info_box_data = {
+            'born': born_info if born_info else None,
+            'occupation': occupation,
+            'years_active': years_active,
+            'known_for': article.notable_works if article.notable_works else None,
+        }
+        
+        # Remove None values
+        personality_info_box_data = {k: v for k, v in personality_info_box_data.items() if v}
+    
     context = {
         'article': article,
         'related_articles': related_articles,
@@ -432,6 +467,7 @@ def article_detail(request, slug, state_slug=None):
         'has_pending_edit': has_pending_edit,
         'contextual_data': contextual_data,
         'info_box_data': info_box_data,
+        'personality_info_box_data': personality_info_box_data,
         'coordinates': coordinates,
         'user_profile': user_profile,
     }
@@ -1203,7 +1239,7 @@ def user_contributions(request):
     recent_edits = []  # ArticleRevision.objects.filter(user=user).order_by('-created_at')
     
     # Calculate total contributions
-    contributions_count = user_articles.count() + recent_edits.count()
+    contributions_count = user_articles.count() + len(recent_edits)
     
     # Pagination for articles tab
     articles_paginator = Paginator(user_articles, 10)

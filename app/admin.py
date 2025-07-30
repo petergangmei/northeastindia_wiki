@@ -1,5 +1,6 @@
 from django.contrib import admin
 from django.utils.html import format_html
+from django import forms
 from .models import (
     UserProfile, Category, Tag, State, MediaItem, Comment, Contribution, Notification, Content
 )
@@ -106,8 +107,48 @@ class NotificationAdmin(TimeStampedModelAdmin):
     readonly_fields = ('created_at',)
 
 
+class ContentAdminForm(forms.ModelForm):
+    """Custom form for Content admin to handle type_data as plain textarea"""
+    
+    class Meta:
+        model = Content
+        fields = '__all__'
+        widgets = {
+            'type_data': forms.Textarea(attrs={
+                'rows': 6, 
+                'cols': 80,
+                'placeholder': 'Enter valid JSON (e.g., {"key": "value"}) or leave empty for default {}'
+            }),
+        }
+    
+    def clean_type_data(self):
+        """Clean and validate the type_data field"""
+        import json
+        
+        data = self.cleaned_data.get('type_data')
+        
+        # Handle empty or whitespace-only input
+        if not data or not data.strip():
+            return {}  # Return empty dict as default
+        
+        # Try to parse as JSON
+        try:
+            # If it's already a dict/list (shouldn't happen with textarea but just in case)
+            if isinstance(data, (dict, list)):
+                return data
+            
+            # Parse the JSON string
+            parsed_data = json.loads(data.strip())
+            return parsed_data
+            
+        except json.JSONDecodeError as e:
+            raise forms.ValidationError(f"Invalid JSON format: {str(e)}")
+        except Exception as e:
+            raise forms.ValidationError(f"Error processing JSON data: {str(e)}")
+
 @admin.register(Content)
 class ContentAdmin(TimeStampedModelAdmin):
+    form = ContentAdminForm
     list_display = ('title', 'content_type', 'author', 'review_status', 'published', 'published_at')
     list_filter = ('content_type', 'review_status', 'published', 'published_at', 'created_at', 'categories', 'states')
     search_fields = ('title', 'content', 'excerpt', 'author__username')

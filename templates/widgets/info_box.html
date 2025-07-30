@@ -251,6 +251,13 @@ Usage: {% include 'widgets/info_box.html' with title="Nagaland" type="state" dat
                 </tr>
                 {% endif %}
 
+                {% if data.years_active %}
+                <tr>
+                    <td class="fw-semibold text-muted bg-light px-3 py-2">Years active</td>
+                    <td class="px-3 py-2">{{ data.years_active }}</td>
+                </tr>
+                {% endif %}
+
             {% else %}
                 <!-- Generic information display -->
                 {% for key, value in data.items %}
