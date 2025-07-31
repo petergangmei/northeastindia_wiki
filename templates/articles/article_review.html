@@ -94,7 +94,7 @@
                         </li>
                         <li class="list-group-item d-flex justify-content-between align-items-center border-0">
                             <span>Author:</span>
-                            <a href="{% url 'app:profile' username=article.author.username %}" class="text-decoration-none">
+                            <a href="{% url 'accounts:profile' username=article.author.username %}" class="text-decoration-none">
                                 {{ article.author.username }}
                             </a>
                         </li>
@@ -109,7 +109,7 @@
                         {% if article.last_edited_by %}
                         <li class="list-group-item d-flex justify-content-between align-items-center border-0">
                             <span>Last Edited By:</span>
-                            <a href="{% url 'app:profile' username=article.last_edited_by.username %}" class="text-decoration-none">
+                            <a href="{% url 'accounts:profile' username=article.last_edited_by.username %}" class="text-decoration-none">
                                 {{ article.last_edited_by.username }}
                             </a>
                         </li>
@@ -171,7 +171,7 @@
                                 <small class="text-muted">{{ revision.created_at|time:"g:i A" }}</small>
                             </div>
                             <p class="mb-1 small text-muted">
-                                <a href="{% url 'app:profile' username=revision.user.username %}" class="text-decoration-none">
+                                <a href="{% url 'accounts:profile' username=revision.user.username %}" class="text-decoration-none">
                                     {{ revision.user.username }}
                                 </a>
                                 {% if revision.comment %}

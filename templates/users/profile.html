@@ -41,7 +41,7 @@
                 
                 {% if request.user == user_profile.user %}
                 <div class="mt-3">
-                    <a href="{% url 'app:profile-edit' %}" class="btn-edit-profile">
+                    <a href="{% url 'accounts:profile-edit' %}" class="btn-edit-profile">
                         <i class="fas fa-edit"></i>
                         Edit Profile
                     </a>

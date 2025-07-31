@@ -21,7 +21,7 @@
                     {% if user.is_authenticated %}
                     <li class="mb-2"><a href="{% url 'app:article-create' %}" class="text-white text-decoration-none"><i class="fas fa-plus me-2"></i>Create Article</a></li>
                     {% else %}
-                    <li class="mb-2"><a href="{% url 'app:register' %}" class="text-white text-decoration-none"><i class="fas fa-user-plus me-2"></i>Join Community</a></li>
+                    <li class="mb-2"><a href="{% url 'accounts:register' %}" class="text-white text-decoration-none"><i class="fas fa-user-plus me-2"></i>Join Community</a></li>
                     {% endif %}
                 </ul>
                 

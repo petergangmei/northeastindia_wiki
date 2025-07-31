@@ -86,7 +86,7 @@
                                             </div>
                                         </td>
                                         <td>
-                                            <a href="{% url 'app:profile' username=article.author.username %}" class="text-decoration-none">
+                                            <a href="{% url 'accounts:profile' username=article.author.username %}" class="text-decoration-none">
                                                 {{ article.author.username }}
                                             </a>
                                         </td>
@@ -307,7 +307,7 @@
                                         </div>
                                     </td>
                                     <td>
-                                        <a href="{% url 'app:profile' username=revision.editor.username %}" class="text-decoration-none">
+                                        <a href="{% url 'accounts:profile' username=revision.editor.username %}" class="text-decoration-none">
                                             {{ revision.editor.username }}
                                         </a>
                                     </td>

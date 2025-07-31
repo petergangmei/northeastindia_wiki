@@ -138,8 +138,8 @@
                             <span class="ms-2 text-white d-none d-lg-inline">{{ user.username }}</span>
                         </a>
                         <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
-                            <li><a class="dropdown-item" href="{% url 'app:profile' username=user.username %}">My Profile</a></li>
-                            <li><a class="dropdown-item" href="{% url 'app:user-contributions' %}">My Contributions</a></li>
+                            <li><a class="dropdown-item" href="{% url 'accounts:profile' username=user.username %}">My Profile</a></li>
+                            <li><a class="dropdown-item" href="{% url 'accounts:user-contributions' %}">My Contributions</a></li>
                             {% if user.profile.role == 'editor' or user.profile.role == 'admin' %}
                                 <li><a class="dropdown-item" href="{% url 'app:article-review-queue' %}">Review Queue</a></li>
                             {% endif %}
@@ -148,7 +148,7 @@
                             {% endif %}
                             <li><hr class="dropdown-divider"></li>
                             <li>
-                                <form method="post" action="{% url 'app:logout' %}" style="display: inline;">
+                                <form method="post" action="{% url 'accounts:logout' %}" style="display: inline;">
                                     {% csrf_token %}
                                     <button type="submit" class="dropdown-item">Log Out</button>
                                 </form>
@@ -156,8 +156,8 @@
                         </ul>
                     </div>
                 {% else %}
-                    <a href="{% url 'app:login' %}" class=" text-white px-3 me-2">Sign In</a>
-                    <a href="{% url 'app:register' %}" class=" text-white btn-sm btn-rounded">Register</a>
+                    <a href="{% url 'accounts:login' %}" class=" text-white px-3 me-2">Sign In</a>
+                    <a href="{% url 'accounts:register' %}" class=" text-white btn-sm btn-rounded">Register</a>
                 {% endif %}
             </div>
         </div>

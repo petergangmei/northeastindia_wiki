@@ -2,21 +2,12 @@ from django.contrib import admin
 from django.utils.html import format_html
 from django import forms
 from .models import (
-    UserProfile, Category, Tag, State, MediaItem, Comment, Contribution, Notification, Content
+    Category, Tag, State, MediaItem, Comment, Contribution, Notification, Content
 )
-
 class TimeStampedModelAdmin(admin.ModelAdmin):
     """Base admin class for models inheriting from TimeStampedModel"""
     readonly_fields = ('created_at', 'updated_at')
     list_filter = ('created_at', 'updated_at')
-
-
-@admin.register(UserProfile)
-class UserProfileAdmin(admin.ModelAdmin):
-    list_display = ('user', 'role', 'reputation_points', 'contribution_count')
-    list_filter = ('role', 'email_notifications')
-    search_fields = ('user__username', 'user__email', 'bio', 'location')
-    readonly_fields = ('reputation_points', 'contribution_count')
 
 
 @admin.register(Category)

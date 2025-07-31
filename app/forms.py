@@ -147,26 +147,6 @@ class InfoBoxDataWidget(forms.Widget):
         js = ('js/info_box_widget.js',)
         css = {'all': ('css/info_box_widget.css',)}
 
-class CustomUserCreationForm(UserCreationForm):
-    """
-    Custom user registration form that includes email and terms agreement
-    """
-    email = forms.EmailField(required=True)
-    agree_terms = forms.BooleanField(
-        required=True,
-        error_messages={'required': 'You must agree to the terms to register.'}
-    )
-    
-    class Meta:
-        model = User
-        fields = ('username', 'email', 'password1', 'password2')
-    
-    def save(self, commit=True):
-        user = super().save(commit=False)
-        user.email = self.cleaned_data['email']
-        if commit:
-            user.save()
-        return user
 
 class ArticleForm(forms.ModelForm):
     """
