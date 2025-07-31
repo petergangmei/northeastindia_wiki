@@ -215,9 +215,9 @@
                     {% if article.states.exists and info_box_data %}
                     {% with article.states.first as state %}
                     {% if article.featured_image and article.featured_image.name and article.featured_image.name != '' %}
-                    {% include 'widgets/info_box.html' with title=state.name type="state" data=info_box_data coordinates=coordinates json_data=json_data image=article.featured_image.url image_caption=article.title %}
+                    {% include 'widgets/info_box.html' with title=state.name type="state" data=info_box_data coordinates=coordinates json_data=json_data image=article.featured_image.url updated_date=article.updated_at %}
                     {% else %}
-                    {% include 'widgets/info_box.html' with title=state.name type="state" data=info_box_data coordinates=coordinates json_data=json_data %}
+                    {% include 'widgets/info_box.html' with title=state.name type="state" data=info_box_data coordinates=coordinates json_data=json_data updated_date=article.updated_at %}
                     {% endif %}
                     {% endwith %}
                     {% endif %}
@@ -225,9 +225,9 @@
                     <!-- Info box for personalities -->
                     {% if article.content_type == 'personality' and personality_info_box_data %}
                     {% if article.featured_image and article.featured_image.name and article.featured_image.name != '' %}
-                    {% include 'widgets/info_box.html' with title=article.title type="person" data=personality_info_box_data json_data=json_data image=article.featured_image.url image_caption=article.title %}
+                    {% include 'widgets/info_box.html' with title=article.title type="person" data=personality_info_box_data json_data=json_data image=article.featured_image.url updated_date=article.updated_at %}
                     {% else %}
-                    {% include 'widgets/info_box.html' with title=article.title type="person" data=personality_info_box_data json_data=json_data %}
+                    {% include 'widgets/info_box.html' with title=article.title type="person" data=personality_info_box_data json_data=json_data updated_date=article.updated_at %}
                     {% endif %}
                     {% endif %}
 
@@ -236,15 +236,15 @@
                     {% with content_type=article.content_type %}
                         {% if content_type == 'cultural' %}
                             {% if article.featured_image and article.featured_image.name and article.featured_image.name != '' %}
-                            {% include 'widgets/info_box.html' with title=article.title type="place" data=None json_data=json_data image=article.featured_image.url image_caption=article.title %}
+                            {% include 'widgets/info_box.html' with title=article.title type="place" data=None json_data=json_data image=article.featured_image.url updated_date=article.updated_at %}
                             {% else %}
-                            {% include 'widgets/info_box.html' with title=article.title type="place" data=None json_data=json_data %}
+                            {% include 'widgets/info_box.html' with title=article.title type="place" data=None json_data=json_data updated_date=article.updated_at %}
                             {% endif %}
                         {% else %}
                             {% if article.featured_image and article.featured_image.name and article.featured_image.name != '' %}
-                            {% include 'widgets/info_box.html' with title=article.title type=content_type data=None json_data=json_data image=article.featured_image.url image_caption=article.title %}
+                            {% include 'widgets/info_box.html' with title=article.title type=content_type data=None json_data=json_data image=article.featured_image.url updated_date=article.updated_at %}
                             {% else %}
-                            {% include 'widgets/info_box.html' with title=article.title type=content_type data=None json_data=json_data %}
+                            {% include 'widgets/info_box.html' with title=article.title type=content_type data=None json_data=json_data updated_date=article.updated_at %}
                             {% endif %}
                         {% endif %}
                     {% endwith %}

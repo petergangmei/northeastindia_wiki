@@ -3,7 +3,7 @@ Wikipedia-style info box widget for articles about places, states, people, etc.
 Usage: {% include 'widgets/info_box.html' with title="Nagaland" type="state" data=info_data %}
 {% endcomment %}
 
-<div class="info-box card border shadow-sm" style="width: 100%; max-width: 350px;">
+<div class="info-box card border shadow-sm" style="width: 100%; max-width: 350px; margin-left: 0; margin-right: 0;">
     <!-- Info box header -->
     <div class="card-header bg-light border-bottom p-3">
         <h5 class="mb-0 fw-bold text-center">{{ title|default:"Information" }}</h5>
@@ -14,11 +14,8 @@ Usage: {% include 'widgets/info_box.html' with title="Nagaland" type="state" dat
 
     <!-- Info box image -->
     {% if image %}
-    <div class="text-center p-2 bg-light">
+    <div class="text-center py-2 bg-light">
         <img src="{{ image }}" alt="{{ title }}" class="img-fluid rounded" style="max-height: 200px; object-fit: cover;">
-        {% if image_caption %}
-        <div class="small text-muted mt-1">{{ image_caption }}</div>
-        {% endif %}
     </div>
     {% endif %}
 
@@ -429,7 +426,7 @@ Usage: {% include 'widgets/info_box.html' with title="Nagaland" type="state" dat
     <div class="card-footer bg-light text-center py-2">
         <small class="text-muted">
             <i class="fas fa-info-circle me-1"></i>
-            Information as of {{ current_date|default:"2024" }}
+            Information as of {{ updated_date|date:"Y"|default:"2024" }}
         </small>
     </div>
 </div>

@@ -206,9 +206,9 @@
                     {% if article.states.exists and info_box_data %}
                     {% with article.states.first as state %}
                     {% if article.featured_image and article.featured_image.name and article.featured_image.name != '' %}
-                    {% include 'widgets/info_box.html' with title=state.name type="state" data=info_box_data coordinates=coordinates image=article.featured_image.url image_caption=article.title %}
+                    {% include 'widgets/info_box.html' with title=state.name type="state" data=info_box_data coordinates=coordinates image=article.featured_image.url updated_date=article.updated_at %}
                     {% else %}
-                    {% include 'widgets/info_box.html' with title=state.name type="state" data=info_box_data coordinates=coordinates %}
+                    {% include 'widgets/info_box.html' with title=state.name type="state" data=info_box_data coordinates=coordinates updated_date=article.updated_at %}
                     {% endif %}
                     {% endwith %}
                     {% endif %}
