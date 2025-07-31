@@ -1,0 +1,21 @@
+{
+  "name": "northeastindia_wiki",
+  "version": "1.0.0",
+  "description": "northeastindia.wiki is an open-source platform dedicated to showcasing the rich cultural heritage, history, and notable personalities of Northeast India. Inspired by Wikipedia, this platform aims to become a comprehensive resource while encouraging user contributions with a structured review process.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/petergangmei/northeastindia_wiki.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/petergangmei/northeastindia_wiki/issues"
+  },
+  "homepage": "https://github.com/petergangmei/northeastindia_wiki#readme"
+}

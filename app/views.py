@@ -543,7 +543,7 @@ def article_create(request):
             )
             
             # Check if the user is submitting for review
-            submit_for_review = request.POST.get('submit_for_review') == 'true'
+            submit_for_review = request.POST.get('action') == 'submit_for_review'
             if submit_for_review:
                 article.review_status = 'pending'
             
@@ -655,37 +655,53 @@ def article_edit(request, slug):
                 tags_ids = [tag.id for tag in form.cleaned_data.get('tags', [])]
                 states_ids = [state.id for state in form.cleaned_data.get('states', [])]
                 
-                # TODO: Implement pending edits with new Content model
-                # For now, directly update the article
-                updated_article = form.save(commit=False)
-                updated_article.last_edited_by = request.user
+                # Create or update ContentRevision for approved articles
+                # Check if user has existing draft revision
+                existing_revision = ContentRevision.objects.filter(
+                    content=article,
+                    editor=request.user,
+                    status__in=['draft', 'pending_review']
+                ).first()
                 
-                # Clean HTML content
-                allowed_tags = [
-                    'p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'strong', 'em', 
-                    'u', 'a', 'img', 'blockquote', 'code', 'pre', 'ul', 'ol', 'li', 
-                    'table', 'thead', 'tbody', 'tr', 'th', 'td', 'br', 'hr'
-                ]
-                allowed_attrs = {
-                    'a': ['href', 'title', 'target'],
-                    'img': ['src', 'alt', 'title', 'width', 'height'],
-                }
-                updated_article.content = bleach.clean(
-                    updated_article.content, 
-                    tags=allowed_tags, 
-                    attributes=allowed_attrs,
-                    strip=True
-                )
+                # Determine revision status based on action
+                submit_for_review = request.POST.get('action') == 'submit_for_review'
+                revision_status = 'pending_review' if submit_for_review else 'draft'
                 
-                # Check if the user is submitting for review
-                submit_for_review = request.POST.get('submit_for_review') == 'true'
+                if existing_revision:
+                    # Update existing revision
+                    revision = existing_revision
+                else:
+                    # Create new revision
+                    revision = ContentRevision(
+                        content=article,
+                        editor=request.user
+                    )
+                
+                # Populate revision with form data
+                revision.title = title
+                revision.content_text = cleaned_content
+                revision.excerpt = excerpt
+                revision.meta_description = meta_description
+                revision.revision_comment = revision_comment
+                revision.status = revision_status
+                revision.info_box_data = form.cleaned_data.get('info_box_data', {})
+                
+                # Handle featured image
+                if form.cleaned_data.get('featured_image'):
+                    revision.featured_image = form.cleaned_data.get('featured_image')
+                
+                # Store M2M relationships as JSON
+                revision.categories_data = categories_ids
+                revision.tags_data = tags_ids
+                revision.states_data = states_ids
+                
+                revision.save()
+                
+                # Show appropriate success message based on action
                 if submit_for_review:
-                    updated_article.review_status = 'pending'
-                
-                updated_article.save()
-                form.save_m2m()
-                
-                messages.success(request, 'Article updated successfully!')
+                    messages.success(request, 'Changes submitted for review successfully!')
+                else:
+                    messages.success(request, 'Draft saved successfully!')
                 
                 # Record the contribution
                 Contribution.objects.create(
@@ -729,8 +745,8 @@ def article_edit(request, slug):
                 )
                 
                 # Check if the user is submitting for review
-                submit_for_review = request.POST.get('submit_for_review') == 'true'
-                if submit_for_review and updated_article.review_status in ['draft', 'rejected']:
+                submit_for_review = request.POST.get('action') == 'submit_for_review'
+                if submit_for_review:
                     updated_article.review_status = 'pending'
                 
                 # Save the article
@@ -770,7 +786,11 @@ def article_edit(request, slug):
                     user_profile.reputation_points += 5  # Adjust point value as needed
                     user_profile.save()
                 
-                messages.success(request, 'Article updated successfully!')
+                # Show appropriate success message based on action
+                if submit_for_review:
+                    messages.success(request, 'Article submitted for review successfully!')
+                else:
+                    messages.success(request, 'Article updated successfully!')
             
             return redirect('app:article-detail', slug=article.slug)
     else:
@@ -819,8 +839,9 @@ def article_history(request, slug):
     View the revision history of an article
     """
     article = get_object_or_404(Article, slug=slug)
-    # TODO: Implement revision tracking with new Content model
-    revisions = []  # ArticleRevision.objects.filter(article=article).order_by('-created_at')
+    
+    # Get all revisions for this article
+    revisions = ContentRevision.objects.filter(content=article).order_by('-created_at')
     
     context = {
         'article': article,
@@ -834,9 +855,7 @@ def article_revision(request, slug, revision_id):
     View a specific revision of an article
     """
     article = get_object_or_404(Article, slug=slug)
-    # TODO: Implement revision tracking with new Content model
-    # revision = get_object_or_404(ArticleRevision, id=revision_id, article=article)
-    revision = None
+    revision = get_object_or_404(ContentRevision, id=revision_id, content=article)
     
     context = {
         'article': article,
