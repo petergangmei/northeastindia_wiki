@@ -2,8 +2,12 @@ from django.contrib import admin
 from django.utils.html import format_html
 from django import forms
 from .models import (
-    Category, Tag, State, MediaItem, Comment, Contribution, Notification, Content
+    Category, Tag, State, MediaItem, Comment, Contribution, Notification, Content,ContentRevision
 )
+
+
+admin.site.register(ContentRevision)
+
 class TimeStampedModelAdmin(admin.ModelAdmin):
     """Base admin class for models inheriting from TimeStampedModel"""
     readonly_fields = ('created_at', 'updated_at')
