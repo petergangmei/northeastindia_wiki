@@ -145,7 +145,7 @@ class ContentItem(TimeStampedModel):
     
     # SEO and metadata
     meta_description = models.CharField(max_length=160, blank=True, help_text="SEO meta description")
-    featured_image = CompressedImageField(upload_to='content/', blank=True, null=True, quality=85, max_width=1200)
+    featured_image = CompressedImageField(upload_to='content/', blank=True, null=True, max_width=1200, target_size_kb=80)
     
     # Moderation and review
     review_status = models.CharField(max_length=20, 
@@ -357,7 +357,7 @@ class Content(TimeStampedModel):
     
     # SEO and metadata
     meta_description = models.CharField(max_length=160, blank=True, help_text="SEO meta description")
-    featured_image = CompressedImageField(upload_to='content/', blank=True, null=True, quality=85, max_width=1200)
+    featured_image = CompressedImageField(upload_to='content/', blank=True, null=True, max_width=1200, target_size_kb=80)
     
     
     # Legacy support fields (will be moved to type_data eventually)
