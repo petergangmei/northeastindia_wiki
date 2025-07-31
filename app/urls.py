@@ -44,6 +44,10 @@ urlpatterns = [
     path('wiki/<slug:slug>/review/', views.article_review, name='article-review'),
     path('wiki/<slug:slug>/review/action/', views.article_review_action, name='article-review-action'),
     
+    # Revision Review URLs
+    path('revision/<int:revision_id>/review/', views.revision_review, name='revision-review'),
+    path('revision/<int:revision_id>/review/action/', views.revision_review_action, name='revision-review-action'),
+    
     # Article detail and related URLs
     path('wiki/<slug:slug>/', views.article_detail, name='article-detail'),
     path('wiki/<slug:slug>/edit/', views.article_edit, name='article-edit'),

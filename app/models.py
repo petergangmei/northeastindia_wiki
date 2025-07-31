@@ -457,6 +457,34 @@ class Content(TimeStampedModel):
         
         return ' | '.join(components)
     
+    def get_pending_revision(self):
+        """Get the current pending revision if any"""
+        return self.revisions.filter(status='pending_review').first()
+    
+    def has_pending_revision(self):
+        """Check if there's a pending revision"""
+        return self.revisions.filter(status='pending_review').exists()
+    
+    def get_latest_draft(self, user):
+        """Get the latest draft revision for a specific user"""
+        return self.revisions.filter(status='draft', editor=user).first()
+    
+    def can_be_edited_by(self, user):
+        """Check if a user can edit this content"""
+        if not user.is_authenticated:
+            return False
+        
+        # Author can always edit
+        if user == self.author:
+            return True
+        
+        # Check user role
+        try:
+            user_profile = user.profile
+            return user_profile.role in ['editor', 'admin'] or user.is_staff
+        except:
+            return user.is_staff
+    
     def get_seo_description(self):
         """Generate SEO-optimized meta description"""
         if self.meta_description:
@@ -470,4 +498,111 @@ class Content(TimeStampedModel):
         import re
         clean_content = re.sub(r'<[^>]+>', '', self.content)
         return (clean_content[:150] + '...') if len(clean_content) > 150 else clean_content
+
+
+class ContentRevision(TimeStampedModel):
+    """
+    Model to store content revisions and pending edits
+    Enables draft workflow where contributor edits require admin approval
+    """
+    REVISION_STATUS_CHOICES = (
+        ('draft', 'Draft'),
+        ('pending_review', 'Pending Review'),
+        ('approved', 'Approved'),
+        ('rejected', 'Rejected'),
+    )
     
+    # Link to the original content
+    content = models.ForeignKey(Content, on_delete=models.CASCADE, related_name='revisions')
+    
+    # Revision metadata
+    editor = models.ForeignKey(User, on_delete=models.PROTECT, related_name='content_revisions')
+    revision_comment = models.CharField(max_length=255, blank=True, help_text="Brief explanation of changes")
+    status = models.CharField(max_length=20, choices=REVISION_STATUS_CHOICES, default='draft')
+    
+    # Content fields (snapshot of changes)
+    title = models.CharField(max_length=255)
+    content_text = HTMLField()  # Using different name to avoid confusion with FK
+    excerpt = models.TextField(blank=True)
+    meta_description = models.CharField(max_length=160, blank=True)
+    featured_image = CompressedImageField(upload_to='content/revisions/', blank=True, null=True, max_width=1200, target_size_kb=80)
+    
+    # Structured data for info boxes
+    info_box_data = models.JSONField(default=dict, blank=True)
+    
+    # Relationships (stored as JSON for flexibility)
+    categories_data = models.JSONField(default=list, blank=True, help_text="List of category IDs")
+    tags_data = models.JSONField(default=list, blank=True, help_text="List of tag IDs") 
+    states_data = models.JSONField(default=list, blank=True, help_text="List of state IDs")
+    
+    # Review metadata
+    reviewed_by = models.ForeignKey(User, null=True, blank=True, on_delete=models.SET_NULL, related_name='reviewed_revisions')
+    reviewed_at = models.DateTimeField(null=True, blank=True)
+    review_notes = models.TextField(blank=True)
+    
+    class Meta:
+        ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['content', 'status']),
+            models.Index(fields=['status', 'created_at']),
+            models.Index(fields=['editor']),
+        ]
+    
+    def __str__(self):
+        return f"Revision of {self.content.title} by {self.editor.username} - {self.status}"
+    
+    def apply_to_content(self):
+        """
+        Apply this revision to the original content object
+        Should only be called when revision is approved
+        """
+        if self.status != 'approved':
+            raise ValueError("Only approved revisions can be applied")
+        
+        # Update the content object
+        self.content.title = self.title
+        self.content.content = self.content_text
+        self.content.excerpt = self.excerpt
+        self.content.meta_description = self.meta_description
+        self.content.info_box_data = self.info_box_data
+        self.content.last_edited_by = self.editor
+        
+        if self.featured_image:
+            self.content.featured_image = self.featured_image
+        
+        # Update relationships
+        if self.categories_data:
+            self.content.categories.set(self.categories_data)
+        if self.tags_data:
+            self.content.tags.set(self.tags_data)
+        if self.states_data:
+            self.content.states.set(self.states_data)
+        
+        self.content.save()
+        
+        # Update revision metadata
+        self.reviewed_at = timezone.now()
+        self.save()
+    
+    def get_changes_summary(self):
+        """
+        Generate a summary of changes compared to the original content
+        """
+        changes = []
+        
+        if self.title != self.content.title:
+            changes.append(f"Title: '{self.content.title}' → '{self.title}'")
+        
+        if self.content_text != self.content.content:
+            changes.append("Content modified")
+        
+        if self.excerpt != self.content.excerpt:
+            changes.append("Excerpt modified")
+        
+        if self.info_box_data != self.content.info_box_data:
+            changes.append("Info box data modified")
+        
+        if not changes:
+            changes.append("No significant changes detected")
+        
+        return changes

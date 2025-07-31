@@ -685,6 +685,40 @@
                         {% endfor %}
                     </div>
                     {% endif %}
+                    
+                    <!-- Revision Status Alert -->
+                    {% if article and is_approved_content and existing_revision %}
+                    <div class="alert alert-info border-0 mx-3 mt-3 mb-0" role="alert">
+                        <h6 class="alert-heading mb-2">
+                            <i class="fas fa-info-circle me-2"></i>
+                            {% if existing_revision.status == 'draft' %}
+                                Working on Draft
+                            {% elif existing_revision.status == 'pending_review' %}
+                                Revision Pending Review
+                            {% elif existing_revision.status == 'rejected' %}
+                                Previous Revision Rejected
+                            {% endif %}
+                        </h6>
+                        <p class="mb-2">
+                            {% if existing_revision.status == 'draft' %}
+                                You have unsaved changes for this approved article. Your edits are saved as a draft and won't be visible to the public until you submit them for review.
+                            {% elif existing_revision.status == 'pending_review' %}
+                                Your revision is currently being reviewed by an administrator. The changes will be applied to the live article once approved.
+                            {% elif existing_revision.status == 'rejected' %}
+                                Your previous revision was rejected. You can make new changes and submit again for review.
+                                {% if existing_revision.review_notes %}
+                                <br><strong>Feedback:</strong> {{ existing_revision.review_notes }}
+                                {% endif %}
+                            {% endif %}
+                        </p>
+                        {% if existing_revision.revision_comment %}
+                        <small class="text-muted">
+                            <i class="fas fa-comment me-1"></i>
+                            Last comment: "{{ existing_revision.revision_comment }}"
+                        </small>
+                        {% endif %}
+                    </div>
+                    {% endif %}
 
                     <div class="form-content">
                         <div class="tab-content" id="form-tab-content">
@@ -1011,14 +1045,24 @@
                            class="btn btn-outline-secondary">
                             <i class="fas fa-times me-2"></i>Cancel
                         </a>
-                        <button type="submit" form="article-form" name="submit_for_review" value="true" 
+                        {% if article and is_approved_content %}
+                        <button type="submit" form="article-form" name="action" value="submit_for_review" 
                                 class="btn btn-outline-primary">
                             <i class="fas fa-paper-plane me-2"></i>Submit for Review
                         </button>
-                        <button type="submit" form="article-form" class="btn btn-primary">
+                        <button type="submit" form="article-form" name="action" value="save_draft" class="btn btn-primary">
+                            <i class="fas fa-save me-2"></i>Save Draft
+                        </button>
+                        {% else %}
+                        <button type="submit" form="article-form" name="action" value="submit_for_review" 
+                                class="btn btn-outline-primary">
+                            <i class="fas fa-paper-plane me-2"></i>Submit for Review
+                        </button>
+                        <button type="submit" form="article-form" name="action" value="save_draft" class="btn btn-primary">
                             <i class="fas fa-save me-2"></i>
                             {% if article %}Update Article{% else %}Create Article{% endif %}
                         </button>
+                        {% endif %}
                     </div>
                 </div>
             </div>

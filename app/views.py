@@ -18,7 +18,7 @@ from difflib import ndiff
 import bleach
 import string
 import random
-from .models import UserProfile, Contribution, Content, Category, Tag, State, Notification
+from .models import UserProfile, Contribution, Content, Category, Tag, State, Notification, ContentRevision
 
 # Create alias for backward compatibility since views use Article extensively
 Article = Content
@@ -592,24 +592,24 @@ def article_create(request):
 @login_required
 def article_edit(request, slug):
     """
-    Edit an existing article
+    Edit an existing article with draft workflow for approved content
     """
     # Get the article
     article = get_object_or_404(Article, slug=slug)
     
-    # Check if user has permission to edit (author, editor, or admin)
-    user_profile = get_object_or_404(UserProfile, user=request.user)
-    if request.user != article.author and user_profile.role not in ['editor', 'admin'] and not request.user.is_staff:
+    # Check if user has permission to edit
+    if not article.can_be_edited_by(request.user):
         messages.error(request, "You don't have permission to edit this article.")
         return redirect('app:article-detail', slug=article.slug)
     
-    # Check if there's already a pending edit for this article
-    # TODO: Implement pending edits with new Content model
-    pending_edit = None
-    # try:
-    #     pending_edit = article.pending_edit
-    # except:
-    #     pass
+    # Get user profile for contribution tracking
+    try:
+        user_profile = request.user.profile
+    except:
+        user_profile = UserProfile.objects.create(user=request.user)
+    
+    # Get existing draft or pending revision for this user/article
+    existing_revision = article.get_latest_draft(request.user) or article.get_pending_revision()
     
     if request.method == 'POST':
         form = ArticleForm(request.POST, request.FILES, instance=article)
@@ -774,36 +774,42 @@ def article_edit(request, slug):
             
             return redirect('app:article-detail', slug=article.slug)
     else:
-        # For GET requests, show the form with either the article data or pending edit data
-        if pending_edit and article.review_status == 'approved':
-            # If there's a pending edit, load it instead of the article
+        # GET request - show form with appropriate data
+        if existing_revision and article.review_status == 'approved':
+            # Load data from existing revision
             initial_data = {
-                'title': pending_edit.title or article.title,
-                'content': pending_edit.content,
-                'excerpt': pending_edit.excerpt,
-                'meta_description': pending_edit.meta_description,
-                'references': pending_edit.references,
-                'revision_comment': pending_edit.revision_comment,
+                'title': existing_revision.title,
+                'content': existing_revision.content_text,
+                'excerpt': existing_revision.excerpt,
+                'meta_description': existing_revision.meta_description,
+                'info_box_data': existing_revision.info_box_data,
+                'revision_comment': existing_revision.revision_comment,
             }
             
-            # Initialize the form with initial data
             form = ArticleForm(instance=article, initial=initial_data)
             
-            # We'll handle the m2m fields and featured image in the template
+            # Set m2m fields if they exist in revision data
+            if hasattr(form, 'fields'):
+                if existing_revision.categories_data:
+                    form.fields['categories'].initial = existing_revision.categories_data
+                if existing_revision.tags_data:
+                    form.fields['tags'].initial = existing_revision.tags_data
+                if existing_revision.states_data:
+                    form.fields['states'].initial = existing_revision.states_data
         else:
-            # Just load the article as normal
+            # Load data from article
             form = ArticleForm(instance=article)
     
     # Get revision history
-    # TODO: Implement revision tracking with new Content model
-    revisions = []  # ArticleRevision.objects.filter(article=article).order_by('-created_at')
+    revisions = article.revisions.all()[:10]  # Show latest 10 revisions
     
     context = {
         'form': form,
         'article': article,
         'revisions': revisions,
-        'pending_edit': pending_edit,
+        'existing_revision': existing_revision,
         'title': 'Edit Article',
+        'is_approved_content': article.review_status == 'approved',
     }
     
     return render(request, 'articles/article_form.html', context)
@@ -1347,8 +1353,9 @@ def article_review_queue(request):
     # Get sort parameter
     sort = request.GET.get('sort', 'newest')
     
-    # Get all pending articles
+    # Get all pending articles and revisions
     pending_articles = Article.objects.filter(content_type='article', review_status='pending')
+    pending_revisions = ContentRevision.objects.filter(status='pending_review')
     
     # Apply search if provided
     if query:
@@ -1358,15 +1365,24 @@ def article_review_queue(request):
             Q(excerpt__icontains=query) |
             Q(author__username__icontains=query)
         )
+        pending_revisions = pending_revisions.filter(
+            Q(title__icontains=query) |
+            Q(content_text__icontains=query) |
+            Q(content__title__icontains=query) |
+            Q(editor__username__icontains=query)
+        )
     
     # Apply sorting
     if sort == 'oldest':
         pending_articles = pending_articles.order_by('created_at')
+        pending_revisions = pending_revisions.order_by('created_at')
     else:  # Default to newest
         pending_articles = pending_articles.order_by('-created_at')
+        pending_revisions = pending_revisions.order_by('-created_at')
     
     # Get counts for dashboard stats
     pending_count = Article.objects.filter(content_type='article', review_status='pending').count()
+    pending_revisions_count = ContentRevision.objects.filter(status='pending_review').count()
     approved_count = Article.objects.filter(content_type='article', review_status='approved', published=True).count()
     rejected_count = Article.objects.filter(content_type='article', review_status='rejected').count()
     draft_count = Article.objects.filter(content_type='article', review_status='draft').count()
@@ -1378,16 +1394,134 @@ def article_review_queue(request):
     
     context = {
         'pending_articles': page_obj,
+        'pending_revisions': pending_revisions[:10],  # Show latest 10 revisions
         'page_obj': page_obj,
         'sort': sort,
         'query': query,
         'pending_count': pending_count,
+        'pending_revisions_count': pending_revisions_count,
         'approved_count': approved_count,
         'rejected_count': rejected_count,
         'draft_count': draft_count,
     }
     
     return render(request, 'articles/review_queue.html', context)
+
+@login_required
+def revision_review(request, revision_id):
+    """
+    Review a specific content revision
+    """
+    # Check if user has permission (editor or admin)
+    user_profile = get_object_or_404(UserProfile, user=request.user)
+    if user_profile.role not in ['editor', 'admin'] and not request.user.is_staff:
+        messages.error(request, "You don't have permission to review revisions.")
+        return redirect('app:home')
+    
+    # Get the revision
+    revision = get_object_or_404(ContentRevision, id=revision_id)
+    
+    # Get the original content
+    original_content = revision.content
+    
+    # Get changes summary
+    changes = revision.get_changes_summary()
+    
+    context = {
+        'revision': revision,
+        'original_content': original_content,
+        'changes': changes,
+    }
+    
+    return render(request, 'articles/revision_review.html', context)
+
+@login_required
+def revision_review_action(request, revision_id):
+    """
+    Handle revision review actions (approve or reject)
+    """
+    # Check if user has permission (editor or admin)
+    user_profile = get_object_or_404(UserProfile, user=request.user)
+    if user_profile.role not in ['editor', 'admin'] and not request.user.is_staff:
+        messages.error(request, "You don't have permission to review revisions.")
+        return redirect('app:home')
+    
+    # Get the revision
+    revision = get_object_or_404(ContentRevision, id=revision_id)
+    
+    # Check if the revision is pending review
+    if revision.status != 'pending_review':
+        messages.warning(request, "This revision is not pending review.")
+        return redirect('app:article-review-queue')
+    
+    if request.method == 'POST':
+        action = request.POST.get('action')
+        review_notes = request.POST.get('review_notes', '')
+        
+        if action == 'approve':
+            # Apply the revision to the content
+            try:
+                revision.status = 'approved'
+                revision.reviewed_by = request.user
+                revision.review_notes = review_notes
+                revision.apply_to_content()
+                
+                # Create notification for the editor
+                create_notification(
+                    revision.editor,
+                    'approval',
+                    f'Your revision for "{revision.content.title}" has been approved.',
+                    'content_revision',
+                    revision.id
+                )
+                
+                # Create contribution record
+                Contribution.objects.create(
+                    user=revision.editor,
+                    contribution_type='article_edit',
+                    content_type='article',
+                    object_id=revision.content.id,
+                    points_earned=10,
+                    approved=True,
+                    approved_by=request.user
+                )
+                
+                # Update user reputation
+                try:
+                    editor_profile = revision.editor.profile
+                    editor_profile.reputation_points += 10
+                    editor_profile.contribution_count += 1
+                    editor_profile.save()
+                except:
+                    pass
+                
+                messages.success(request, f'Revision approved and applied to "{revision.content.title}".')
+                
+            except Exception as e:
+                messages.error(request, f'Error applying revision: {str(e)}')
+                
+        elif action == 'reject':
+            # Mark revision as rejected
+            revision.status = 'rejected'
+            revision.reviewed_by = request.user
+            revision.review_notes = review_notes
+            revision.save()
+            
+            # Create notification for the editor
+            create_notification(
+                revision.editor,
+                'rejection',
+                f'Your revision for "{revision.content.title}" has been rejected. Reason: {review_notes}',
+                'content_revision',
+                revision.id
+            )
+            
+            messages.success(request, f'Revision rejected for "{revision.content.title}".')
+        
+        return redirect('app:article-review-queue')
+    
+    # If not POST, redirect to review queue
+    return redirect('app:article-review-queue')
 
 @login_required
 def article_review(request, slug):
