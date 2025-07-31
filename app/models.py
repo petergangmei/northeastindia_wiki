@@ -4,6 +4,7 @@ from django.utils.text import slugify
 from django.urls import reverse
 from django.utils import timezone
 from tinymce.models import HTMLField
+from .fields import CompressedImageField
 
 class TimeStampedModel(models.Model):
     """
@@ -30,7 +31,6 @@ class UserProfile(models.Model):
 
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
     bio = models.TextField(blank=True)
-    avatar = models.ImageField(upload_to='avatars/', blank=True, null=True)
     location = models.CharField(max_length=100, blank=True)
     website = models.URLField(blank=True)
     role = models.CharField(max_length=20, choices=USER_ROLES, default='viewer')
@@ -113,7 +113,6 @@ class State(TimeStampedModel):
     population = models.PositiveIntegerField(null=True, blank=True)
     area = models.PositiveIntegerField(help_text="Area in square kilometers", null=True, blank=True)
     languages = models.CharField(max_length=255, help_text="Comma-separated list of major languages", blank=True)
-    image = models.ImageField(upload_to='states/', blank=True, null=True)
     
     def __str__(self):
         return self.name
@@ -146,7 +145,7 @@ class ContentItem(TimeStampedModel):
     
     # SEO and metadata
     meta_description = models.CharField(max_length=160, blank=True, help_text="SEO meta description")
-    featured_image = models.ImageField(upload_to='content/', blank=True, null=True)
+    featured_image = CompressedImageField(upload_to='content/', blank=True, null=True, quality=85, max_width=1200)
     
     # Moderation and review
     review_status = models.CharField(max_length=20, 
@@ -358,7 +357,7 @@ class Content(TimeStampedModel):
     
     # SEO and metadata
     meta_description = models.CharField(max_length=160, blank=True, help_text="SEO meta description")
-    featured_image = models.ImageField(upload_to='content/', blank=True, null=True)
+    featured_image = CompressedImageField(upload_to='content/', blank=True, null=True, quality=85, max_width=1200)
     
     
     # Legacy support fields (will be moved to type_data eventually)

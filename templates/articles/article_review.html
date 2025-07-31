@@ -17,11 +17,10 @@
                 <div class="col-md-8">
                     <h2 class="mb-3">{{ article.title }}</h2>
                     <div class="d-flex align-items-center mb-3">
-                        <img src="{% if article.author.profile.avatar %}{{ article.author.profile.avatar.url }}{% else %}https://via.placeholder.com/40{% endif %}" 
-                             class="rounded-circle me-2" 
-                             width="40" height="40" 
-                             alt="{{ article.author.username }}" 
-                             style="object-fit: cover;">
+                        <div class="bg-primary rounded-circle d-flex justify-content-center align-items-center me-2"
+                             style="width: 40px; height: 40px;">
+                            <span class="text-white fw-bold">{{ article.author.username|first|upper }}</span>
+                        </div>
                         <div>
                             <div class="fw-bold">{{ article.author.username }}</div>
                             <div class="text-muted small">{{ article.author.profile.role|title }}</div>

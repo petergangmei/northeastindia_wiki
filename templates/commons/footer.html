@@ -3,14 +3,14 @@
     <div class="container py-5">
         <div class="row">
             <!-- About section -->
-            <div class="col-lg-3 col-md-6 mb-4 mb-lg-0">
+            <div class="col-lg-4 col-md-6 mb-4 mb-lg-0">
                 <h5 class="text-uppercase text-white mb-4">About Northeast India Wiki</h5>
                 <p>A dedicated platform focused on showcasing the rich cultural heritage, history, and famous personalities of Northeast India.</p>
                 <p class="mt-3">Our mission is to preserve and share knowledge about the Northeast region's unique identity through collaborative contributions.</p>
             </div>
 
             <!-- Navigation & Discovery -->
-            <div class="col-lg-3 col-md-6 mb-4 mb-lg-0">
+            <div class="col-lg-4 col-md-6 mb-4 mb-lg-0">
                 <h5 class="text-uppercase text-white mb-4">Explore Content</h5>
                 <ul class="list-unstyled">
                     <li class="mb-2"><a href="{% url 'app:home' %}" class="text-white text-decoration-none"><i class="fas fa-home me-2"></i>Home</a></li>
@@ -36,42 +36,9 @@
                 </div>
             </div>
 
-            <!-- Northeast India States -->
-            <div class="col-lg-3 col-md-6 mb-4 mb-lg-0">
-                <h5 class="text-uppercase text-white mb-4">Seven Sisters + Sikkim</h5>
-                <div class="row">
-                    <div class="col-6">
-                        <ul class="list-unstyled">
-                            <li class="mb-2"><a href="{% url 'app:article-list' %}?state=assam" class="text-white text-decoration-none small"><i class="fas fa-map-marker-alt me-2"></i>Assam</a></li>
-                            <li class="mb-2"><a href="{% url 'app:article-list' %}?state=arunachal-pradesh" class="text-white text-decoration-none small"><i class="fas fa-map-marker-alt me-2"></i>Arunachal Pradesh</a></li>
-                            <li class="mb-2"><a href="{% url 'app:article-list' %}?state=manipur" class="text-white text-decoration-none small"><i class="fas fa-map-marker-alt me-2"></i>Manipur</a></li>
-                            <li class="mb-2"><a href="{% url 'app:article-list' %}?state=meghalaya" class="text-white text-decoration-none small"><i class="fas fa-map-marker-alt me-2"></i>Meghalaya</a></li>
-                        </ul>
-                    </div>
-                    <div class="col-6">
-                        <ul class="list-unstyled">
-                            <li class="mb-2"><a href="{% url 'app:article-list' %}?state=mizoram" class="text-white text-decoration-none small"><i class="fas fa-map-marker-alt me-2"></i>Mizoram</a></li>
-                            <li class="mb-2"><a href="{% url 'app:article-list' %}?state=nagaland" class="text-white text-decoration-none small"><i class="fas fa-map-marker-alt me-2"></i>Nagaland</a></li>
-                            <li class="mb-2"><a href="{% url 'app:article-list' %}?state=tripura" class="text-white text-decoration-none small"><i class="fas fa-map-marker-alt me-2"></i>Tripura</a></li>
-                            <li class="mb-2"><a href="{% url 'app:article-list' %}?state=sikkim" class="text-white text-decoration-none small"><i class="fas fa-mountain me-2"></i>Sikkim</a></li>
-                        </ul>
-                    </div>
-                </div>
-                
-                <!-- Popular Topics -->
-                <div class="mt-3 pt-3 border-top border-light">
-                    <h6 class="text-uppercase text-white mb-2">Popular Topics</h6>
-                    <div class="d-flex flex-wrap gap-1">
-                        <a href="{% url 'app:article-search' %}?q=festival" class="badge bg-light text-dark text-decoration-none">Festivals</a>
-                        <a href="{% url 'app:article-search' %}?q=culture" class="badge bg-light text-dark text-decoration-none">Culture</a>
-                        <a href="{% url 'app:article-search' %}?q=tradition" class="badge bg-light text-dark text-decoration-none">Traditions</a>
-                        <a href="{% url 'app:article-search' %}?q=personality" class="badge bg-light text-dark text-decoration-none">People</a>
-                    </div>
-                </div>
-            </div>
 
             <!-- Connect with us -->
-            <div class="col-lg-3 col-md-6 mb-4 mb-lg-0">
+            <div class="col-lg-4 col-md-6 mb-4 mb-lg-0">
                 <h5 class="text-uppercase text-white mb-4">Connect With Us</h5>
                 <!-- Social icons -->
                 <div class="mb-4">
