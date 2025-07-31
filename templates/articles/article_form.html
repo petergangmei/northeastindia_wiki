@@ -652,6 +652,12 @@
                             </button>
                         </li>
                         <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="info-box-tab" data-mdb-toggle="pill" 
+                                    data-mdb-target="#info-box" type="button" role="tab" aria-controls="info-box" aria-selected="false">
+                                <i class="fas fa-info-circle me-2"></i>Info Box
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
                             <button class="nav-link" id="media-seo-tab" data-mdb-toggle="pill" 
                                     data-mdb-target="#media-seo" type="button" role="tab" aria-controls="media-seo" aria-selected="false">
                                 <i class="fas fa-image me-2"></i>Media & SEO
@@ -829,6 +835,62 @@
                                             </div>
                                             {% endif %}
                                             <div class="form-text">Select the Northeast Indian states related to this article</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Info Box Tab -->
+                            <div class="tab-pane fade" id="info-box" role="tabpanel">
+                                <div class="row">
+                                    <div class="col-12">
+                                        <div class="form-group">
+                                            <label class="form-label">
+                                                <i class="fas fa-info-circle me-2"></i>Info Box Data
+                                            </label>
+                                            <div class="alert alert-info">
+                                                <i class="fas fa-lightbulb me-2"></i>
+                                                <strong>How to use:</strong> Add label-value pairs that will appear in the article's info box. 
+                                                For example: "Name: Peter", "Age: 25", "Location: Meghalaya", "Known as: Elephant Falls".
+                                            </div>
+                                            
+                                            <!-- Dynamic content type examples -->
+                                            <div class="mb-3">
+                                                <small class="text-muted">
+                                                    <strong>Common examples by content type:</strong>
+                                                </small>
+                                                <div class="row mt-2">
+                                                    <div class="col-md-4">
+                                                        <div class="p-2 bg-light rounded">
+                                                            <strong class="text-primary">Person:</strong><br>
+                                                            <small>Born, Occupation, Years active, Known for</small>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-md-4">
+                                                        <div class="p-2 bg-light rounded">
+                                                            <strong class="text-success">Place:</strong><br>
+                                                            <small>Location, Type, Coordinates, Known as</small>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-md-4">
+                                                        <div class="p-2 bg-light rounded">
+                                                            <strong class="text-warning">Movie:</strong><br>
+                                                            <small>Director, Cast, Release date, Language</small>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <!-- Info Box Data Widget -->
+                                            {{ form.info_box_data }}
+                                            
+                                            {% if form.info_box_data.errors %}
+                                            <div class="invalid-feedback">
+                                                {% for error in form.info_box_data.errors %}
+                                                <i class="fas fa-exclamation-circle me-1"></i>{{ error }}
+                                                {% endfor %}
+                                            </div>
+                                            {% endif %}
                                         </div>
                                     </div>
                                 </div>

@@ -359,6 +359,8 @@ class Content(TimeStampedModel):
     meta_description = models.CharField(max_length=160, blank=True, help_text="SEO meta description")
     featured_image = CompressedImageField(upload_to='content/', blank=True, null=True, max_width=1200, target_size_kb=80)
     
+    # Structured data for info boxes (stores label-value pairs as JSON)
+    info_box_data = models.JSONField(default=dict, blank=True, help_text="Structured data for info box display (e.g., {'Name': 'Peter', 'Age': '25'})")
     
     # Legacy support fields (will be moved to type_data eventually)
     last_edited_by = models.ForeignKey(User, null=True, blank=True, on_delete=models.SET_NULL, related_name='edited_content')

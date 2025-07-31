@@ -258,11 +258,151 @@ Usage: {% include 'widgets/info_box.html' with title="Nagaland" type="state" dat
                 </tr>
                 {% endif %}
 
+            {% elif type == "movie" %}
+                <!-- Movie-specific information -->
+                {% if data.Director %}
+                <tr>
+                    <td class="fw-semibold text-muted bg-light px-3 py-2">Directed by</td>
+                    <td class="px-3 py-2">{{ data.Director }}</td>
+                </tr>
+                {% endif %}
+
+                {% if data.Producer %}
+                <tr>
+                    <td class="fw-semibold text-muted bg-light px-3 py-2">Produced by</td>
+                    <td class="px-3 py-2">{{ data.Producer }}</td>
+                </tr>
+                {% endif %}
+
+                {% if data.Writer %}
+                <tr>
+                    <td class="fw-semibold text-muted bg-light px-3 py-2">Written by</td>
+                    <td class="px-3 py-2">{{ data.Writer }}</td>
+                </tr>
+                {% endif %}
+
+                {% if data.Starring %}
+                <tr>
+                    <td class="fw-semibold text-muted bg-light px-3 py-2">Starring</td>
+                    <td class="px-3 py-2">{{ data.Starring }}</td>
+                </tr>
+                {% endif %}
+
+                {% if data.Music %}
+                <tr>
+                    <td class="fw-semibold text-muted bg-light px-3 py-2">Music by</td>
+                    <td class="px-3 py-2">{{ data.Music }}</td>
+                </tr>
+                {% endif %}
+
+                {% if data.Release_date %}
+                <tr>
+                    <td class="fw-semibold text-muted bg-light px-3 py-2">Release date</td>
+                    <td class="px-3 py-2">{{ data.Release_date }}</td>
+                </tr>
+                {% endif %}
+
+                {% if data.Running_time %}
+                <tr>
+                    <td class="fw-semibold text-muted bg-light px-3 py-2">Running time</td>
+                    <td class="px-3 py-2">{{ data.Running_time }}</td>
+                </tr>
+                {% endif %}
+
+                {% if data.Country %}
+                <tr>
+                    <td class="fw-semibold text-muted bg-light px-3 py-2">Country</td>
+                    <td class="px-3 py-2">{{ data.Country }}</td>
+                </tr>
+                {% endif %}
+
+                {% if data.Language %}
+                <tr>
+                    <td class="fw-semibold text-muted bg-light px-3 py-2">Language</td>
+                    <td class="px-3 py-2">{{ data.Language }}</td>
+                </tr>
+                {% endif %}
+
+                {% if data.Budget %}
+                <tr>
+                    <td class="fw-semibold text-muted bg-light px-3 py-2">Budget</td>
+                    <td class="px-3 py-2">{{ data.Budget }}</td>
+                </tr>
+                {% endif %}
+
+                {% if data.Box_office %}
+                <tr>
+                    <td class="fw-semibold text-muted bg-light px-3 py-2">Box office</td>
+                    <td class="px-3 py-2">{{ data.Box_office }}</td>
+                </tr>
+                {% endif %}
+
+            {% elif type == "place" %}
+                <!-- Place-specific information -->
+                {% if data.Location %}
+                <tr>
+                    <td class="fw-semibold text-muted bg-light px-3 py-2">Location</td>
+                    <td class="px-3 py-2">{{ data.Location }}</td>
+                </tr>
+                {% endif %}
+
+                {% if data.Type %}
+                <tr>
+                    <td class="fw-semibold text-muted bg-light px-3 py-2">Type</td>
+                    <td class="px-3 py-2">{{ data.Type }}</td>
+                </tr>
+                {% endif %}
+
+                {% if data.Watercourse %}
+                <tr>
+                    <td class="fw-semibold text-muted bg-light px-3 py-2">Watercourse</td>
+                    <td class="px-3 py-2">{{ data.Watercourse }}</td>
+                </tr>
+                {% endif %}
+
+                {% if data.Known_as %}
+                <tr>
+                    <td class="fw-semibold text-muted bg-light px-3 py-2">Known as</td>
+                    <td class="px-3 py-2">{{ data.Known_as }}</td>
+                </tr>
+                {% endif %}
+
+                {% if data.District %}
+                <tr>
+                    <td class="fw-semibold text-muted bg-light px-3 py-2">District</td>
+                    <td class="px-3 py-2">{{ data.District }}</td>
+                </tr>
+                {% endif %}
+
+                {% if data.State %}
+                <tr>
+                    <td class="fw-semibold text-muted bg-light px-3 py-2">State</td>
+                    <td class="px-3 py-2">{{ data.State }}</td>
+                </tr>
+                {% endif %}
+
+                {% if data.Elevation %}
+                <tr>
+                    <td class="fw-semibold text-muted bg-light px-3 py-2">Elevation</td>
+                    <td class="px-3 py-2">{{ data.Elevation }}</td>
+                </tr>
+                {% endif %}
+
             {% else %}
-                <!-- Generic information display -->
+                <!-- Generic information display for custom data -->
                 {% for key, value in data.items %}
                 <tr>
                     <td class="fw-semibold text-muted bg-light px-3 py-2">{{ key|title }}</td>
+                    <td class="px-3 py-2">{{ value }}</td>
+                </tr>
+                {% endfor %}
+            {% endif %}
+            
+            <!-- Display user-defined info box data (from JSON field) -->
+            {% if json_data %}
+                {% for key, value in json_data.items %}
+                <tr>
+                    <td class="fw-semibold text-muted bg-light px-3 py-2">{{ key }}</td>
                     <td class="px-3 py-2">{{ value }}</td>
                 </tr>
                 {% endfor %}

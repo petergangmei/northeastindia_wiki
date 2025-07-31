@@ -214,13 +214,24 @@
                     <!-- Info box for states/places -->
                     {% if article.states.exists and info_box_data %}
                     {% with article.states.first as state %}
-                    {% include 'widgets/info_box.html' with title=state.name type="state" data=info_box_data coordinates=coordinates %}
+                    {% include 'widgets/info_box.html' with title=state.name type="state" data=info_box_data coordinates=coordinates json_data=json_data %}
                     {% endwith %}
                     {% endif %}
 
                     <!-- Info box for personalities -->
                     {% if article.content_type == 'personality' and personality_info_box_data %}
-                    {% include 'widgets/info_box.html' with title=article.title type="person" data=personality_info_box_data %}
+                    {% include 'widgets/info_box.html' with title=article.title type="person" data=personality_info_box_data json_data=json_data %}
+                    {% endif %}
+
+                    <!-- Generic info box for content with json_data only -->
+                    {% if json_data and not info_box_data and not personality_info_box_data %}
+                    {% with content_type=article.content_type %}
+                        {% if content_type == 'cultural' %}
+                            {% include 'widgets/info_box.html' with title=article.title type="place" data=None json_data=json_data %}
+                        {% else %}
+                            {% include 'widgets/info_box.html' with title=article.title type=content_type data=None json_data=json_data %}
+                        {% endif %}
+                    {% endwith %}
                     {% endif %}
 
                     <!-- Featured image -->

@@ -1,0 +1,106 @@
+.info-box-data-widget {
+    border: 1px solid #dee2e6;
+    border-radius: 0.375rem;
+    padding: 1rem;
+    background-color: #f8f9fa;
+    margin-bottom: 1rem;
+}
+
+.info-box-data-widget .form-label {
+    font-weight: 600;
+    color: #495057;
+    margin-bottom: 0.5rem;
+}
+
+.info-box-pair {
+    background-color: white;
+    padding: 0.75rem;
+    border-radius: 0.25rem;
+    border: 1px solid #e9ecef;
+    margin-bottom: 0.5rem;
+    transition: all 0.2s ease;
+}
+
+.info-box-pair:hover {
+    border-color: #adb5bd;
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+}
+
+.info-box-pair .form-control {
+    border-radius: 0.25rem;
+    border: 1px solid #ced4da;
+    transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+
+.info-box-pair .form-control:focus {
+    border-color: #80bdff;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+.info-box-pair .info-box-label {
+    font-weight: 500;
+}
+
+.info-box-pair .remove-pair {
+    width: 100%;
+    transition: all 0.2s ease;
+}
+
+.info-box-pair .remove-pair:hover {
+    background-color: #dc3545;
+    border-color: #dc3545;
+    color: white;
+}
+
+.add-pair {
+    transition: all 0.2s ease;
+}
+
+.add-pair:hover {
+    background-color: #0d6efd;
+    border-color: #0d6efd;
+    color: white;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .info-box-pair .col-md-4,
+    .info-box-pair .col-md-6,
+    .info-box-pair .col-md-2 {
+        margin-bottom: 0.5rem;
+    }
+    
+    .info-box-pair .remove-pair {
+        width: auto;
+        padding: 0.375rem 0.75rem;
+    }
+}
+
+/* Animation for adding/removing pairs */
+.info-box-pair {
+    animation: fadeIn 0.3s ease-in;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Helpful styling for empty state */
+.info-box-pairs:empty::after {
+    content: "No info box fields added yet. Click 'Add Field' to get started.";
+    display: block;
+    text-align: center;
+    color: #6c757d;
+    font-style: italic;
+    padding: 2rem;
+    background-color: white;
+    border: 2px dashed #dee2e6;
+    border-radius: 0.25rem;
+}

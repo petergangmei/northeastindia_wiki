@@ -500,6 +500,7 @@ def article_detail(request, slug, state_slug=None):
         'personality_info_box_data': personality_info_box_data,
         'coordinates': coordinates,
         'user_profile': user_profile,
+        'json_data': article.info_box_data if article.info_box_data else {},
     }
     
     return render(request, 'articles/article_detail.html', context)
