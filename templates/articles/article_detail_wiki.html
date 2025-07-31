@@ -202,13 +202,6 @@
             <!-- Info box sidebar -->
             <div class="col-md-4 col-lg-3">
                 <div class="wiki-sidebar">
-                    <!-- Info box for states/places -->
-                    {% if article.states.exists and info_box_data %}
-                    {% with article.states.first as state %}
-                    {% include 'widgets/info_box.html' with title=state.name type="state" data=info_box_data coordinates=coordinates %}
-                    {% endwith %}
-                    {% endif %}
-
                     <!-- Featured image -->
                     {% if article.featured_image and article.featured_image.name and article.featured_image.name != '' %}
                     <div class="card border shadow-sm mb-4">
@@ -217,6 +210,13 @@
                             <small class="text-muted">{{ article.title }} - Featured Image</small>
                         </div>
                     </div>
+                    {% endif %}
+
+                    <!-- Info box for states/places -->
+                    {% if article.states.exists and info_box_data %}
+                    {% with article.states.first as state %}
+                    {% include 'widgets/info_box.html' with title=state.name type="state" data=info_box_data coordinates=coordinates %}
+                    {% endwith %}
                     {% endif %}
 
                     <!-- Related articles -->
