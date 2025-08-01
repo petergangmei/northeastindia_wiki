@@ -7,3 +7,5 @@
 7. Finally, add a review section to the [todo.md](http://todo.md/) file with a summary of the changes you made and any other relevant information.
 8. Use context7 mcp anytime you need to get any documentations
 9. If you ned to run python or Django command, activate VENV  first (source venv/bin/activate)
+10. When writing HTML, CSS, and JavaScript within .html files, prioritize achieving the desired design or layout using MDBootstrap classes. Use custom CSS only when absolutely necessary, and ensure it is applied through class selectors.
+11. Use d-flex and justify content more than grids when needed

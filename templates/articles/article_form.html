@@ -14,6 +14,26 @@
 {% block extra_css %}
 {{ form.media }}
 <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+<style>
+.image-upload-area:hover {
+    border-color: #007bff !important;
+    background-color: #e3f2fd !important;
+}
+
+.image-upload-area.dragover {
+    border-color: #28a745 !important;
+    background-color: #d4edda !important;
+    border-style: solid !important;
+}
+
+.image-upload-area.dragover .upload-placeholder {
+    transform: scale(1.05);
+}
+
+.upload-placeholder {
+    transition: transform 0.2s ease;
+}
+</style>
 {% endblock %}
 
 {% block content %}
@@ -23,21 +43,21 @@
             <div class="article-form-container">
 
                 <!-- Enhanced Header -->
-                <div class="form-header">
-                    <div class="header-content">
-                        <div class="header-left">
-                            <h4>{{ title }}</h4>
-                            <div class="subtitle">
+                <div class="bg-light border-bottom p-3 mb-3 rounded-top">
+                    <div class="d-flex justify-content-between align-items-center gap-2">
+                        <div>
+                            <h4 class="mb-1 fw-semibold text-dark">{{ title }}</h4>
+                            <small class="text-muted">
                                 {% if article %}
                                     Last edited {{ article.updated_at|timesince }} ago
                                 {% else %}
                                     Create a new article for Northeast India Wiki
                                 {% endif %}
-                            </div>
+                            </small>
                         </div>
-                        <div class="header-right">
+                        <div>
                             <button type="submit" form="article-form" name="action" value="submit_for_review" 
-                                    class="btn btn-outline-light btn-header">
+                                    class="btn btn-primary">
                                 <i class="fas fa-paper-plane me-2"></i>Submit for Review
                             </button>
                         </div>
@@ -297,23 +317,34 @@
                                         <i class="fas fa-image me-2"></i>Featured Image
                                     </label>
                                     
-                                    <div class="image-upload-area" id="image-upload-area">
+                                    {% if article.featured_image %}
+                                    <div class="current-image mb-3">
+                                        <div class="card">
+                                            <img src="{{ article.featured_image.url }}" alt="Current featured image" class="card-img-top" style="max-height: 250px; object-fit: contain; width: 100%; background-color: #f8f9fa;">
+                                            <div class="card-body p-2">
+                                                <small class="text-muted">
+                                                    <i class="fas fa-check-circle text-success me-1"></i>
+                                                    Current featured image
+                                                </small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    {% endif %}
+                                    
+                                    <div class="image-upload-area" id="image-upload-area" style="border: 2px dashed #dee2e6; border-radius: 8px; padding: 2rem; text-align: center; background-color: #f8f9fa; cursor: pointer; transition: all 0.3s ease; min-height: 120px; display: flex; align-items: center; justify-content: center;">
                                         <div class="upload-placeholder">
                                             <i class="fas fa-cloud-upload-alt fa-2x mb-3 text-muted"></i>
-                                            <p class="mb-2">Drag and drop an image here, or click to select</p>
+                                            <p class="mb-2">
+                                                {% if article.featured_image %}
+                                                    Drag and drop a new image here, or click to select
+                                                {% else %}
+                                                    Drag and drop an image here, or click to select
+                                                {% endif %}
+                                            </p>
                                             <small class="text-muted">Supported formats: JPG, PNG, GIF (Max 5MB)</small>
                                         </div>
                                         {{ form.featured_image }}
                                     </div>
-                                    
-                                    {% if article.featured_image %}
-                                    <div class="image-preview">
-                                        <img src="{{ article.featured_image.url }}" alt="Current featured image" class="img-fluid">
-                                        <div class="mt-2">
-                                            <small class="text-muted">Current featured image</small>
-                                        </div>
-                                    </div>
-                                    {% endif %}
                                     
                                     {% if form.featured_image.errors %}
                                     <div class="invalid-feedback">
