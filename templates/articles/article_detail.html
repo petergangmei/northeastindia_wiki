@@ -59,27 +59,19 @@
     <div class="wiki-header">
         <div class="container-fluid">
             <!-- Article title with languages -->
-            <div class="d-flex justify-content-between align-items-start mb-2">
+            <div class="d-flex justify-content-between align-items-start">
                 <h1 class="wiki-title mb-0">{{ article.title }}</h1>
-                <div class="wiki-language-selector">
-                    <span class="badge bg-light text-dark">
-                        <i class="fas fa-globe me-1"></i>
-                        116 languages
-                    </span>
-                </div>
             </div>
             
             <!-- Wikipedia-style navigation tabs -->
             <div class="wiki-tabs border-bottom">
                 <nav class="nav nav-tabs border-0">
-                    <a class="nav-link active" href="#" id="article-tab">Article</a>
-                    <a class="nav-link" href="#" id="talk-tab">Talk</a>
                 </nav>
                 
                 <!-- Article actions -->
                 <div class="wiki-actions d-flex align-items-center">
                     <nav class="nav">
-                        <a class="nav-link" href="#" id="read-tab">Read</a>
+                        <a class="nav-link active" href="#" id="read-tab">Read</a>
                         {% if has_edit_permission %}
                         <a class="nav-link" href="{% url 'app:article-edit' slug=article.slug %}" id="edit-tab">Edit</a>
                         <a class="nav-link" href="{% url 'app:article-history' slug=article.slug %}" id="history-tab">View history</a>
