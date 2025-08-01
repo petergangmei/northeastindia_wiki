@@ -21,6 +21,44 @@
     <div class="row justify-content-center">
         <div class="col-12 col-xl-10">
             <div class="article-form-container">
+                <!-- Revision Status Alert -->
+                {% if article and is_approved_content and existing_revision %}
+                <div class="alert alert-info border-0 mb-3 compact-alert" role="alert">
+                    <div class="d-flex align-items-start">
+                        <i class="fas fa-info-circle me-2 mt-1 alert-icon"></i>
+                        <div class="flex-grow-1">
+                            <div class="alert-title">
+                                {% if existing_revision.status == 'draft' %}
+                                    Working on Draft
+                                {% elif existing_revision.status == 'pending_review' %}
+                                    Revision Pending Review
+                                {% elif existing_revision.status == 'rejected' %}
+                                    Previous Revision Rejected
+                                {% endif %}
+                            </div>
+                            <div class="alert-text">
+                                {% if existing_revision.status == 'draft' %}
+                                    You have unsaved changes for this approved article. Your edits are saved as a draft and won't be visible to the public until you submit them for review.
+                                {% elif existing_revision.status == 'pending_review' %}
+                                    Your revision is currently being reviewed by an administrator. The changes will be applied to the live article once approved.
+                                {% elif existing_revision.status == 'rejected' %}
+                                    Your previous revision was rejected. You can make new changes and submit again for review.
+                                    {% if existing_revision.review_notes %}
+                                    <br><strong>Feedback:</strong> {{ existing_revision.review_notes }}
+                                    {% endif %}
+                                {% endif %}
+                            </div>
+                            {% if existing_revision.revision_comment %}
+                            <div class="alert-comment">
+                                <i class="fas fa-comment me-1"></i>
+                                Last comment: "{{ existing_revision.revision_comment }}"
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+
                 <!-- Enhanced Header -->
                 <div class="form-header">
                     <div class="header-content">
@@ -101,40 +139,6 @@
                         {% for error in form.non_field_errors %}
                         <i class="fas fa-exclamation-triangle me-2"></i>{{ error }}
                         {% endfor %}
-                    </div>
-                    {% endif %}
-                    
-                    <!-- Revision Status Alert -->
-                    {% if article and is_approved_content and existing_revision %}
-                    <div class="alert alert-info border-0 mx-3 mt-3 mb-0" role="alert">
-                        <h6 class="alert-heading mb-2">
-                            <i class="fas fa-info-circle me-2"></i>
-                            {% if existing_revision.status == 'draft' %}
-                                Working on Draft
-                            {% elif existing_revision.status == 'pending_review' %}
-                                Revision Pending Review
-                            {% elif existing_revision.status == 'rejected' %}
-                                Previous Revision Rejected
-                            {% endif %}
-                        </h6>
-                        <p class="mb-2">
-                            {% if existing_revision.status == 'draft' %}
-                                You have unsaved changes for this approved article. Your edits are saved as a draft and won't be visible to the public until you submit them for review.
-                            {% elif existing_revision.status == 'pending_review' %}
-                                Your revision is currently being reviewed by an administrator. The changes will be applied to the live article once approved.
-                            {% elif existing_revision.status == 'rejected' %}
-                                Your previous revision was rejected. You can make new changes and submit again for review.
-                                {% if existing_revision.review_notes %}
-                                <br><strong>Feedback:</strong> {{ existing_revision.review_notes }}
-                                {% endif %}
-                            {% endif %}
-                        </p>
-                        {% if existing_revision.revision_comment %}
-                        <small class="text-muted">
-                            <i class="fas fa-comment me-1"></i>
-                            Last comment: "{{ existing_revision.revision_comment }}"
-                        </small>
-                        {% endif %}
                     </div>
                     {% endif %}
 
@@ -708,71 +712,17 @@ document.addEventListener('DOMContentLoaded', function() {
         const progress = (1 / tabs.length) * 100;
         progressBar.style.width = progress + '%';
         
-        // Add click event listeners for tab switching and progress updates
+        // Add event listeners for MDBootstrap tab events
         tabs.forEach((tab, index) => {
-            tab.addEventListener('click', function(e) {
-                e.preventDefault();
-                switchToTab(this, index, tabs.length, progressBar);
-            });
-            
-            // Add keyboard navigation
-            tab.addEventListener('keydown', function(e) {
-                if (e.key === 'Enter' || e.key === ' ') {
-                    e.preventDefault();
-                    switchToTab(this, index, tabs.length, progressBar);
-                }
-                
-                // Arrow key navigation
-                if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') {
-                    e.preventDefault();
-                    const direction = e.key === 'ArrowRight' ? 1 : -1;
-                    const nextIndex = (index + direction + tabs.length) % tabs.length;
-                    const nextTab = tabs[nextIndex];
-                    nextTab.focus();
-                    switchToTab(nextTab, nextIndex, tabs.length, progressBar);
-                }
+            // MDBootstrap uses different events - listen for click and update progress
+            tab.addEventListener('click', function() {
+                // Small delay to let MDBootstrap handle the tab switch first
+                setTimeout(() => {
+                    const progress = ((index + 1) / tabs.length) * 100;
+                    progressBar.style.width = progress + '%';
+                }, 50);
             });
         });
-    }
-    
-    function switchToTab(tab, index, totalTabs, progressBar) {
-        // Update progress
-        const progress = ((index + 1) / totalTabs) * 100;
-        progressBar.style.width = progress + '%';
-        
-        // Show target tab content
-        const targetId = tab.getAttribute('data-mdb-target');
-        showTabContent(targetId);
-        
-        // Update active states
-        updateActiveTab(tab);
-    }
-    
-    function showTabContent(targetId) {
-        // Hide all tab panes
-        const allPanes = document.querySelectorAll('.tab-pane');
-        allPanes.forEach(pane => {
-            pane.classList.remove('show', 'active');
-        });
-        
-        // Show target pane
-        const targetPane = document.querySelector(targetId);
-        if (targetPane) {
-            targetPane.classList.add('show', 'active');
-        }
-    }
-    
-    function updateActiveTab(activeTab) {
-        // Remove active from all tabs
-        const allTabs = document.querySelectorAll('#form-tabs .nav-link');
-        allTabs.forEach(tab => {
-            tab.classList.remove('active');
-            tab.setAttribute('aria-selected', 'false');
-        });
-        
-        // Add active to clicked tab
-        activeTab.classList.add('active');
-        activeTab.setAttribute('aria-selected', 'true');
     }
 
     function initializeAutoSave() {
