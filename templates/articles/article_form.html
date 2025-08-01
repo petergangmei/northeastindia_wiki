@@ -21,49 +21,12 @@
     <div class="row justify-content-center">
         <div class="col-12 col-xl-10">
             <div class="article-form-container">
-                <!-- Revision Status Alert -->
-                {% if article and is_approved_content and existing_revision %}
-                <div class="alert alert-info border-0 mb-3 compact-alert" role="alert">
-                    <div class="d-flex align-items-start">
-                        <i class="fas fa-info-circle me-2 mt-1 alert-icon"></i>
-                        <div class="flex-grow-1">
-                            <div class="alert-title">
-                                {% if existing_revision.status == 'draft' %}
-                                    Working on Draft
-                                {% elif existing_revision.status == 'pending_review' %}
-                                    Revision Pending Review
-                                {% elif existing_revision.status == 'rejected' %}
-                                    Previous Revision Rejected
-                                {% endif %}
-                            </div>
-                            <div class="alert-text">
-                                {% if existing_revision.status == 'draft' %}
-                                    You have unsaved changes for this approved article. Your edits are saved as a draft and won't be visible to the public until you submit them for review.
-                                {% elif existing_revision.status == 'pending_review' %}
-                                    Your revision is currently being reviewed by an administrator. The changes will be applied to the live article once approved.
-                                {% elif existing_revision.status == 'rejected' %}
-                                    Your previous revision was rejected. You can make new changes and submit again for review.
-                                    {% if existing_revision.review_notes %}
-                                    <br><strong>Feedback:</strong> {{ existing_revision.review_notes }}
-                                    {% endif %}
-                                {% endif %}
-                            </div>
-                            {% if existing_revision.revision_comment %}
-                            <div class="alert-comment">
-                                <i class="fas fa-comment me-1"></i>
-                                Last comment: "{{ existing_revision.revision_comment }}"
-                            </div>
-                            {% endif %}
-                        </div>
-                    </div>
-                </div>
-                {% endif %}
 
                 <!-- Enhanced Header -->
                 <div class="form-header">
                     <div class="header-content">
                         <div class="header-left">
-                            <h2>{{ title }}</h2>
+                            <h4>{{ title }}</h4>
                             <div class="subtitle">
                                 {% if article %}
                                     Last edited {{ article.updated_at|timesince }} ago
@@ -479,6 +442,44 @@
                         {% endif %}
                     </div>
                 </div>
+
+                <!-- Revision Status Alert -->
+                {% if article and is_approved_content and existing_revision %}
+                <div class="alert alert-info mt-3 border-0 mb-3 compact-alert" role="alert">
+                    <div class="d-flex align-items-start">
+                        <i class="fas fa-info-circle me-2 mt-1 alert-icon"></i>
+                        <div class="flex-grow-1">
+                            <div class="alert-title">
+                                {% if existing_revision.status == 'draft' %}
+                                    Working on Draft
+                                {% elif existing_revision.status == 'pending_review' %}
+                                    Revision Pending Review
+                                {% elif existing_revision.status == 'rejected' %}
+                                    Previous Revision Rejected
+                                {% endif %}
+                            </div>
+                            <div class="alert-text">
+                                {% if existing_revision.status == 'draft' %}
+                                    You have unsaved changes for this approved article. Your edits are saved as a draft and won't be visible to the public until you submit them for review.
+                                {% elif existing_revision.status == 'pending_review' %}
+                                    Your revision is currently being reviewed by an administrator. The changes will be applied to the live article once approved.
+                                {% elif existing_revision.status == 'rejected' %}
+                                    Your previous revision was rejected. You can make new changes and submit again for review.
+                                    {% if existing_revision.review_notes %}
+                                    <br><strong>Feedback:</strong> {{ existing_revision.review_notes }}
+                                    {% endif %}
+                                {% endif %}
+                            </div>
+                            {% if existing_revision.revision_comment %}
+                            <div class="alert-comment">
+                                <i class="fas fa-comment me-1"></i>
+                                Last comment: "{{ existing_revision.revision_comment }}"
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
             </div>
         </div>
     </div>
