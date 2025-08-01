@@ -97,10 +97,10 @@
                     <div class="revision-meta">
                         <div class="row align-items-center">
                             <div class="col-md-6">
-                                <p class="mb-1"><strong>Author:</strong> {{ revision.user.username }}</p>
+                                <p class="mb-1"><strong>Author:</strong> {{ revision.editor.username }}</p>
                                 <p class="mb-1"><strong>Date:</strong> {{ revision.created_at|date:"F j, Y H:i" }}</p>
-                                {% if revision.comment %}
-                                <p class="mb-1"><strong>Comment:</strong> {{ revision.comment }}</p>
+                                {% if revision.revision_comment %}
+                                <p class="mb-1"><strong>Comment:</strong> {{ revision.revision_comment }}</p>
                                 {% endif %}
                             </div>
                             <div class="col-md-6 text-md-end">
@@ -165,7 +165,7 @@
                         <div class="tab-pane fade show active" id="content" role="tabpanel" aria-labelledby="content-tab">
                             <h3 class="h2 mb-3">{{ revision.title }}</h3>
                             <div class="revision-content">
-                                {{ revision.content_html|safe }}
+                                {{ revision.content_text|safe }}
                             </div>
                         </div>
                         
