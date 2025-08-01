@@ -196,13 +196,18 @@ body {
     background-color: var(--secondary-color) !important;
     color: var(--text-color) !important;
     border-bottom: 1px solid var(--border-color) !important;
-    font-weight: bold;
-    font-size: 14px;
+    font-weight: normal !important;
+    font-size: 13.5px;
     padding: 0.5rem 0.75rem;
 }
 
 .card-header.bg-light .text-dark {
     color: var(--text-color) !important;
+}
+
+.card-header.bg-light h3 {
+    font-weight: normal !important;
+    font-size: 13.5px !important;
 }
 
 .bg-light {
@@ -219,13 +224,18 @@ body {
     background-color: var(--secondary-color) !important;
     color: var(--text-color) !important;
     border-bottom: 1px solid var(--border-color) !important;
-    font-weight: bold;
-    font-size: 14px;
+    font-weight: normal !important;
+    font-size: 13.5px;
     padding: 0.5rem 0.75rem;
 }
 
 .card-header.bg-primary .text-white {
     color: var(--text-color) !important;
+}
+
+.card-header.bg-primary h3 {
+    font-weight: normal !important;
+    font-size: 13.5px !important;
 }
 
 .bg-primary {
@@ -1280,6 +1290,12 @@ footer a:hover {
     font-size: 0.9rem;
     text-transform: uppercase;
     letter-spacing: 0.5px;
+}
+
+/* Search results hover fix */
+#search-results .list-group-item:hover,
+#search-results .list-group-item:hover * {
+    text-decoration: none !important;
 }
 
 /* Media queries for responsive design */

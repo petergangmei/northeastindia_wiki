@@ -61,4 +61,23 @@ Convert hardcoded CSS styles in `/Users/petergangmei/Developer/Crossplatform/dja
 - Test thoroughly on mobile and desktop viewports
 
 ## Review Section
-(To be completed after implementation)
+
+### Changes Made
+1. **Updated CSS for Section Headings**: Modified `.card-header.bg-light` and `.card-header.bg-primary` rules in `main.css:199` and `main.css:222`
+   - Changed `font-weight: bold` to `font-weight: normal !important`
+   - Reduced `font-size` from `14px` to `12px`
+   - Added specific h3 targeting rules for both `.card-header.bg-light h3` and `.card-header.bg-primary h3`
+   - This affects section headings like "Today's Featured Article", "Recent Contributors", "How to Contribute"
+
+### Files Modified
+- `/Users/petergangmei/Developer/Crossplatform/django/northeastindia_wiki/static/css/main.css` (lines 199, 227, 210, 238)
+
+### Impact
+- Section headings now appear with lighter font weight (normal instead of bold)
+- Section headings now have smaller text size (12px instead of 14px)
+- Added `!important` declarations to ensure styles override any conflicting CSS
+- Maintains Wikipedia-style design consistency with more subtle section headers
+
+### Next Steps
+- Static files have been collected to apply all changes
+- Changes are ready for viewing on the website
