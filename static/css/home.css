@@ -8,6 +8,25 @@
 .min-vh-50{
     min-height: 70vh !important;
 }
+
+/* Wikipedia-style statistics */
+.site-statistics {
+    font-size: 0.9rem;
+    line-height: 1.4;
+}
+
+.site-statistics strong {
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+
+.site-statistics .text-primary {
+    color: #0645ad !important;
+}
+
+.site-statistics div:not(:last-child) {
+    margin-right: 0.5rem;
+}
 /* Hero section responsive adjustments for better mobile spacing */
 @media (max-width: 768px) {
     .hero-section {
