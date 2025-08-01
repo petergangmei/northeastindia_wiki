@@ -33,6 +33,95 @@
 .upload-placeholder {
     transition: transform 0.2s ease;
 }
+
+/* Categorization Section Styling */
+.categorization-section {
+    background: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    padding: 1.5rem;
+    height: 100%;
+    transition: all 0.2s ease;
+}
+
+.categorization-section:hover {
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    border-color: #ced4da;
+}
+
+.categorization-section select {
+    min-height: 120px;
+    border: 1px solid #ced4da;
+    border-radius: 6px;
+    padding: 0.5rem;
+}
+
+.categorization-section select:focus {
+    border-color: #80bdff;
+    box-shadow: 0 0 0 0.2rem rgba(0,123,255,0.25);
+}
+
+/* Selected Items Styling */
+.selected-items {
+    min-height: 60px;
+    background: white;
+    border: 1px solid #e9ecef;
+    border-radius: 6px;
+    padding: 0.75rem;
+}
+
+.selected-items:empty::before {
+    content: "No items selected";
+    color: #6c757d;
+    font-style: italic;
+    font-size: 0.875rem;
+}
+
+.tag-item {
+    display: inline-block;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 0.375rem 0.75rem;
+    margin: 0.25rem;
+    border-radius: 20px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    transition: all 0.2s ease;
+}
+
+.tag-item:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+.tag-item .remove {
+    margin-left: 0.5rem;
+    cursor: pointer;
+    opacity: 0.8;
+    padding: 0.125rem 0.25rem;
+    border-radius: 50%;
+    transition: all 0.2s ease;
+}
+
+.tag-item .remove:hover {
+    background: rgba(255,255,255,0.2);
+    opacity: 1;
+}
+
+/* Category-specific colors */
+.tag-item.category-tag {
+    background: linear-gradient(135deg, #007bff, #0056b3);
+}
+
+.tag-item.tag-tag {
+    background: linear-gradient(135deg, #28a745, #1e7e34);
+}
+
+.tag-item.state-tag {
+    background: linear-gradient(135deg, #ffc107, #e0a800);
+    color: #212529;
+}
 </style>
 {% endblock %}
 
@@ -213,67 +302,102 @@
 
                             <!-- Categorization Tab -->
                             <div class="tab-pane fade" id="categorization" role="tabpanel">
-                                <div class="row">
-                                    <!-- Categories -->
-                                    <div class="col-md-4 mb-4">
-                                        <div class="form-group">
-                                            <label for="{{ form.categories.id_for_label }}" class="form-label">
-                                                <i class="fas fa-folder me-2"></i>Categories
-                                            </label>
-                                            <div class="select-wrapper">
-                                                {{ form.categories }}
+                                <div class="p-4">
+                                    <div class="row g-4">
+                                        <!-- Categories -->
+                                        <div class="col-lg-4 col-md-6">
+                                            <div class="categorization-section">
+                                                <label for="{{ form.categories.id_for_label }}" class="form-label fw-semibold mb-3">
+                                                    <i class="fas fa-folder me-2 text-primary"></i>Categories
+                                                    <span class="text-muted ms-1">(Select multiple)</span>
+                                                </label>
+                                                <div class="select-wrapper position-relative mb-3">
+                                                    {{ form.categories }}
+                                                    <div class="select-overlay d-none">
+                                                        <div class="search-box mb-2">
+                                                            <input type="text" class="form-control form-control-sm" placeholder="Search categories..." id="category-search">
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="selected-items mb-3" id="selected-categories">
+                                                    <small class="text-muted">Selected categories will appear here</small>
+                                                </div>
+                                                {% if form.categories.errors %}
+                                                <div class="invalid-feedback d-block">
+                                                    {% for error in form.categories.errors %}
+                                                    <i class="fas fa-exclamation-circle me-1"></i>{{ error }}
+                                                    {% endfor %}
+                                                </div>
+                                                {% endif %}
+                                                <div class="form-text">
+                                                    <i class="fas fa-info-circle me-1"></i>
+                                                    Hold Ctrl/Cmd to select multiple categories
+                                                </div>
                                             </div>
-                                            <div class="selected-tags" id="selected-categories"></div>
-                                            {% if form.categories.errors %}
-                                            <div class="invalid-feedback">
-                                                {% for error in form.categories.errors %}
-                                                <i class="fas fa-exclamation-circle me-1"></i>{{ error }}
-                                                {% endfor %}
-                                            </div>
-                                            {% endif %}
-                                            <div class="form-text">Hold Ctrl/Cmd to select multiple categories</div>
                                         </div>
-                                    </div>
 
-                                    <!-- Tags -->
-                                    <div class="col-md-4 mb-4">
-                                        <div class="form-group">
-                                            <label for="{{ form.tags.id_for_label }}" class="form-label">
-                                                <i class="fas fa-tags me-2"></i>Tags
-                                            </label>
-                                            <div class="select-wrapper">
-                                                {{ form.tags }}
+                                        <!-- Tags -->
+                                        <div class="col-lg-4 col-md-6">
+                                            <div class="categorization-section">
+                                                <label for="{{ form.tags.id_for_label }}" class="form-label fw-semibold mb-3">
+                                                    <i class="fas fa-tags me-2 text-success"></i>Tags
+                                                    <span class="text-muted ms-1">(Select multiple)</span>
+                                                </label>
+                                                <div class="select-wrapper position-relative mb-3">
+                                                    {{ form.tags }}
+                                                    <div class="select-overlay d-none">
+                                                        <div class="search-box mb-2">
+                                                            <input type="text" class="form-control form-control-sm" placeholder="Search tags..." id="tag-search">
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="selected-items mb-3" id="selected-tags">
+                                                    <small class="text-muted">Selected tags will appear here</small>
+                                                </div>
+                                                {% if form.tags.errors %}
+                                                <div class="invalid-feedback d-block">
+                                                    {% for error in form.tags.errors %}
+                                                    <i class="fas fa-exclamation-circle me-1"></i>{{ error }}
+                                                    {% endfor %}
+                                                </div>
+                                                {% endif %}
+                                                <div class="form-text">
+                                                    <i class="fas fa-lightbulb me-1"></i>
+                                                    Add relevant tags to help users find your article
+                                                </div>
                                             </div>
-                                            <div class="selected-tags" id="selected-tags"></div>
-                                            {% if form.tags.errors %}
-                                            <div class="invalid-feedback">
-                                                {% for error in form.tags.errors %}
-                                                <i class="fas fa-exclamation-circle me-1"></i>{{ error }}
-                                                {% endfor %}
-                                            </div>
-                                            {% endif %}
-                                            <div class="form-text">Add relevant tags to help users find your article</div>
                                         </div>
-                                    </div>
 
-                                    <!-- States -->
-                                    <div class="col-md-4 mb-4">
-                                        <div class="form-group">
-                                            <label for="{{ form.states.id_for_label }}" class="form-label">
-                                                <i class="fas fa-map-marker-alt me-2"></i>Related States
-                                            </label>
-                                            <div class="select-wrapper">
-                                                {{ form.states }}
+                                        <!-- States -->
+                                        <div class="col-lg-4 col-md-12">
+                                            <div class="categorization-section">
+                                                <label for="{{ form.states.id_for_label }}" class="form-label fw-semibold mb-3">
+                                                    <i class="fas fa-map-marker-alt me-2 text-warning"></i>Related States
+                                                    <span class="text-muted ms-1">(Select multiple)</span>
+                                                </label>
+                                                <div class="select-wrapper position-relative mb-3">
+                                                    {{ form.states }}
+                                                    <div class="select-overlay d-none">
+                                                        <div class="search-box mb-2">
+                                                            <input type="text" class="form-control form-control-sm" placeholder="Search states..." id="state-search">
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="selected-items mb-3" id="selected-states">
+                                                    <small class="text-muted">Selected states will appear here</small>
+                                                </div>
+                                                {% if form.states.errors %}
+                                                <div class="invalid-feedback d-block">
+                                                    {% for error in form.states.errors %}
+                                                    <i class="fas fa-exclamation-circle me-1"></i>{{ error }}
+                                                    {% endfor %}
+                                                </div>
+                                                {% endif %}
+                                                <div class="form-text">
+                                                    <i class="fas fa-map me-1"></i>
+                                                    Select the Northeast Indian states related to this article
+                                                </div>
                                             </div>
-                                            <div class="selected-tags" id="selected-states"></div>
-                                            {% if form.states.errors %}
-                                            <div class="invalid-feedback">
-                                                {% for error in form.states.errors %}
-                                                <i class="fas fa-exclamation-circle me-1"></i>{{ error }}
-                                                {% endfor %}
-                                            </div>
-                                            {% endif %}
-                                            <div class="form-text">Select the Northeast Indian states related to this article</div>
                                         </div>
                                     </div>
                                 </div>
@@ -709,16 +833,38 @@ document.addEventListener('DOMContentLoaded', function() {
                 container.innerHTML = '';
                 const selectedOptions = Array.from(select.selectedOptions);
                 
+                if (selectedOptions.length === 0) {
+                    container.innerHTML = '<small class="text-muted">No items selected</small>';
+                    return;
+                }
+                
                 selectedOptions.forEach(option => {
                     const tag = document.createElement('span');
-                    tag.className = 'tag-item';
+                    // Add specific class based on field type
+                    let tagClass = 'tag-item';
+                    if (fieldName === 'categories') tagClass += ' category-tag';
+                    else if (fieldName === 'tags') tagClass += ' tag-tag';
+                    else if (fieldName === 'states') tagClass += ' state-tag';
+                    
+                    tag.className = tagClass;
                     tag.innerHTML = `
-                        ${option.text}
-                        <span class="remove" onclick="removeTag('${fieldName}', '${option.value}')">
+                        <span class="tag-text">${option.text}</span>
+                        <span class="remove" onclick="removeTag('${fieldName}', '${option.value}')" title="Remove ${option.text}">
                             <i class="fas fa-times"></i>
                         </span>
                     `;
+                    
+                    // Add animation
+                    tag.style.opacity = '0';
+                    tag.style.transform = 'scale(0.8)';
                     container.appendChild(tag);
+                    
+                    // Animate in
+                    setTimeout(() => {
+                        tag.style.transition = 'all 0.3s ease';
+                        tag.style.opacity = '1';
+                        tag.style.transform = 'scale(1)';
+                    }, 10);
                 });
             }
         }

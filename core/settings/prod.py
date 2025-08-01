@@ -5,7 +5,11 @@ These settings should be used in production only.
 """
 
 import os
+from dotenv import load_dotenv
 from .common import *
+
+# Load environment variables from .env file
+load_dotenv()
 
 # SECURITY WARNING: keep the secret key used in production secret!
 # In production, this should be set from environment variables
