@@ -5,3 +5,5 @@
 5. Please every step of the way just give me a high level explanation of what changes you made
 6. Make every task and code change you do as simple as possible. We want to avoid making any massive or complex changes. Every change should impact as little code as possible. Everything is about simplicity.
 7. Finally, add a review section to the [todo.md](http://todo.md/) file with a summary of the changes you made and any other relevant information.
+8. Use context7 mcp anytime you need to get any documentations
+9. If you ned to run python or Django command, activate VENV  first (source venv/bin/activate)

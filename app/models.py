@@ -493,7 +493,7 @@ class ContentRevision(TimeStampedModel):
     featured_image = CompressedImageField(upload_to='content/revisions/', blank=True, null=True, max_width=1200, target_size_kb=80)
     
     # Structured data for info boxes
-    info_box_data = models.JSONField(default=dict, blank=True)
+    info_box_data = models.JSONField(default=dict, blank=True, null=True)
     
     # Relationships (stored as JSON for flexibility)
     categories_data = models.JSONField(default=list, blank=True, help_text="List of category IDs")

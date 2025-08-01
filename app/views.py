@@ -590,7 +590,7 @@ def article_edit(request, slug):
                 revision.meta_description = meta_description
                 revision.revision_comment = revision_comment
                 revision.status = revision_status
-                revision.info_box_data = form.cleaned_data.get('info_box_data', {})
+                revision.info_box_data = form.cleaned_data.get('info_box_data') or {}
                 
                 # Handle featured image
                 if form.cleaned_data.get('featured_image'):
