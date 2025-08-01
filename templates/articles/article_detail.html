@@ -200,43 +200,13 @@
             <!-- Info box sidebar -->
             <div class="col-md-4 col-lg-3">
                 <div class="wiki-sidebar">
-                    <!-- Info box for states/places -->
-                    {% if article.states.exists and info_box_data %}
-                    {% with article.states.first as state %}
+                    <!-- Unified info box for all articles -->
+                    {% if json_data %}
                     {% if article.featured_image and article.featured_image.name and article.featured_image.name != '' %}
-                    {% include 'widgets/info_box.html' with title=state.name type="state" data=info_box_data coordinates=coordinates json_data=json_data image=article.featured_image.url updated_date=article.updated_at %}
+                    {% include 'widgets/info_box.html' with title=article.title json_data=json_data coordinates=coordinates image=article.featured_image.url updated_date=article.updated_at %}
                     {% else %}
-                    {% include 'widgets/info_box.html' with title=state.name type="state" data=info_box_data coordinates=coordinates json_data=json_data updated_date=article.updated_at %}
+                    {% include 'widgets/info_box.html' with title=article.title json_data=json_data coordinates=coordinates updated_date=article.updated_at %}
                     {% endif %}
-                    {% endwith %}
-                    {% endif %}
-
-                    <!-- Info box for personalities -->
-                    {% if article.content_type == 'personality' and personality_info_box_data %}
-                    {% if article.featured_image and article.featured_image.name and article.featured_image.name != '' %}
-                    {% include 'widgets/info_box.html' with title=article.title type="person" data=personality_info_box_data json_data=json_data image=article.featured_image.url updated_date=article.updated_at %}
-                    {% else %}
-                    {% include 'widgets/info_box.html' with title=article.title type="person" data=personality_info_box_data json_data=json_data updated_date=article.updated_at %}
-                    {% endif %}
-                    {% endif %}
-
-                    <!-- Generic info box for content with json_data only -->
-                    {% if json_data and not info_box_data and not personality_info_box_data %}
-                    {% with content_type=article.content_type %}
-                        {% if content_type == 'cultural' %}
-                            {% if article.featured_image and article.featured_image.name and article.featured_image.name != '' %}
-                            {% include 'widgets/info_box.html' with title=article.title type="place" data=None json_data=json_data image=article.featured_image.url updated_date=article.updated_at %}
-                            {% else %}
-                            {% include 'widgets/info_box.html' with title=article.title type="place" data=None json_data=json_data updated_date=article.updated_at %}
-                            {% endif %}
-                        {% else %}
-                            {% if article.featured_image and article.featured_image.name and article.featured_image.name != '' %}
-                            {% include 'widgets/info_box.html' with title=article.title type=content_type data=None json_data=json_data image=article.featured_image.url updated_date=article.updated_at %}
-                            {% else %}
-                            {% include 'widgets/info_box.html' with title=article.title type=content_type data=None json_data=json_data updated_date=article.updated_at %}
-                            {% endif %}
-                        {% endif %}
-                    {% endwith %}
                     {% endif %}
 
                     <!-- Related articles -->
