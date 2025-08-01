@@ -14,10 +14,10 @@
 
         <!-- Search form -->
         <form class="d-flex" method="GET" action="{% url 'app:article-search' %}" style="max-width: 300px; flex: 0 1 auto; margin-left: auto; margin-right: 2rem;">
-            <div class="input-group" style="max-width: 250px;">
-                <input type="search" name="q" class="form-control" placeholder="Search" aria-label="Search" style="font-size: 0.8rem; height: 32px; border: 1px solid #a2a9b1; border-radius: 2px 0 0 2px; padding: 0.25rem 0.5rem;">
-                <button class="btn" type="submit" style="background: #f8f9fa; border: 1px solid #a2a9b1; border-left: 0; height: 32px; border-radius: 0 2px 2px 0; padding: 0 8px; min-width: 40px;">
-                    <i class="fas fa-search" style="font-size: 0.75rem; color: #72777d;"></i>
+            <div class="search-container" style="max-width: 250px; position: relative; display: flex; align-items: center;">
+                <input type="search" name="q" class="search-input-field" placeholder="Search" aria-label="Search">
+                <button class="search-submit-btn" type="submit">
+                    <i class="fas fa-search"></i>
                 </button>
             </div>
         </form>
@@ -181,10 +181,67 @@
     }
     
     /* Search form enhancements */
-    .form-control:focus {
-        border-color: #36c;
-        box-shadow: 0 0 0 0.1rem rgba(51, 102, 204, 0.25);
+    .search-container {
+        background: white;
+        border: 1px solid #a2a9b1;
+        border-radius: 2px;
+        height: 32px;
+        overflow: hidden;
+        display: flex !important;
+        align-items: stretch !important;
+    }
+    
+    .search-input-field {
+        flex: 1;
+        border: none;
         outline: none;
+        padding: 6px 12px;
+        font-size: 0.8rem;
+        background: transparent;
+        height: 100%;
+        line-height: 1.2;
+    }
+    
+    .search-input-field::placeholder {
+        color: #72777d;
+    }
+    
+    .search-input-field:focus {
+        outline: none;
+        box-shadow: none;
+    }
+    
+    .search-container:focus-within {
+        border-color: #36c;
+        box-shadow: 0 0 0 1px rgba(51, 102, 204, 0.25);
+    }
+    
+    .search-submit-btn {
+        width: 40px;
+        height: 100%;
+        background: #f8f9fa;
+        border: none;
+        border-left: 1px solid #a2a9b1;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0;
+        margin: 0;
+    }
+    
+    .search-submit-btn:hover {
+        background: #e9ecef;
+    }
+    
+    .search-submit-btn:focus {
+        outline: none;
+        background: #e9ecef;
+    }
+    
+    .search-submit-btn i {
+        font-size: 0.75rem;
+        color: #72777d;
     }
     
     /* Wikipedia-specific link styling */
@@ -244,14 +301,21 @@
             font-size: 1rem !important;
         }
         
-        form input {
-            font-size: 0.75rem !important;
+        .search-container {
             height: 28px !important;
         }
         
-        form button {
-            height: 28px !important;
-            padding: 0 6px !important;
+        .search-input-field {
+            font-size: 0.75rem !important;
+            padding: 4px 8px !important;
+        }
+        
+        .search-submit-btn {
+            width: 35px !important;
+        }
+        
+        .search-submit-btn i {
+            font-size: 0.7rem !important;
         }
         
         .d-flex.align-items-center {
