@@ -1,82 +1,51 @@
-<footer class="bg-primary-dark text-white mt-5">
-    <!-- Footer content -->
-    <div class="container py-5">
+<!-- Wikipedia-style simplified footer -->
+<footer class="wiki-footer border-top mt-4">
+    <div class="container py-3">
+        <!-- Main footer content -->
         <div class="row">
-            <!-- About section -->
-            <div class="col-lg-4 col-md-6 mb-4 mb-lg-0">
-                <h5 class="text-uppercase text-white mb-4">About Northeast India Wiki</h5>
-                <p>A dedicated platform focused on showcasing the rich cultural heritage, history, and famous personalities of Northeast India.</p>
-                <p class="mt-3">Our mission is to preserve and share knowledge about the Northeast region's unique identity through collaborative contributions.</p>
-            </div>
-
-            <!-- Navigation & Discovery -->
-            <div class="col-lg-4 col-md-6 mb-4 mb-lg-0">
-                <h5 class="text-uppercase text-white mb-4">Explore Content</h5>
-                <ul class="list-unstyled">
-                    <li class="mb-2"><a href="{% url 'app:home' %}" class="text-white text-decoration-none"><i class="fas fa-home me-2"></i>Home</a></li>
-                    <li class="mb-2"><a href="{% url 'app:article-list' %}" class="text-white text-decoration-none"><i class="fas fa-newspaper me-2"></i>All Articles</a></li>
-                    <li class="mb-2"><a href="{% url 'app:categories' %}" class="text-white text-decoration-none"><i class="fas fa-folder me-2"></i>Browse Categories</a></li>
-                    <li class="mb-2"><a href="{% url 'app:article-tags' %}" class="text-white text-decoration-none"><i class="fas fa-tags me-2"></i>Explore Tags</a></li>
-                    <li class="mb-2"><a href="{% url 'app:article-search' %}" class="text-white text-decoration-none"><i class="fas fa-search me-2"></i>Advanced Search</a></li>
-                    {% if user.is_authenticated %}
-                    <li class="mb-2"><a href="{% url 'app:article-create' %}" class="text-white text-decoration-none"><i class="fas fa-plus me-2"></i>Create Article</a></li>
-                    {% else %}
-                    <li class="mb-2"><a href="{% url 'accounts:register' %}" class="text-white text-decoration-none"><i class="fas fa-user-plus me-2"></i>Join Community</a></li>
-                    {% endif %}
-                </ul>
-                
-                <!-- Recent Activity -->
-                <div class="mt-3 pt-3 border-top border-light">
-                    <h6 class="text-uppercase text-white mb-2">Content Discovery</h6>
-                    <div class="d-flex flex-wrap gap-1">
-                        <a href="{% url 'app:article-search' %}?q=recent" class="badge bg-success text-decoration-none">Recent</a>
-                        <a href="{% url 'app:article-search' %}?q=featured" class="badge bg-warning text-dark text-decoration-none">Featured</a>
-                        <a href="{% url 'app:article-search' %}?q=heritage" class="badge bg-info text-decoration-none">Heritage</a>
-                    </div>
-                </div>
-            </div>
-
-
-            <!-- Connect with us -->
-            <div class="col-lg-4 col-md-6 mb-4 mb-lg-0">
-                <h5 class="text-uppercase text-white mb-4">Connect With Us</h5>
-                <!-- Social icons -->
-                <div class="mb-4">
-                    <a href="#" class="btn btn-floating btn-accent btn-md m-1">
-                        <i class="fab fa-facebook-f text-white"></i>
-                    </a>
-                    <a href="#" class="btn btn-floating btn-accent btn-md m-1">
-                        <i class="fab fa-twitter text-white"></i>
-                    </a>
-                    <a href="#" class="btn btn-floating btn-accent btn-md m-1">
-                        <i class="fab fa-instagram text-white"></i>
-                    </a>
-                    <a href="#" class="btn btn-floating btn-accent btn-md m-1">
-                        <i class="fab fa-youtube text-white"></i>
-                    </a>
-                </div>
-                
-                <!-- Newsletter -->
-                <h5 class="text-uppercase text-white mb-3">Subscribe to Newsletter</h5>
-                <form action="#" method="post">
-                    <div class="input-group mb-3">
-                        <input type="email" class="form-control bg-light" placeholder="Your email" aria-label="Email" required>
-                        <button class="btn btn-primary text-white" type="submit">Subscribe</button>
-                    </div>
-                </form>
+            <div class="col-12">
+                <p class="text-muted small mb-2">
+                    Text is available under the 
+                    <a href="https://creativecommons.org/licenses/by-sa/4.0/">Creative Commons Attribution-ShareAlike License 4.0</a>; 
+                    additional terms may apply. By using this site, you agree to the 
+                    <a href="#" class="text-decoration-none">Terms of Use</a> and 
+                    <a href="#" class="text-decoration-none">Privacy Policy</a>. 
+                    Northeast India Wiki® is a registered trademark.
+                </p>
             </div>
         </div>
-    </div>
-
-    <!-- Copyright -->
-    <div class="text-center p-3 bg-primary border-top border-secondary">
-        <div class="container">
-            <div class="row align-items-center">
-                <div class="col-md-6 text-md-start">
-                    &copy; {% now "Y" %} Northeast India Wiki. All rights reserved.
-                </div>
-                <div class="col-md-6 text-md-end">
-                    <small>Built with community contributions. Inspired by Wikipedia.</small>
+        
+        <!-- Footer links -->
+        <div class="row">
+            <div class="col-12">
+                <ul class="list-inline small text-muted mb-0">
+                    <li class="list-inline-item"><a href="#" class="text-decoration-none">Privacy policy</a></li>
+                    <li class="list-inline-item"><a href="{% url 'app:home' %}" class="text-decoration-none">About Northeast India Wiki</a></li>
+                    <li class="list-inline-item"><a href="#" class="text-decoration-none">Disclaimers</a></li>
+                    <li class="list-inline-item"><a href="#" class="text-decoration-none">Contact us</a></li>
+                    <li class="list-inline-item"><a href="#" class="text-decoration-none">Code of Conduct</a></li>
+                    <li class="list-inline-item"><a href="{% url 'app:article-list' %}" class="text-decoration-none">Statistics</a></li>
+                    <li class="list-inline-item"><a href="#" class="text-decoration-none">Cookie statement</a></li>
+                </ul>
+            </div>
+        </div>
+        
+        <!-- Powered by -->
+        <div class="row mt-2">
+            <div class="col-12">
+                <div class="d-flex align-items-center justify-content-start">
+                    <small class="text-muted me-3">
+                        <a href="https://www.wikimedia.org/" class="text-decoration-none">
+                            <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAiIGhlaWdodD0iMjAiIHZpZXdCb3g9IjAgMCAyMCAyMCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTEwIDIwQzE1LjUyMjggMjAgMjAgMTUuNTIyOCAyMCAxMEMyMCA0LjQ3NzE1IDE1LjUyMjggMCAxMCAwQzQuNDc3MTUgMCAwIDQuNDc3MTUgMCAxMEMwIDE1LjUyMjggNC40NzcxNSAyMCAxMCAyMFoiIGZpbGw9IiM2NjY2NjYiLz4KPC9zdmc+" alt="Wikimedia Foundation" class="me-1" style="width: 16px; height: 16px;">
+                            Wikimedia Foundation
+                        </a>
+                    </small>
+                    <small class="text-muted">
+                        <a href="https://www.mediawiki.org/" class="text-decoration-none">
+                            <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAiIGhlaWdodD0iMjAiIHZpZXdCb3g9IjAgMCAyMCAyMCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTEwIDIwQzE1LjUyMjggMjAgMjAgMTUuNTIyOCAyMCAxMEMyMCA0LjQ3NzE1IDE1LjUyMjggMCAxMCAwQzQuNDc3MTUgMCAwIDQuNDc3MTUgMCAxMEMwIDE1LjUyMjggNC40NzcxNSAyMCAxMCAyMFoiIGZpbGw9IiNmZjY2MDAiLz4KPC9zdmc+" alt="Powered by MediaWiki" class="me-1" style="width: 16px; height: 16px;">
+                            Powered by MediaWiki
+                        </a>
+                    </small>
                 </div>
             </div>
         </div>
