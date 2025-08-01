@@ -37,8 +37,8 @@
                                 {% for revision in revisions %}
                                 <tr>
                                     <td>{{ revision.created_at|date:"F j, Y H:i" }}</td>
-                                    <td>{{ revision.user.username }}</td>
-                                    <td>{{ revision.comment|default:"No comment" }}</td>
+                                    <td>{{ revision.editor.username }}</td>
+                                    <td>{{ revision.revision_comment|default:"No comment" }}</td>
                                     <td>
                                         <a href="{% url 'app:article-revision' slug=article.slug revision_id=revision.id %}" class="btn btn-sm btn-outline-primary">
                                             View
