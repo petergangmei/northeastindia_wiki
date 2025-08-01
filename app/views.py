@@ -50,12 +50,13 @@ def home(request):
     """
     Enhanced home page view with Wikipedia-style content
     """
-    # Get Article of the Day (Featured Article)
+    # Get Article of the Day (Featured Article) - only articles with featured images
     article_of_the_day = Article.objects.filter(
         content_type='article',
         published=True, 
-        review_status='approved'
-    ).order_by('?').first()
+        review_status='approved',
+        featured_image__isnull=False
+    ).exclude(featured_image='').order_by('?').first()
     
     # Get latest articles (Recent additions)
     latest_articles = Article.objects.filter(

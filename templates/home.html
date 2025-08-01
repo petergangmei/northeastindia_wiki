@@ -100,10 +100,19 @@
                             <a href="{% url 'app:article-detail' slug=article_of_the_day.slug %}" class="btn btn-outline-primary btn-sm">Read full article →</a>
                         </div>
                         <div class="col-md-4">
-                            <div class="bg-light rounded p-3 text-center">
-                                <i class="fas fa-image fa-3x text-muted mb-2"></i>
-                                <small class="text-muted">Featured image placeholder</small>
-                            </div>
+                            {% if article_of_the_day.featured_image %}
+                                <div class="rounded overflow-hidden">
+                                    <img src="{{ article_of_the_day.featured_image.url }}" 
+                                         alt="{{ article_of_the_day.title }}" 
+                                         class="img-fluid w-100" 
+                                         style="height: 200px; object-fit: cover;">
+                                </div>
+                            {% else %}
+                                <div class="bg-light rounded p-3 text-center">
+                                    <i class="fas fa-image fa-3x text-muted mb-2"></i>
+                                    <small class="text-muted">Featured image placeholder</small>
+                                </div>
+                            {% endif %}
                         </div>
                     </div>
                 </div>
