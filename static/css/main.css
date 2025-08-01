@@ -1282,6 +1282,12 @@ footer a:hover {
     letter-spacing: 0.5px;
 }
 
+/* Search results hover fix */
+#search-results .list-group-item:hover,
+#search-results .list-group-item:hover * {
+    text-decoration: none !important;
+}
+
 /* Media queries for responsive design */
 @media (max-width: 768px) {
     .container {

@@ -8,15 +8,15 @@
         <div class="list-group list-group-flush">
             {% for article in articles|slice:":5" %}
             <a href="{% url 'app:article-detail' slug=article.slug %}" 
-               class="list-group-item list-group-item-action border-0 py-3 px-4 ripple">
+               class="list-group-item list-group-item-action border-0 py-3 px-4 ripple text-decoration-none">
                 <div class="d-flex w-100 justify-content-between align-items-center">
                     <div>
                         <h6 class="mb-1 fw-bold">{{ article.title }}</h6>
                         <p class="mb-1 text-muted small">
                             {% if article.excerpt %}
-                            {{ article.excerpt|truncatechars:100 }}
+                            {{ article.excerpt|truncatechars:100|safe }}
                             {% else %}
-                            {{ article.content|striptags|truncatechars:100 }}
+                            {{ article.content|striptags|truncatechars:100|safe }}
                             {% endif %}
                         </p>
                        
