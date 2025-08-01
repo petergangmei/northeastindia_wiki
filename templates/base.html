@@ -236,8 +236,10 @@
     {% block extra_css %}{% endblock %}
 </head>
 <body>
-    <!-- Header -->
-    {% include 'commons/header.html' %}
+    <!-- Header (hidden on home page) -->
+    {% if request.resolver_match.url_name != 'home' %}
+        {% include 'commons/header.html' %}
+    {% endif %}
     
     <!-- Breadcrumb Navigation -->
     {% block breadcrumbs %}{% endblock %}
