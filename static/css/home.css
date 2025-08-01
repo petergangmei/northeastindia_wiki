@@ -5,6 +5,9 @@
     transition: background-color 0.2s ease;
 }
 
+.min-vh-50{
+    min-height: 70vh !important;
+}
 /* Hero section responsive adjustments for better mobile spacing */
 @media (max-width: 768px) {
     .hero-section {
