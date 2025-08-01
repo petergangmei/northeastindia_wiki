@@ -237,9 +237,9 @@
                                             <p class="mb-1 small text-muted">
                                                 <i class="far fa-clock me-1"></i> {{ revision.created_at|date:"M d, Y g:i A" }}
                                             </p>
-                                            {% if revision.comment %}
+                                            {% if revision.revision_comment %}
                                             <p class="mb-0 mt-2 ps-2 border-start border-3 border-info">
-                                                {{ revision.comment }}
+                                                {{ revision.revision_comment }}
                                             </p>
                                             {% endif %}
                                         </div>

@@ -171,11 +171,11 @@
                                 <small class="text-muted">{{ revision.created_at|time:"g:i A" }}</small>
                             </div>
                             <p class="mb-1 small text-muted">
-                                <a href="{% url 'accounts:profile' username=revision.user.username %}" class="text-decoration-none">
-                                    {{ revision.user.username }}
+                                <a href="{% url 'accounts:profile' username=revision.editor.username %}" class="text-decoration-none">
+                                    {{ revision.editor.username }}
                                 </a>
-                                {% if revision.comment %}
-                                - {{ revision.comment }}
+                                {% if revision.revision_comment %}
+                                - {{ revision.revision_comment }}
                                 {% endif %}
                             </p>
                         </div>

@@ -97,7 +97,7 @@
                             <select name="from_revision" id="from_revision" class="form-select">
                                 {% for rev in all_revisions %}
                                 <option value="{{ rev.id }}" {% if rev.id == from_revision.id %}selected{% endif %}>
-                                    #{{ rev.id }} - {{ rev.created_at|date:"Y-m-d H:i" }} by {{ rev.user.username }}
+                                    #{{ rev.id }} - {{ rev.created_at|date:"Y-m-d H:i" }} by {{ rev.editor.username }}
                                 </option>
                                 {% endfor %}
                             </select>
@@ -107,7 +107,7 @@
                             <select name="to_revision" id="to_revision" class="form-select">
                                 {% for rev in all_revisions %}
                                 <option value="{{ rev.id }}" {% if rev.id == to_revision.id %}selected{% endif %}>
-                                    #{{ rev.id }} - {{ rev.created_at|date:"Y-m-d H:i" }} by {{ rev.user.username }}
+                                    #{{ rev.id }} - {{ rev.created_at|date:"Y-m-d H:i" }} by {{ rev.editor.username }}
                                 </option>
                                 {% endfor %}
                             </select>
@@ -122,10 +122,10 @@
                         <div class="col-md-6 mb-3">
                             <div class="revision-info">
                                 <h4 class="h5">From: Revision #{{ from_revision.id }}</h4>
-                                <p class="mb-1"><strong>Author:</strong> {{ from_revision.user.username }}</p>
+                                <p class="mb-1"><strong>Author:</strong> {{ from_revision.editor.username }}</p>
                                 <p class="mb-1"><strong>Date:</strong> {{ from_revision.created_at|date:"F j, Y H:i" }}</p>
-                                {% if from_revision.comment %}
-                                <p class="mb-1"><strong>Comment:</strong> {{ from_revision.comment }}</p>
+                                {% if from_revision.revision_comment %}
+                                <p class="mb-1"><strong>Comment:</strong> {{ from_revision.revision_comment }}</p>
                                 {% endif %}
                                 <a href="{% url 'app:article-revision' slug=article.slug revision_id=from_revision.id %}" class="btn btn-sm btn-outline-primary mt-2">
                                     View This Revision
@@ -135,10 +135,10 @@
                         <div class="col-md-6 mb-3">
                             <div class="revision-info">
                                 <h4 class="h5">To: Revision #{{ to_revision.id }}</h4>
-                                <p class="mb-1"><strong>Author:</strong> {{ to_revision.user.username }}</p>
+                                <p class="mb-1"><strong>Author:</strong> {{ to_revision.editor.username }}</p>
                                 <p class="mb-1"><strong>Date:</strong> {{ to_revision.created_at|date:"F j, Y H:i" }}</p>
-                                {% if to_revision.comment %}
-                                <p class="mb-1"><strong>Comment:</strong> {{ to_revision.comment }}</p>
+                                {% if to_revision.revision_comment %}
+                                <p class="mb-1"><strong>Comment:</strong> {{ to_revision.revision_comment }}</p>
                                 {% endif %}
                                 <a href="{% url 'app:article-revision' slug=article.slug revision_id=to_revision.id %}" class="btn btn-sm btn-outline-primary mt-2">
                                     View This Revision
