@@ -8,14 +8,16 @@
 
 {% block content %}
 <!-- Wikipedia-style Home Page -->
-<div class="container py-2">
-    <!-- Welcome Header -->
-    <div class="text-center mb-4">
-        <h1 class="display-6 mb-2">Welcome to Northeast India Wiki</h1>
-        <p class="lead text-muted mb-3">The free encyclopedia of Northeast India that anyone can edit</p>
+<!-- Hero Section -->
+<div class="hero-section d-flex align-items-center justify-content-center min-vh-50">
+    <div class="container">
+        <!-- Welcome Header -->
+        <div class="text-center">
+        <h1 class="display-5 mb-3">Welcome to Northeast India Wiki</h1>
+        <p class="lead text-muted mb-4">The free encyclopedia of Northeast India that anyone can edit</p>
         
         <!-- Site Statistics -->
-        <div class="row justify-content-center mb-4">
+        <div class="row justify-content-center mb-5">
             <div class="col-auto">
                 <div class="d-flex gap-4 text-center small text-muted">
                     <div>
@@ -69,9 +71,12 @@
                 <div id="search-results"></div>
             </div>
         </div>
+        </div>
     </div>
+</div>
 
-    <!-- Main Content Grid -->
+<!-- Main Content Section -->
+<div class="container py-4">
     <div class="row g-4">
         <!-- Left Column -->
         <div class="col-lg-8">
@@ -104,8 +109,8 @@
                                 <div class="rounded overflow-hidden">
                                     <img src="{{ article_of_the_day.featured_image.url }}" 
                                          alt="{{ article_of_the_day.title }}" 
-                                         class="img-fluid w-100" 
-                                         style="height: 200px; object-fit: cover;">
+                                         class="img-fluid w-100 object-fit-cover" 
+                                         style="height: 200px;">
                                 </div>
                             {% else %}
                                 <div class="bg-light rounded p-3 text-center">
@@ -132,7 +137,7 @@
                             <div class="col">
                                 <div class="d-flex">
                                     <div class="flex-shrink-0 me-3">
-                                        <div class="bg-light rounded p-2" style="width: 50px; height: 50px;">
+                                        <div class="bg-light rounded p-2 d-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
                                             <i class="fas fa-file-alt fa-lg text-muted"></i>
                                         </div>
                                     </div>
@@ -211,6 +216,22 @@
 .hover-bg-light:hover {
     background-color: #f8f9fa !important;
     transition: background-color 0.2s ease;
+}
+
+/* Hero section responsive adjustments for better mobile spacing */
+@media (max-width: 768px) {
+    .hero-section {
+        min-height: 60vh !important;
+    }
+    .hero-section h1 {
+        font-size: 2rem !important;
+    }
+}
+
+@media (max-width: 576px) {
+    .hero-section {
+        min-height: 70vh !important;
+    }
 }
 </style>
 {% endblock %}

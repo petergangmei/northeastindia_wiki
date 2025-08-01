@@ -1,53 +1,64 @@
-# Views.py Cleanup Plan
+# Home.html Template CSS to MDBootstrap Conversion Plan
 
 ## Objective
-Clean up `/Users/petergangmei/Developer/Crossplatform/django/northeastindia_wiki/app/views.py` by removing account-related function definitions and updating imports.
+Convert hardcoded CSS styles in `/Users/petergangmei/Developer/Crossplatform/django/northeastindia_wiki/templates/home.html` to MDBootstrap utility classes while maintaining the same visual appearance and functionality.
+
+## Analysis of Current Issues
+
+### Identified Hardcoded Styles to Convert:
+1. **Hero Section Inline Style**: `style="min-height: 50vh;"` on line 12
+2. **Featured Image Inline Style**: `style="height: 200px; object-fit: cover;"` on line 113
+3. **Icon Container Inline Style**: `style="width: 50px; height: 50px;"` on line 140
+4. **Avatar Circle Inline Style**: `style="width: 30px; height: 30px;"` on line 176
+5. **Responsive Media Queries**: Lines 222-235 with custom CSS for mobile responsiveness
+6. **Hover Effect CSS**: Lines 216-219 for hover background transitions
 
 ## Tasks
 
-### Phase 1: Identify Account-Related Functions
-- [ ] Identify all 10 account-related functions to be removed:
-  1. `user_login` (line 124)
-  2. `user_logout` (line 152) 
-  3. `register` (line 160)
-  4. `profile` (line 180)
-  5. `edit_profile` (line 197)
-  6. `password_reset_request` (line 1198)
-  7. `password_reset_done` (line 1242)
-  8. `password_reset_confirm` (line 1248)
-  9. `password_reset_complete` (line 1274)
-  10. `user_contributions` (line 1281)
+### Phase 1: Convert Hero Section Styling
+- [ ] Replace `style="min-height: 50vh;"` with Bootstrap utility class `min-vh-50`
+- [ ] Remove responsive media queries for hero section and replace with Bootstrap responsive utilities
+- [ ] Convert hero section mobile font-size adjustments to Bootstrap responsive typography classes
 
-### Phase 2: Remove Functions
-- [ ] Remove `user_login` function and its implementation
-- [ ] Remove `user_logout` function and its implementation  
-- [ ] Remove `register` function and its implementation
-- [ ] Remove `profile` function and its implementation
-- [ ] Remove `edit_profile` function and its implementation
-- [ ] Remove `password_reset_request` function and its implementation
-- [ ] Remove `password_reset_done` function and its implementation
-- [ ] Remove `password_reset_confirm` function and its implementation
-- [ ] Remove `password_reset_complete` function and its implementation
-- [ ] Remove `user_contributions` function and its implementation
+### Phase 2: Convert Image and Container Sizing
+- [ ] Replace `style="height: 200px; object-fit: cover;"` with Bootstrap utility classes
+- [ ] Convert icon container sizing `style="width: 50px; height: 50px;"` to Bootstrap utilities
+- [ ] Replace avatar circle sizing `style="width: 30px; height: 30px;"` with Bootstrap utilities
 
-### Phase 3: Update Imports
-- [ ] Remove unused authentication-related imports:
-  - `from django.contrib.auth import login, authenticate, logout`
-  - `from django.contrib.auth.forms import AuthenticationForm, PasswordResetForm, SetPasswordForm`
-  - `from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode`
-  - `from django.utils.encoding import force_bytes, force_str`
-  - `from django.contrib.auth.tokens import default_token_generator`
-  - `from django.template.loader import render_to_string`
-  - `from django.core.mail import send_mail, BadHeaderError`
-- [ ] Remove `CustomUserCreationForm` from forms import
-- [ ] Keep necessary imports that are still used by remaining functions
+### Phase 3: Convert Custom CSS to Bootstrap Classes
+- [ ] Replace hover effect CSS with Bootstrap hover utilities or keep as minimal custom CSS if no equivalent exists
+- [ ] Remove all responsive media queries and replace with Bootstrap responsive utilities
+- [ ] Clean up the `<style>` section, keeping only truly necessary custom CSS
 
-### Phase 4: Verification
-- [ ] Ensure no syntax errors in the cleaned file
-- [ ] Verify remaining functions are intact
-- [ ] Check that all necessary imports are still present for remaining functions
+### Phase 4: Testing and Verification
+- [ ] Test responsive behavior on different screen sizes
+- [ ] Verify visual appearance matches the original design
+- [ ] Ensure all interactive elements still function correctly
+- [ ] Validate that no functionality is broken
+
+## Bootstrap Utility Classes to Use
+
+### For Hero Section:
+- `min-vh-50` for min-height: 50vh
+- `min-vh-md-60` for mobile responsive height
+- `fs-1`, `fs-2`, etc. for responsive font sizes
+
+### For Images and Containers:
+- `h-*` utilities for height (custom values may need CSS variables)
+- `w-*` utilities for width
+- `object-fit-cover` for object-fit (if available in Bootstrap 5)
+
+### For Responsive Design:
+- `d-*` utilities for responsive display
+- `text-*` utilities for responsive text alignment
+- Responsive spacing utilities (`p-*`, `m-*`)
 
 ## Notes
-- Keep all non-account related functions intact
-- Maintain proper code formatting and structure
-- Ensure no breaking changes to existing functionality
+- Prioritize Bootstrap utility classes over custom CSS
+- Keep minimal custom CSS only when no Bootstrap equivalent exists
+- Maintain the Wikipedia-style visual design
+- Ensure responsive behavior is preserved or improved
+- Test thoroughly on mobile and desktop viewports
+
+## Review Section
+(To be completed after implementation)
