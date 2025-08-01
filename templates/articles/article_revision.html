@@ -104,14 +104,7 @@
                                 {% endif %}
                             </div>
                             <div class="col-md-6 text-md-end">
-                                {% if user.is_staff or user.profile.role == 'admin' or user.profile.role == 'editor' %}
-                                <button class="btn btn-outline-primary restore-btn"
-                                        data-revision-id="{{ revision.id }}"
-                                        data-bs-toggle="modal" 
-                                        data-bs-target="#restoreModal">
-                                    <i class="fas fa-undo me-1"></i> Restore This Revision
-                                </button>
-                                {% endif %}
+                                <!-- Restore button moved to Actions tab -->
                             </div>
                         </div>
                     </div>
@@ -136,23 +129,23 @@
                     </div>
                     
                     <!-- Tabs for different views -->
-                    <ul class="nav nav-tabs mb-3" id="revisionTabs" role="tablist">
+                    <ul class="nav nav-pills mb-3" id="revisionTabs" role="tablist">
                         <li class="nav-item" role="presentation">
-                            <button class="nav-link active" id="content-tab" data-bs-toggle="tab" data-bs-target="#content" 
+                            <button class="nav-link active" id="content-tab" data-mdb-toggle="pill" data-mdb-target="#content" 
                                     type="button" role="tab" aria-controls="content" aria-selected="true">
                                 Content
                             </button>
                         </li>
                         {% if diff_available %}
                         <li class="nav-item" role="presentation">
-                            <button class="nav-link" id="diff-tab" data-bs-toggle="tab" data-bs-target="#diff" 
+                            <button class="nav-link" id="diff-tab" data-mdb-toggle="pill" data-mdb-target="#diff" 
                                     type="button" role="tab" aria-controls="diff" aria-selected="false">
                                 Changes
                             </button>
                         </li>
                         {% endif %}
                         <li class="nav-item" role="presentation">
-                            <button class="nav-link" id="metadata-tab" data-bs-toggle="tab" data-bs-target="#metadata" 
+                            <button class="nav-link" id="metadata-tab" data-mdb-toggle="pill" data-mdb-target="#metadata" 
                                     type="button" role="tab" aria-controls="metadata" aria-selected="false">
                                 Metadata
                             </button>

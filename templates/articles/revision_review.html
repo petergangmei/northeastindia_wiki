@@ -72,7 +72,7 @@
             <div class="revision-content shadow">
                 <!-- Header -->
                 <div class="revision-header">
-                    <h2>Review Revision</h2>
+                    <h2 class="text-white">Review Revision</h2>
                     <p class="mb-0">Article: <strong>{{ revision.content.title }}</strong></p>
                     <small>Submitted by {{ revision.editor.username }} on {{ revision.created_at|date:"M d, Y H:i" }}</small>
                 </div>
@@ -121,7 +121,7 @@
                                 {% if original_content.excerpt %}
                                 <hr>
                                 <h6>Excerpt:</h6>
-                                <p>{{ original_content.excerpt }}</p>
+                                <p>{{ original_content.excerpt|safe }}</p>
                                 {% endif %}
                             </div>
                         </div>
@@ -137,7 +137,7 @@
                                 {% if revision.excerpt %}
                                 <hr>
                                 <h6>Excerpt:</h6>
-                                <p>{{ revision.excerpt }}</p>
+                                <p>{{ revision.excerpt|safe }}</p>
                                 {% endif %}
                             </div>
                         </div>
