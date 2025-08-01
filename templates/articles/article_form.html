@@ -674,17 +674,10 @@
                             </div>
                         </div>
                         <div class="header-right">
-                            {% if article and is_approved_content %}
-                                <button type="submit" form="article-form" name="action" value="submit_for_review" 
-                                        class="btn btn-outline-light btn-header">
-                                    <i class="fas fa-paper-plane me-2"></i>Submit for Review
-                                </button>
-                            {% elif article or not article %}
-                                <button type="submit" form="article-form" name="action" value="submit_for_review" 
-                                        class="btn btn-outline-light btn-header">
-                                    <i class="fas fa-paper-plane me-2"></i>Submit for Review
-                                </button>
-                            {% endif %}
+                            <button type="submit" form="article-form" name="action" value="submit_for_review" 
+                                    class="btn btn-outline-light btn-header">
+                                <i class="fas fa-paper-plane me-2"></i>Submit for Review
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -1064,8 +1057,8 @@
                                                 {% for rev in revisions|slice:":5" %}
                                                 <tr>
                                                     <td>{{ rev.created_at|date:"M d, Y H:i" }}</td>
-                                                    <td>{{ rev.user.username }}</td>
-                                                    <td>{{ rev.comment|default:"No comment" }}</td>
+                                                    <td>{{ rev.editor.username }}</td>
+                                                    <td>{{ rev.revision_comment|default:"No comment" }}</td>
                                                     <td>
                                                         <a href="{% url 'app:article-revision' slug=article.slug revision_id=rev.id %}" 
                                                            class="btn btn-sm btn-outline-secondary" target="_blank">
@@ -1566,6 +1559,25 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             });
         });
+    }
+});
+
+// Handle explicit button clicks to ensure correct action is sent
+document.addEventListener('click', function(e) {
+    if (e.target.type === 'submit' && e.target.form && e.target.form.id === 'article-form') {
+        // Create a hidden input with the action value
+        const existingActionInput = e.target.form.querySelector('input[name="action"]');
+        if (existingActionInput) {
+            existingActionInput.remove();
+        }
+        
+        const hiddenInput = document.createElement('input');
+        hiddenInput.type = 'hidden';
+        hiddenInput.name = 'action';
+        hiddenInput.value = e.target.value;
+        e.target.form.appendChild(hiddenInput);
+        
+        console.log('Submit button clicked with action:', e.target.value);
     }
 });
 
