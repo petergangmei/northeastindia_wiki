@@ -58,14 +58,11 @@
     <!-- Wikipedia-style header -->
     <div class="wiki-header">
         <div class="container-fluid">
-            <!-- Article title with languages -->
-            <div class="d-flex justify-content-between align-items-start">
-                <h1 class="wiki-title mb-0">{{ article.title }}</h1>
-            </div>
-            
-            <!-- Wikipedia-style navigation tabs -->
             <div class="wiki-tabs border-bottom">
                 <nav class="nav nav-tabs border-0">
+                          <div class="d-flex justify-content-between align-items-start">
+                            <h1 class="wiki-title mb-0 ms-3">{{ article.title }}</h1>
+                        </div>
                 </nav>
                 
                 <!-- Article actions -->
@@ -280,16 +277,13 @@
 .wiki-header {
     background: #f8f9fa;
     border-bottom: 1px solid #a2a9b1;
-    padding: 1rem 0 0;
 }
 
-.wiki-title {
-    font-size: 2.2rem;
+.wiki-title-h1 {
+    font-family: 'Georgia', serif;
+    font-size: 2rem;
     font-weight: 400;
     color: #000;
-    border-bottom: 3px solid #a2a9b1;
-    padding-bottom: 0.5rem;
-    margin-bottom: 1rem;
 }
 
 .wiki-language-selector {

@@ -1257,8 +1257,7 @@ footer a:hover {
 
 .wiki-header {
     background: #f8f9fa;
-    border-bottom: 1px solid #a2a9b1;
-    padding: 1rem 0 0;
+    border-bottom: 1px solid #d5dbe1;
 }
 
 .wiki-title {
@@ -1266,9 +1265,6 @@ footer a:hover {
     font-size: 2.4rem;
     font-weight: normal;
     color: #000;
-    border-bottom: 3px solid #a2a9b1;
-    padding-bottom: 0.25rem;
-    margin-bottom: 1rem;
     line-height: 1.3;
 }
 
