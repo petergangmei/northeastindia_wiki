@@ -41,6 +41,7 @@ urlpatterns = [
     path('wiki/<slug:slug>/revision/<int:revision_id>/', views.article_revision, name='article-revision'),
     path('wiki/<slug:slug>/compare/', views.article_compare, name='article-compare'),
     path('wiki/<slug:slug>/delete/', views.article_delete, name='article-delete'),
+    path('articles/<slug:slug>/toggle-watch/', views.toggle_article_watch, name='article-toggle-watch'),
     
     # Category-specific list URLs (placed BEFORE general patterns to avoid conflicts)
     path('personalities/', views.personalities_list, name='personalities-list'),

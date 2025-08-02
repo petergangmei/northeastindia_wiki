@@ -444,9 +444,29 @@ def article_edit(request, slug):
     # Get the article
     article = get_object_or_404(Article, slug=slug)
     
-    # Check if user has permission to edit
+    # Check if user has permission to edit with detailed feedback
     if not article.can_be_edited_by(request.user):
-        messages.error(request, "You don't have permission to edit this article.")
+        # Provide specific feedback based on protection level and user role
+        try:
+            user_profile = request.user.profile
+            user_role = user_profile.role
+        except:
+            user_role = 'viewer'
+        
+        if article.protection_level == 'fully_protected':
+            messages.error(request, "This article is fully protected and can only be edited by administrators.")
+        elif article.protection_level == 'protected':
+            messages.error(request, "This article is protected and can only be edited by editors and administrators.")
+        elif article.protection_level == 'semi_protected':
+            if user_role == 'contributor':
+                messages.error(request, f"This article is semi-protected. You need at least 10 approved contributions and 50 reputation points to edit. You currently have {user_profile.contribution_count} contributions and {user_profile.reputation_points} reputation points.")
+            else:
+                messages.error(request, "This article is semi-protected. You need contributor status with sufficient reputation to edit.")
+        elif user_role == 'viewer':
+            messages.error(request, "You need contributor status or higher to edit articles. Please request contributor status.")
+        else:
+            messages.error(request, "You don't have permission to edit this article.")
+        
         return redirect('app:article-detail', slug=article.slug)
     
     # Get user profile for contribution tracking
@@ -543,6 +563,29 @@ def article_edit(request, slug):
                 revision.states_data = states_ids
                 
                 revision.save()
+                
+                # Send notifications for collaborative editing
+                if submit_for_review:
+                    # Notify watchers and original author about the proposed edit
+                    watchers = article.watchers.exclude(id=request.user.id)
+                    for watcher in watchers:
+                        create_notification(
+                            watcher,
+                            'review',
+                            f'{request.user.username} has proposed changes to "{article.title}" that you\'re watching.',
+                            'article',
+                            article.id
+                        )
+                    
+                    # Notify original author if they're not the editor and not already a watcher
+                    if article.author != request.user and article.author not in watchers:
+                        create_notification(
+                            article.author,
+                            'review',
+                            f'{request.user.username} has proposed changes to your article "{article.title}".',
+                            'article',
+                            article.id
+                        )
                 
                 # Show appropriate success message based on action
                 if submit_for_review:
@@ -1261,6 +1304,17 @@ def revision_review_action(request, revision_id):
                     revision.id
                 )
                 
+                # Notify watchers about the approved changes (excluding the editor)
+                watchers = revision.content.watchers.exclude(id=revision.editor.id)
+                for watcher in watchers:
+                    create_notification(
+                        watcher,
+                        'system',
+                        f'"{revision.content.title}" that you\'re watching has been updated by {revision.editor.username}.',
+                        'article',
+                        revision.content.id
+                    )
+                
                 # Create contribution record
                 Contribution.objects.create(
                     user=revision.editor,
@@ -1272,12 +1326,13 @@ def revision_review_action(request, revision_id):
                     approved_by=request.user
                 )
                 
-                # Update user reputation
+                # Update user reputation and trust score
                 try:
                     editor_profile = revision.editor.profile
                     editor_profile.reputation_points += 10
                     editor_profile.contribution_count += 1
-                    editor_profile.save()
+                    editor_profile.approved_edit_count += 1
+                    editor_profile.update_trust_score()  # This also saves the profile
                 except:
                     pass
                 
@@ -1301,6 +1356,14 @@ def revision_review_action(request, revision_id):
                 'content_revision',
                 revision.id
             )
+            
+            # Update user's rejected edit count and trust score
+            try:
+                editor_profile = revision.editor.profile
+                editor_profile.rejected_edit_count += 1
+                editor_profile.update_trust_score()  # This also saves the profile
+            except:
+                pass
             
             messages.success(request, f'Revision rejected for "{revision.content.title}".')
         
@@ -2393,3 +2456,37 @@ def get_csrf_token(request):
     
     token = get_token(request)
     return JsonResponse({'csrftoken': token})
+
+@login_required
+def toggle_article_watch(request, slug):
+    """
+    Toggle watch status for an article (Wikipedia-style)
+    """
+    from django.http import JsonResponse
+    import json
+    
+    if request.method != 'POST':
+        return JsonResponse({'success': False, 'message': 'Invalid request method'})
+    
+    article = get_object_or_404(Article, slug=slug)
+    
+    # Check if user is already watching
+    is_watching = request.user in article.watchers.all()
+    
+    if is_watching:
+        # Remove from watchers
+        article.watchers.remove(request.user)
+        message = f"Removed '{article.title}' from your watchlist."
+        new_status = False
+    else:
+        # Add to watchers
+        article.watchers.add(request.user)
+        message = f"Added '{article.title}' to your watchlist."
+        new_status = True
+    
+    return JsonResponse({
+        'success': True,
+        'is_watching': new_status,
+        'message': message,
+        'watchers_count': article.watchers.count()
+    })

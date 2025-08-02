@@ -71,15 +71,40 @@
                         <a class="nav-link active" href="#" id="read-tab">Read</a>
                         {% if has_edit_permission %}
                         <a class="nav-link" href="{% url 'app:article-edit' slug=article.slug %}" id="edit-tab">Edit</a>
-                        <a class="nav-link" href="{% url 'app:article-history' slug=article.slug %}" id="history-tab">View history</a>
+                        {% elif user.is_authenticated %}
+                        <a class="nav-link disabled" href="#" title="{% if article.protection_level == 'protected' %}This article is protected{% elif article.protection_level == 'semi_protected' %}This article is semi-protected{% elif user.profile.role == 'viewer' %}You need contributor status to edit{% else %}You don't have permission to edit{% endif %}">Edit</a>
                         {% endif %}
+                        <a class="nav-link" href="{% url 'app:article-history' slug=article.slug %}" id="history-tab">View history</a>
                     </nav>
+                    
+                    {% if article.protection_level != 'unprotected' %}
+                    <div class="protection-indicator ms-2">
+                        <span class="badge bg-warning text-dark" title="{{ article.protection_reason }}">
+                            {% if article.protection_level == 'fully_protected' %}
+                                <i class="fas fa-lock"></i> Fully Protected
+                            {% elif article.protection_level == 'protected' %}
+                                <i class="fas fa-shield-alt"></i> Protected
+                            {% elif article.protection_level == 'semi_protected' %}
+                                <i class="fas fa-shield-halved"></i> Semi-Protected
+                            {% endif %}
+                        </span>
+                    </div>
+                    {% endif %}
                     
                     <div class="dropdown ms-3">
                         <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" id="toolsDropdown" data-bs-toggle="dropdown">
                             Tools
                         </button>
                         <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="toolsDropdown">
+                            {% if user.is_authenticated %}
+                            <li>
+                                <a class="dropdown-item" href="#" onclick="toggleWatchArticle('{{ article.slug }}')">
+                                    <i class="fas fa-eye me-2"></i>
+                                    <span id="watch-text">{% if user in article.watchers.all %}Unwatch{% else %}Watch this page{% endif %}</span>
+                                </a>
+                            </li>
+                            <li><hr class="dropdown-divider"></li>
+                            {% endif %}
                             <li><a class="dropdown-item" href="#" onclick="window.print()"><i class="fas fa-print me-2"></i>Print</a></li>
                             <li><a class="dropdown-item" href="#" onclick="copyToClipboard()"><i class="fas fa-link me-2"></i>Copy link</a></li>
                             <li><hr class="dropdown-divider"></li>
@@ -331,6 +356,48 @@ function addSmoothScrolling() {
 function copyToClipboard() {
     navigator.clipboard.writeText(window.location.href).then(function() {
         alert('Link copied to clipboard!');
+    });
+}
+
+// Wikipedia-style article watching
+function toggleWatchArticle(slug) {
+    fetch(`/articles/${slug}/toggle-watch/`, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({})
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            const watchText = document.getElementById('watch-text');
+            watchText.textContent = data.is_watching ? 'Unwatch' : 'Watch this page';
+            
+            // Show notification
+            const notification = document.createElement('div');
+            notification.className = 'alert alert-success alert-dismissible fade show position-fixed';
+            notification.style.cssText = 'top: 20px; right: 20px; z-index: 1050; max-width: 300px;';
+            notification.innerHTML = `
+                ${data.message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            document.body.appendChild(notification);
+            
+            // Auto-dismiss after 3 seconds
+            setTimeout(() => {
+                if (notification.parentNode) {
+                    notification.remove();
+                }
+            }, 3000);
+        } else {
+            alert('Error: ' + data.message);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('An error occurred while updating watch status.');
     });
 }
 </script>

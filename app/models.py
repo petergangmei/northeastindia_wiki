@@ -301,6 +301,13 @@ class Content(TimeStampedModel):
         ('featured', 'Featured'),
     )
     
+    PROTECTION_LEVELS = (
+        ('unprotected', 'Unprotected'),        # Anyone with contributor+ role can edit
+        ('semi_protected', 'Semi-protected'),   # Requires minimum reputation/contributions
+        ('protected', 'Protected'),             # Only editors and admins can edit
+        ('fully_protected', 'Fully Protected'), # Only admins can edit
+    )
+    
     # Core fields (used by all content types)
     title = models.CharField(max_length=255)
     slug = models.SlugField(max_length=280, unique=True)
@@ -313,6 +320,16 @@ class Content(TimeStampedModel):
     published_at = models.DateTimeField(null=True, blank=True)
     review_status = models.CharField(max_length=20, choices=REVIEW_STATUS_CHOICES, default='draft')
     review_notes = models.TextField(blank=True)
+    
+    # Collaborative editing and protection
+    protection_level = models.CharField(max_length=20, choices=PROTECTION_LEVELS, default='unprotected', help_text="Wikipedia-style protection level")
+    protection_reason = models.TextField(blank=True, help_text="Reason for protection (vandalism, edit wars, etc.)")
+    protection_expires = models.DateTimeField(null=True, blank=True, help_text="When protection expires (if temporary)")
+    protected_by = models.ForeignKey(User, null=True, blank=True, on_delete=models.SET_NULL, related_name='protected_content', help_text="Admin who applied protection")
+    
+    # Edit tracking for collaboration
+    edit_count = models.PositiveIntegerField(default=0, help_text="Total number of approved edits")
+    watchers = models.ManyToManyField(User, blank=True, related_name='watched_content', help_text="Users watching this content for changes")
     
     # Relationships
     author = models.ForeignKey(User, on_delete=models.PROTECT, related_name='content_items')
@@ -456,20 +473,50 @@ class Content(TimeStampedModel):
         return summary
     
     def can_be_edited_by(self, user):
-        """Check if a user can edit this content"""
+        """
+        Check if a user can edit this content - Wikipedia-style collaborative editing
+        """
         if not user.is_authenticated:
             return False
         
-        # Author can always edit
-        if user == self.author:
-            return True
-        
-        # Check user role
+        # Get user profile and role
         try:
             user_profile = user.profile
-            return user_profile.role in ['editor', 'admin'] or user.is_staff
+            user_role = user_profile.role
         except:
-            return user.is_staff
+            # If no profile exists, treat as viewer
+            user_role = 'viewer'
+        
+        # Staff users and admins can always edit
+        if user.is_staff or user_role == 'admin':
+            return True
+        
+        # Check protection level
+        if self.protection_level == 'fully_protected':
+            # Only admins can edit fully protected content
+            return user_role == 'admin'
+        
+        elif self.protection_level == 'protected':
+            # Only editors and admins can edit protected content
+            return user_role in ['editor', 'admin']
+        
+        elif self.protection_level == 'semi_protected':
+            # Requires minimum reputation/contributions
+            if user_role in ['editor', 'admin']:
+                return True
+            if user_role == 'contributor':
+                # Check if user meets minimum requirements for semi-protected editing
+                try:
+                    # Minimum 10 approved contributions and 50 reputation points
+                    return (user_profile.contribution_count >= 10 and 
+                            user_profile.reputation_points >= 50)
+                except:
+                    return False
+            return False
+        
+        else:  # unprotected
+            # Any contributor or higher can edit unprotected content
+            return user_role in ['contributor', 'editor', 'admin']
     
     def get_seo_description(self):
         """Generate SEO-optimized meta description"""
