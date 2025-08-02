@@ -690,19 +690,58 @@ def article_edit(request, slug):
 
 def article_history(request, slug):
     """
-    View the revision history of an article
+    View the revision history of an article with enhanced status information
     """
     article = get_object_or_404(Article, slug=slug)
     
     # Get all revisions for this article
     revisions = ContentRevision.objects.filter(content=article).order_by('-created_at')
     
+    # Get the currently active revision (most recent approved revision)
+    active_revision = revisions.filter(status='approved').first()
+    
+    # Get pending revision if any
+    pending_revision = revisions.filter(status='pending_review').first()
+    
+    # Enhance revisions with status information
+    enhanced_revisions = []
+    for revision in revisions:
+        revision_data = {
+            'revision': revision,
+            'is_active': active_revision and revision.id == active_revision.id,
+            'is_pending': revision.status == 'pending_review',
+            'status_display': get_revision_status_display(revision, article, active_revision),
+            'activation_date': revision.reviewed_at if revision.status == 'approved' else None,
+        }
+        enhanced_revisions.append(revision_data)
+    
     context = {
         'article': article,
         'revisions': revisions,
+        'enhanced_revisions': enhanced_revisions,
+        'active_revision': active_revision,
+        'pending_revision': pending_revision,
     }
     
     return render(request, 'articles/article_history.html', context)
+
+def get_revision_status_display(revision, article, active_revision):
+    """
+    Helper function to determine the display status of a revision
+    """
+    if revision.status == 'pending_review':
+        return 'PENDING'
+    elif revision.status == 'approved':
+        if active_revision and revision.id == active_revision.id:
+            return 'ACTIVE'
+        else:
+            return 'INACTIVE'
+    elif revision.status == 'rejected':
+        return 'REJECTED'
+    elif revision.status == 'draft':
+        return 'DRAFT'
+    else:
+        return 'UNKNOWN'
 
 def article_revision(request, slug, revision_id):
     """

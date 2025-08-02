@@ -434,6 +434,27 @@ class Content(TimeStampedModel):
         """Get the latest draft revision for a specific user"""
         return self.revisions.filter(status='draft', editor=user).first()
     
+    def get_active_revision(self):
+        """Get the currently active (published) revision"""
+        return self.revisions.filter(status='approved').first()
+    
+    def has_active_revision(self):
+        """Check if there's an active revision"""
+        return self.revisions.filter(status='approved').exists()
+    
+    def get_revision_status_summary(self):
+        """Get a summary of revision statuses"""
+        summary = {
+            'total_revisions': self.revisions.count(),
+            'draft_count': self.revisions.filter(status='draft').count(),
+            'pending_count': self.revisions.filter(status='pending_review').count(),
+            'approved_count': self.revisions.filter(status='approved').count(),
+            'rejected_count': self.revisions.filter(status='rejected').count(),
+            'active_revision': self.get_active_revision(),
+            'pending_revision': self.get_pending_revision(),
+        }
+        return summary
+    
     def can_be_edited_by(self, user):
         """Check if a user can edit this content"""
         if not user.is_authenticated:

@@ -15,6 +15,46 @@
                     <div class="d-flex justify-content-between align-items-center">
                         <h1 class="history-title">History </h1> <a href="{% url 'app:article-detail' slug=article.slug %}" class="view-article-btn me-5 btn btn-sm btn-outline-secondary">VIEW ARTICLE</a>
                     </div>
+                    
+                    <!-- Status Summary -->
+                    <div class="mt-3 p-3 bg-light rounded">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h6 class="fw-bold mb-2">Current Status</h6>
+                                {% if active_revision %}
+                                    <div class="d-flex align-items-center mb-2">
+                                        <span class="badge bg-success me-2">
+                                            <i class="fas fa-check-circle me-1"></i>ACTIVE
+                                        </span>
+                                        <span class="text-muted">
+                                            Revision from {{ active_revision.created_at|date:"F j, Y" }}
+                                        </span>
+                                    </div>
+                                {% else %}
+                                    <div class="d-flex align-items-center mb-2">
+                                        <span class="badge bg-secondary me-2">NO ACTIVE REVISION</span>
+                                    </div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6">
+                                <h6 class="fw-bold mb-2">Pending Actions</h6>
+                                {% if pending_revision %}
+                                    <div class="d-flex align-items-center mb-2">
+                                        <span class="badge bg-warning text-dark me-2">
+                                            <i class="fas fa-clock me-1"></i>PENDING REVIEW
+                                        </span>
+                                        <span class="text-muted">
+                                            Submitted {{ pending_revision.created_at|date:"F j, Y" }}
+                                        </span>
+                                    </div>
+                                {% else %}
+                                    <div class="d-flex align-items-center mb-2">
+                                        <span class="text-muted">No pending revisions</span>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 <div class="">
                     {% if revisions %}
@@ -24,22 +64,62 @@
                                 <tr>
                                     <th>Date & Time</th>
                                     <th>User</th>
+                                    <th>Status</th>
                                     <th>Comment</th>
+                                    <th>Activation Date</th>
                                     <th>Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                {% for revision in revisions %}
-                                <tr>
+                                {% for revision_data in enhanced_revisions %}
+                                {% with revision=revision_data.revision %}
+                                <tr {% if revision_data.is_active %}class="table-success"{% elif revision_data.is_pending %}class="table-warning"{% endif %}>
                                     <td>{{ revision.created_at|date:"F j, Y H:i" }}</td>
                                     <td>{{ revision.editor.username }}</td>
+                                    <td>
+                                        {% if revision_data.status_display == 'ACTIVE' %}
+                                            <span class="badge bg-success">
+                                                <i class="fas fa-check-circle me-1"></i>ACTIVE
+                                            </span>
+                                        {% elif revision_data.status_display == 'PENDING' %}
+                                            <span class="badge bg-warning text-dark">
+                                                <i class="fas fa-clock me-1"></i>PENDING
+                                            </span>
+                                        {% elif revision_data.status_display == 'INACTIVE' %}
+                                            <span class="badge bg-secondary">
+                                                <i class="fas fa-archive me-1"></i>INACTIVE
+                                            </span>
+                                        {% elif revision_data.status_display == 'REJECTED' %}
+                                            <span class="badge bg-danger">
+                                                <i class="fas fa-times-circle me-1"></i>REJECTED
+                                            </span>
+                                        {% elif revision_data.status_display == 'DRAFT' %}
+                                            <span class="badge bg-info">
+                                                <i class="fas fa-edit me-1"></i>DRAFT
+                                            </span>
+                                        {% else %}
+                                            <span class="badge bg-light text-dark">
+                                                {{ revision_data.status_display }}
+                                            </span>
+                                        {% endif %}
+                                    </td>
                                     <td>{{ revision.revision_comment|default:"No comment" }}</td>
+                                    <td>
+                                        {% if revision_data.activation_date %}
+                                            {{ revision_data.activation_date|date:"F j, Y H:i" }}
+                                        {% elif revision_data.status_display == 'PENDING' %}
+                                            <span class="text-muted">Awaiting review</span>
+                                        {% else %}
+                                            <span class="text-muted">—</span>
+                                        {% endif %}
+                                    </td>
                                     <td>
                                         <a href="{% url 'app:article-revision' slug=article.slug revision_id=revision.id %}" class="history-btn history-view-btn">
                                             VIEW
                                         </a>
                                     </td>
                                 </tr>
+                                {% endwith %}
                                 {% endfor %}
                             </tbody>
                         </table>
