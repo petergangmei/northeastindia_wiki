@@ -639,7 +639,14 @@ def article_edit(request, slug):
                 else:
                     messages.success(request, 'Article updated successfully!')
             
-            return redirect('app:article-detail', slug=article.slug)
+            # Conditional redirect based on action type
+            submit_for_review = request.POST.get('action') == 'submit_for_review'
+            if submit_for_review:
+                # Redirect to article history page when submitting for review
+                return redirect('app:article-history', slug=article.slug)
+            else:
+                # Stay on edit page when saving draft
+                return redirect('app:article-edit', slug=article.slug)
     else:
         # GET request - show form with appropriate data
         if existing_revision and article.review_status == 'approved':
