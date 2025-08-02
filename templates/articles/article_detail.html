@@ -118,9 +118,11 @@
                             {% endif %}
                             <li><a class="dropdown-item" href="#" onclick="window.print()"><i class="fas fa-print me-2"></i>Print</a></li>
                             <li><a class="dropdown-item" href="#" onclick="copyToClipboard()"><i class="fas fa-link me-2"></i>Copy link</a></li>
-                            {% if user.is_authenticated and user.profile.role in 'autoconfirmed,extended_confirmed,reviewer,editor,admin'|split:',' %}
+                            {% if user.is_authenticated and user.profile.role %}
+                                {% if user.profile.role == 'autoconfirmed' or user.profile.role == 'extended_confirmed' or user.profile.role == 'reviewer' or user.profile.role == 'editor' or user.profile.role == 'admin' %}
                             <li><hr class="dropdown-divider"></li>
                             <li><a class="dropdown-item text-danger" href="{% url 'app:request-deletion' slug=article.slug %}"><i class="fas fa-trash me-2"></i>Request deletion</a></li>
+                                {% endif %}
                             {% endif %}
                             <li><hr class="dropdown-divider"></li>
                         </ul>
