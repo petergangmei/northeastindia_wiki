@@ -7,292 +7,412 @@
 {% endblock %}
 
 {% block content %}
-<div class="container my-4">
-    <div class="row">
-        <!-- Main content -->
-        <div class="col-lg-12">
-            <div class="card border-0 shadow-4 rounded-5 mb-4">
-                <div class="card-header bg-primary text-white py-3 rounded-top d-flex justify-content-between align-items-center">
-                    <h4 class="mb-0 fw-bold text-white">Article Review Queue</h4>
-                    <span class="badge bg-light text-primary rounded-pill px-3 py-2">
-                        {{ pending_articles.count }} Pending Articles
-                    </span>
-                </div>
+<style>
+/* Wikipedia-style Review Queue Styles */
+.wiki-review-page {
+    font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+    line-height: 1.6;
+    color: #000;
+}
+
+.wiki-page-header {
+    border-bottom: 1px solid #a2a9b1;
+    padding-bottom: 10px;
+    margin-bottom: 20px;
+}
+
+.wiki-page-title {
+    font-size: 28px;
+    font-weight: normal;
+    margin: 0 0 10px 0;
+    color: #000;
+}
+
+.wiki-subtitle {
+    font-size: 14px;
+    color: #54595d;
+    margin: 0;
+}
+
+.wiki-controls {
+    background: #f8f9fa;
+    border: 1px solid #a2a9b1;
+    padding: 15px;
+    margin-bottom: 20px;
+}
+
+.wiki-search-form {
+    display: inline-block;
+    margin-right: 20px;
+}
+
+.wiki-search-input {
+    border: 1px solid #a2a9b1;
+    padding: 6px 8px;
+    font-size: 14px;
+    width: 300px;
+}
+
+.wiki-search-btn {
+    background: #f8f9fa;
+    border: 1px solid #a2a9b1;
+    padding: 6px 12px;
+    font-size: 14px;
+    cursor: pointer;
+}
+
+.wiki-search-btn:hover {
+    background: #eaecf0;
+}
+
+.wiki-sort-links a {
+    color: #0645ad;
+    text-decoration: none;
+    margin-right: 10px;
+    font-size: 14px;
+}
+
+.wiki-sort-links a:hover {
+    text-decoration: underline;
+}
+
+.wiki-sort-links a.active {
+    font-weight: bold;
+    color: #000;
+}
+
+.wiki-table {
+    width: 100%;
+    border-collapse: collapse;
+    border: 1px solid #a2a9b1;
+    background: #fff;
+}
+
+.wiki-table th {
+    background: #eaecf0;
+    border: 1px solid #a2a9b1;
+    padding: 8px 12px;
+    text-align: left;
+    font-weight: bold;
+    font-size: 14px;
+}
+
+.wiki-table td {
+    border: 1px solid #a2a9b1;
+    padding: 8px 12px;
+    vertical-align: top;
+    font-size: 14px;
+}
+
+.wiki-table tr:nth-child(even) {
+    background: #f8f9fa;
+}
+
+.wiki-article-title {
+    font-weight: bold;
+    margin-bottom: 4px;
+}
+
+.wiki-article-title a {
+    color: #0645ad;
+    text-decoration: none;
+}
+
+.wiki-article-title a:visited {
+    color: #0b0080;
+}
+
+.wiki-article-title a:hover {
+    text-decoration: underline;
+}
+
+.wiki-article-excerpt {
+    color: #54595d;
+    font-size: 13px;
+    line-height: 1.4;
+}
+
+.wiki-user-link {
+    color: #0645ad;
+    text-decoration: none;
+}
+
+.wiki-user-link:hover {
+    text-decoration: underline;
+}
+
+.wiki-date {
+    color: #54595d;
+    font-size: 13px;
+}
+
+.wiki-category-tag {
+    background: #eaecf0;
+    border: 1px solid #a2a9b1;
+    padding: 2px 6px;
+    font-size: 12px;
+    margin-right: 4px;
+    margin-bottom: 2px;
+    display: inline-block;
+}
+
+.wiki-action-link {
+    color: #0645ad;
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: bold;
+}
+
+.wiki-action-link:hover {
+    text-decoration: underline;
+}
+
+.wiki-stats {
+    background: #f8f9fa;
+    border: 1px solid #a2a9b1;
+    padding: 15px;
+    margin-top: 20px;
+    font-size: 14px;
+}
+
+.wiki-stats-row {
+    display: flex;
+    gap: 30px;
+    flex-wrap: wrap;
+}
+
+.wiki-stat-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.wiki-stat-number {
+    font-weight: bold;
+    font-size: 16px;
+}
+
+.wiki-no-results {
+    text-align: center;
+    padding: 40px 20px;
+    background: #f8f9fa;
+    border: 1px solid #a2a9b1;
+    color: #54595d;
+}
+
+.wiki-pagination {
+    margin-top: 20px;
+    text-align: center;
+}
+
+.wiki-pagination a {
+    color: #0645ad;
+    text-decoration: none;
+    padding: 4px 8px;
+    margin: 0 2px;
+}
+
+.wiki-pagination a:hover {
+    text-decoration: underline;
+}
+
+.wiki-pagination .current {
+    font-weight: bold;
+    color: #000;
+    padding: 4px 8px;
+    margin: 0 2px;
+}
+
+.wiki-section-header {
+    font-size: 20px;
+    font-weight: bold;
+    border-bottom: 1px solid #a2a9b1;
+    padding-bottom: 8px;
+    margin: 30px 0 15px 0;
+}
+
+.wiki-revision-comment {
+    font-style: italic;
+    color: #54595d;
+    font-size: 13px;
+}
+</style>
+
+<div class="wiki-review-page">
+    <div class="container-fluid" style="max-width: 1200px; margin: 0 auto; padding: 20px;">
+        <div class="wiki-page-header">
+            <h1 class="wiki-page-title">Article Review Queue</h1>
+            <p class="wiki-subtitle">{{ pending_count }} pending articles and {{ pending_revisions_count }} pending revisions</p>
+        </div>
+        
+        {% if pending_articles %}
+            <!-- Search and Sort Controls -->
+            <div class="wiki-controls">
+                <form method="get" class="wiki-search-form">
+                    <input type="search" name="q" class="wiki-search-input" 
+                           placeholder="Search pending articles..." 
+                           value="{{ request.GET.q|default:'' }}">
+                    <button class="wiki-search-btn" type="submit">Search</button>
+                </form>
                 
-                <div class="card-body p-0">
-                    {% if pending_articles %}
-                        <!-- Filter and Sort Options -->
-                        <div class="p-4 border-bottom">
-                            <div class="row align-items-center">
-                                <div class="col-md-6">
-                                    <form method="get" class="d-flex">
-                                        <div class="input-group shadow-0">
-                                            <input type="search" name="q" class="form-control rounded-start" 
-                                                   placeholder="Search pending articles..." 
-                                                   value="{{ request.GET.q|default:'' }}">
-                                            <button class="btn btn-primary rounded-end" type="submit">
-                                                <i class="fas fa-search"></i>
-                                            </button>
-                                        </div>
-                                    </form>
-                                </div>
-                                <div class="col-md-6 text-md-end mt-3 mt-md-0">
-                                    <div class="btn-group">
-                                        <a href="?sort=newest" class="btn btn-outline-primary {% if sort == 'newest' or not sort %}active{% endif %}">
-                                            Newest
-                                        </a>
-                                        <a href="?sort=oldest" class="btn btn-outline-primary {% if sort == 'oldest' %}active{% endif %}">
-                                            Oldest
-                                        </a>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <!-- Pending Articles List -->
-                        <div class="table-responsive">
-                            <table class="table table-hover align-middle mb-0">
-                                <thead class="table-light">
-                                    <tr>
-                                        <th scope="col" style="width: 40%">Title</th>
-                                        <th scope="col">Author</th>
-                                        <th scope="col">Submitted</th>
-                                        <th scope="col">Categories</th>
-                                        <th scope="col">Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {% for article in pending_articles %}
-                                    <tr>
-                                        <td>
-                                            <div class="d-flex align-items-center">
-                                                {% if article.featured_image %}
-                                                <div class="me-3">
-                                                    <img src="{{ article.featured_image.url }}" class="rounded" 
-                                                         style="width: 50px; height: 50px; object-fit: cover;" 
-                                                         alt="{{ article.title }}">
-                                                </div>
-                                                {% endif %}
-                                                <div>
-                                                    <h6 class="mb-0">
-                                                        <a href="{% url 'app:article-detail' slug=article.slug %}" class="text-decoration-none text-reset">
-                                                            {{ article.title }}
-                                                        </a>
-                                                    </h6>
-                                                    <p class="text-muted small mb-0">
-                                                        {{ article.excerpt|default:article.content|striptags|truncatechars:80 }}
-                                                    </p>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td>
-                                            <a href="{% url 'accounts:profile' username=article.author.username %}" class="text-decoration-none">
-                                                {{ article.author.username }}
-                                            </a>
-                                        </td>
-                                        <td>
-                                            <span class="text-muted small">
-                                                {{ article.created_at|date:"M d, Y" }}
-                                                <br>
-                                                {{ article.created_at|time:"g:i A" }}
-                                            </span>
-                                        </td>
-                                        <td>
-                                            {% for category in article.categories.all|slice:":2" %}
-                                            <span class="badge bg-primary bg-gradient rounded-pill me-1">
-                                                {{ category.name }}
-                                            </span>
-                                            {% endfor %}
-                                            {% if article.categories.count > 2 %}
-                                            <span class="badge bg-light text-dark rounded-pill">
-                                                +{{ article.categories.count|add:"-2" }}
-                                            </span>
-                                            {% endif %}
-                                        </td>
-                                        <td>
-                                            <a href="{% url 'app:article-review' slug=article.slug %}" 
-                                               class="btn btn-sm btn-primary">
-                                                <i class="fas fa-search me-1"></i> REVIEW
-                                            </a>
-                                        </td>
-                                    </tr>
-                                    {% endfor %}
-                                </tbody>
-                            </table>
-                        </div>
-                        
-                        <!-- Pagination -->
-                        {% if page_obj.has_other_pages %}
-                        <div class="p-4">
-                            <nav aria-label="Article pagination">
-                                <ul class="pagination pagination-circle justify-content-center mb-0">
-                                    {% if page_obj.has_previous %}
-                                    <li class="page-item">
-                                        <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if sort %}&sort={{ sort }}{% endif %}{% if query %}&q={{ query }}{% endif %}" aria-label="Previous">
-                                            <span aria-hidden="true">&laquo;</span>
-                                        </a>
-                                    </li>
-                                    {% else %}
-                                    <li class="page-item disabled">
-                                        <span class="page-link">&laquo;</span>
-                                    </li>
-                                    {% endif %}
-                                    
-                                    {% for i in page_obj.paginator.page_range %}
-                                        {% if page_obj.number == i %}
-                                        <li class="page-item active"><span class="page-link">{{ i }}</span></li>
-                                        {% else %}
-                                        <li class="page-item">
-                                            <a class="page-link" href="?page={{ i }}{% if sort %}&sort={{ sort }}{% endif %}{% if query %}&q={{ query }}{% endif %}">{{ i }}</a>
-                                        </li>
-                                        {% endif %}
-                                    {% endfor %}
-                                    
-                                    {% if page_obj.has_next %}
-                                    <li class="page-item">
-                                        <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if sort %}&sort={{ sort }}{% endif %}{% if query %}&q={{ query }}{% endif %}" aria-label="Next">
-                                            <span aria-hidden="true">&raquo;</span>
-                                        </a>
-                                    </li>
-                                    {% else %}
-                                    <li class="page-item disabled">
-                                        <span class="page-link">&raquo;</span>
-                                    </li>
-                                    {% endif %}
-                                </ul>
-                            </nav>
-                        </div>
-                        {% endif %}
-                    {% else %}
-                        <div class="text-center p-5">
-                            <div class="mb-3">
-                                <i class="fas fa-check-circle fa-4x text-success"></i>
-                            </div>
-                            <h5 class="fw-bold">No Pending Articles</h5>
-                            <p class="text-muted">All articles have been reviewed. Check back later for new submissions.</p>
-                        </div>
-                    {% endif %}
+                <div class="wiki-sort-links">
+                    Sort by:
+                    <a href="?sort=newest" class="{% if sort == 'newest' or not sort %}active{% endif %}">Newest</a>
+                    <a href="?sort=oldest" class="{% if sort == 'oldest' %}active{% endif %}">Oldest</a>
                 </div>
             </div>
             
-            <!-- Pending Revisions Section -->
-            {% if pending_revisions %}
-            <div class="card border-0 shadow-4 rounded-5 mb-4">
-                <div class="card-header bg-warning text-dark py-3 rounded-top d-flex justify-content-between align-items-center">
-                    <h5 class="mb-0 fw-bold">Pending Revisions</h5>
-                    <span class="badge bg-dark text-warning rounded-pill px-3 py-2">
-                        {{ pending_revisions_count }} Revision{{ pending_revisions_count|pluralize }}
-                    </span>
-                </div>
+            <!-- Pending Articles Table -->
+            <table class="wiki-table">
+                <thead>
+                    <tr>
+                        <th style="width: 45%">Article</th>
+                        <th style="width: 15%">Author</th>
+                        <th style="width: 15%">Submitted</th>
+                        <th style="width: 15%">Categories</th>
+                        <th style="width: 10%">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for article in pending_articles %}
+                    <tr>
+                        <td>
+                            <div class="wiki-article-title">
+                                <a href="{% url 'app:article-detail' slug=article.slug %}">{{ article.title }}</a>
+                            </div>
+                            <div class="wiki-article-excerpt">
+                                {{ article.excerpt|default:article.content|striptags|truncatechars:120 }}
+                            </div>
+                        </td>
+                        <td>
+                            <a href="{% url 'accounts:profile' username=article.author.username %}" class="wiki-user-link">
+                                {{ article.author.username }}
+                            </a>
+                        </td>
+                        <td>
+                            <div class="wiki-date">
+                                {{ article.created_at|date:"M j, Y" }}<br>
+                                {{ article.created_at|time:"H:i" }}
+                            </div>
+                        </td>
+                        <td>
+                            {% for category in article.categories.all|slice:":3" %}
+                            <span class="wiki-category-tag">{{ category.name }}</span>
+                            {% endfor %}
+                            {% if article.categories.count > 3 %}
+                            <span class="wiki-category-tag">+{{ article.categories.count|add:"-3" }} more</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <a href="{% url 'app:article-review' slug=article.slug %}" class="wiki-action-link">Review</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            
+            <!-- Pagination -->
+            {% if page_obj.has_other_pages %}
+            <div class="wiki-pagination">
+                {% if page_obj.has_previous %}
+                <a href="?page={{ page_obj.previous_page_number }}{% if sort %}&sort={{ sort }}{% endif %}{% if query %}&q={{ query }}{% endif %}">&laquo; Previous</a>
+                {% endif %}
                 
-                <div class="card-body p-0">
-                    <div class="table-responsive">
-                        <table class="table table-hover align-middle mb-0">
-                            <thead class="table-light">
-                                <tr>
-                                    <th scope="col" style="width: 40%">Article</th>
-                                    <th scope="col">Editor</th>
-                                    <th scope="col">Submitted</th>
-                                    <th scope="col">Comment</th>
-                                    <th scope="col">Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for revision in pending_revisions %}
-                                <tr>
-                                    <td>
-                                        <div>
-                                            <h6 class="mb-0">
-                                                <a href="{% url 'app:article-detail' slug=revision.content.slug %}" class="text-decoration-none text-reset">
-                                                    {{ revision.content.title }}
-                                                </a>
-                                            </h6>
-                                            {% if revision.title != revision.content.title %}
-                                            <p class="text-muted small mb-0">
-                                                <i class="fas fa-arrow-right me-1"></i>Proposed title: "{{ revision.title }}"
-                                            </p>
-                                            {% endif %}
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <a href="{% url 'accounts:profile' username=revision.editor.username %}" class="text-decoration-none">
-                                            {{ revision.editor.username }}
-                                        </a>
-                                    </td>
-                                    <td>
-                                        <span class="text-muted small">
-                                            {{ revision.created_at|date:"M d, Y" }}
-                                            <br>
-                                            {{ revision.created_at|time:"g:i A" }}
-                                        </span>
-                                    </td>
-                                    <td>
-                                        <small class="text-muted">
-                                            {{ revision.revision_comment|default:"No comment"|truncatechars:50 }}
-                                        </small>
-                                    </td>
-                                    <td>
-                                        <div class="btn-group">
-                                            <a href="{% url 'app:revision-review' revision_id=revision.id %}" 
-                                               class="btn btn-sm btn-warning">
-                                                <i class="fas fa-search me-1"></i> Review
-                                            </a>
-                                        </div>
-                                    </td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
+                {% for i in page_obj.paginator.page_range %}
+                    {% if page_obj.number == i %}
+                    <span class="current">{{ i }}</span>
+                    {% else %}
+                    <a href="?page={{ i }}{% if sort %}&sort={{ sort }}{% endif %}{% if query %}&q={{ query }}{% endif %}">{{ i }}</a>
+                    {% endif %}
+                {% endfor %}
+                
+                {% if page_obj.has_next %}
+                <a href="?page={{ page_obj.next_page_number }}{% if sort %}&sort={{ sort }}{% endif %}{% if query %}&q={{ query }}{% endif %}">Next &raquo;</a>
+                {% endif %}
             </div>
             {% endif %}
-            
-            <!-- Review Stats Card -->
-            <div class="row row-cols-1 row-cols-md-4 g-4">
-                <div class="col">
-                    <div class="card border-0 shadow-2 rounded-5 h-100">
-                        <div class="card-body text-center">
-                            <div class="mb-3">
-                                <i class="fas fa-clock fa-3x text-warning"></i>
-                            </div>
-                            <h5 class="fw-bold">{{ pending_count }}</h5>
-                            <p class="text-muted mb-0">Pending</p>
+        {% else %}
+            <div class="wiki-no-results">
+                <h3>No Pending Articles</h3>
+                <p>All articles have been reviewed. Check back later for new submissions.</p>
+            </div>
+        {% endif %}
+        
+        <!-- Pending Revisions Section -->
+        {% if pending_revisions %}
+        <h2 class="wiki-section-header">Pending Revisions</h2>
+        
+        <table class="wiki-table">
+            <thead>
+                <tr>
+                    <th style="width: 35%">Article</th>
+                    <th style="width: 15%">Editor</th>
+                    <th style="width: 15%">Submitted</th>
+                    <th style="width: 25%">Comment</th>
+                    <th style="width: 10%">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for revision in pending_revisions %}
+                <tr>
+                    <td>
+                        <div class="wiki-article-title">
+                            <a href="{% url 'app:article-detail' slug=revision.content.slug %}">{{ revision.content.title }}</a>
                         </div>
-                    </div>
+                        {% if revision.title != revision.content.title %}
+                        <div class="wiki-article-excerpt">
+                            → Proposed title: "{{ revision.title }}"
+                        </div>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <a href="{% url 'accounts:profile' username=revision.editor.username %}" class="wiki-user-link">
+                            {{ revision.editor.username }}
+                        </a>
+                    </td>
+                    <td>
+                        <div class="wiki-date">
+                            {{ revision.created_at|date:"M j, Y" }}<br>
+                            {{ revision.created_at|time:"H:i" }}
+                        </div>
+                    </td>
+                    <td>
+                        <div class="wiki-revision-comment">
+                            {{ revision.revision_comment|default:"No comment"|truncatechars:60 }}
+                        </div>
+                    </td>
+                    <td>
+                        <a href="{% url 'app:revision-review' revision_id=revision.id %}" class="wiki-action-link">Review</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% endif %}
+        
+        <!-- Review Statistics -->
+        <div class="wiki-stats">
+            <h3 style="margin-top: 0; margin-bottom: 15px;">Review Statistics</h3>
+            <div class="wiki-stats-row">
+                <div class="wiki-stat-item">
+                    <span class="wiki-stat-number">{{ pending_count }}</span>
+                    <span>pending articles</span>
                 </div>
-                <div class="col">
-                    <div class="card border-0 shadow-2 rounded-5 h-100">
-                        <div class="card-body text-center">
-                            <div class="mb-3">
-                                <i class="fas fa-check-circle fa-3x text-success"></i>
-                            </div>
-                            <h5 class="fw-bold">{{ approved_count }}</h5>
-                            <p class="text-muted mb-0">Approved</p>
-                        </div>
-                    </div>
+                <div class="wiki-stat-item">
+                    <span class="wiki-stat-number">{{ approved_count }}</span>
+                    <span>approved articles</span>
                 </div>
-                <div class="col">
-                    <div class="card border-0 shadow-2 rounded-5 h-100">
-                        <div class="card-body text-center">
-                            <div class="mb-3">
-                                <i class="fas fa-times-circle fa-3x text-danger"></i>
-                            </div>
-                            <h5 class="fw-bold">{{ rejected_count }}</h5>
-                            <p class="text-muted mb-0">Rejected</p>
-                        </div>
-                    </div>
+                <div class="wiki-stat-item">
+                    <span class="wiki-stat-number">{{ rejected_count }}</span>
+                    <span>rejected articles</span>
                 </div>
-                <div class="col">
-                    <div class="card border-0 shadow-2 rounded-5 h-100">
-                        <div class="card-body text-center">
-                            <div class="mb-3">
-                                <i class="fas fa-pen fa-3x text-primary"></i>
-                            </div>
-                            <h5 class="fw-bold">{{ draft_count }}</h5>
-                            <p class="text-muted mb-0">Drafts</p>
-                        </div>
-                    </div>
+                <div class="wiki-stat-item">
+                    <span class="wiki-stat-number">{{ draft_count }}</span>
+                    <span>draft articles</span>
+                </div>
+                <div class="wiki-stat-item">
+                    <span class="wiki-stat-number">{{ pending_revisions_count }}</span>
+                    <span>pending revisions</span>
                 </div>
             </div>
         </div>
