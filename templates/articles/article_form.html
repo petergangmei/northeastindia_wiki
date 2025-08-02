@@ -1090,5 +1090,69 @@ document.addEventListener('submit', function(e) {
         });
     }
 });
+
+// CSRF Token Refresh Function
+function refreshCSRFToken() {
+    return fetch('/api/csrf-token/', {
+        method: 'GET',
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.csrftoken) {
+            // Update the current form's CSRF token
+            const currentToken = document.querySelector('[name=csrfmiddlewaretoken]');
+            if (currentToken) {
+                currentToken.value = data.csrftoken;
+                console.log('CSRF token refreshed via API:', data.csrftoken);
+                return data.csrftoken;
+            }
+        }
+        return null;
+    })
+    .catch(error => {
+        console.error('Error refreshing CSRF token:', error);
+        return null;
+    });
+}
+
+// Refresh CSRF token before form submission
+document.addEventListener('submit', function(e) {
+    if (e.target.id === 'article-form') {
+        e.preventDefault();
+        
+        console.log('Form submission intercepted, refreshing CSRF token...');
+        
+        refreshCSRFToken().then(newToken => {
+            if (newToken) {
+                console.log('CSRF token updated, submitting form...');
+                // Remove the event listener temporarily to avoid infinite loop
+                document.removeEventListener('submit', arguments.callee);
+                // Submit the form
+                e.target.submit();
+            } else {
+                console.error('Failed to refresh CSRF token');
+                alert('There was an issue with form security. Please refresh the page and try again.');
+            }
+        });
+    }
+});
+
+// Also refresh token when form gets focus (user starts interacting)
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('article-form');
+    if (form) {
+        let tokenRefreshed = false;
+        
+        form.addEventListener('focusin', function() {
+            if (!tokenRefreshed) {
+                refreshCSRFToken();
+                tokenRefreshed = true;
+            }
+        });
+    }
+});
 </script>
 {% endblock %}

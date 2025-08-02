@@ -23,6 +23,7 @@ urlpatterns = [
     path('wiki/search/', views.article_search, name='article-search'),
     path('wiki/search-htmx/', views.article_search_htmx, name='article-search-htmx'),
     path('wiki/create/', views.article_create, name='article-create'),
+    path('api/csrf-token/', views.get_csrf_token, name='get-csrf-token'),
     
     # Article Review - Place review URLs before article detail to avoid URL conflicts
     path('wiki/review-queue/', views.article_review_queue, name='article-review-queue'),

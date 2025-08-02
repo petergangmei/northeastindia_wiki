@@ -333,6 +333,27 @@ def article_create(request):
         return redirect('app:home')
     
     if request.method == 'POST':
+        # Enhanced CSRF debugging
+        csrf_cookie = request.COOKIES.get('csrftoken', 'Not set')
+        csrf_post = request.POST.get('csrfmiddlewaretoken', 'Not provided')
+        
+        print(f"=== CSRF DEBUG INFO ===")
+        print(f"CSRF Cookie: {csrf_cookie}")
+        print(f"CSRF Token in POST: {csrf_post}")
+        print(f"User: {request.user}")
+        print(f"Is authenticated: {request.user.is_authenticated}")
+        print(f"Request META keys: {list(request.META.keys())[:10]}...")  # First 10 keys
+        print(f"Session key: {request.session.session_key}")
+        print(f"Tokens match: {csrf_cookie == csrf_post}")
+        
+        # Check if Django's CSRF validation would pass
+        from django.middleware.csrf import get_token
+        expected_token = get_token(request)
+        print(f"Expected token: {expected_token}")
+        print(f"Expected matches cookie: {expected_token == csrf_cookie}")
+        print(f"Expected matches POST: {expected_token == csrf_post}")
+        print(f"========================")
+        
         form = ArticleForm(request.POST, request.FILES)
         if form.is_valid():
             # Create but don't save the article instance yet
@@ -397,13 +418,23 @@ def article_create(request):
             return redirect('app:article-detail', slug=article.slug)
     else:
         form = ArticleForm()
+        # Ensure CSRF cookie is set on GET request
+        from django.middleware.csrf import get_token
+        get_token(request)
     
     context = {
         'form': form,
         'title': 'Create New Article',
     }
     
-    return render(request, 'articles/article_form.html', context)
+    response = render(request, 'articles/article_form.html', context)
+    
+    # Add cache-busting headers to prevent CSRF token caching issues
+    response['Cache-Control'] = 'no-cache, no-store, must-revalidate'
+    response['Pragma'] = 'no-cache'
+    response['Expires'] = '0'
+    
+    return response
 
 @login_required
 def article_edit(request, slug):
@@ -2272,3 +2303,47 @@ def tribal_culture_list(request):
     }
     
     return render(request, 'articles/article_list.html', context)
+
+
+def csrf_failure(request, reason=""):
+    """
+    Custom CSRF failure view for debugging
+    """
+    from django.http import HttpResponseForbidden
+    from django.template import Context, Template
+    
+    template = Template("""
+    <html>
+    <head><title>CSRF Verification Failed</title></head>
+    <body>
+        <h1>CSRF Verification Failed</h1>
+        <p><strong>Reason:</strong> {{ reason }}</p>
+        <p><strong>Request method:</strong> {{ request.method }}</p>
+        <p><strong>Request path:</strong> {{ request.path }}</p>
+        <p><strong>User:</strong> {{ request.user }}</p>
+        <p><strong>CSRF Cookie:</strong> {{ request.COOKIES.csrftoken|default:"Not set" }}</p>
+        <p><strong>CSRF Token in POST:</strong> {{ request.POST.csrfmiddlewaretoken|default:"Not provided" }}</p>
+        <p><strong>Referer:</strong> {{ request.META.HTTP_REFERER|default:"Not provided" }}</p>
+        <p><strong>User Agent:</strong> {{ request.META.HTTP_USER_AGENT|default:"Not provided" }}</p>
+        <p><a href="javascript:history.back()">Go Back</a></p>
+    </body>
+    </html>
+    """)
+    
+    context = Context({
+        'reason': reason,
+        'request': request,
+    })
+    
+    return HttpResponseForbidden(template.render(context))
+
+
+def get_csrf_token(request):
+    """
+    AJAX endpoint to get a fresh CSRF token
+    """
+    from django.middleware.csrf import get_token
+    from django.http import JsonResponse
+    
+    token = get_token(request)
+    return JsonResponse({'csrftoken': token})

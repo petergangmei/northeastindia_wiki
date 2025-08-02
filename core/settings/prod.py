@@ -30,7 +30,12 @@ TRUSTED_ORIGINS = [
     'https://www.northeastindia.wiki',
     'http://127.0.0.1:8000',
     'http://localhost:8000',
+    'https://127.0.0.1:8000',
+    'https://localhost:8000',
 ]
+
+# Add CSRF trusted origins specifically
+CSRF_TRUSTED_ORIGINS = TRUSTED_ORIGINS
 
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
@@ -63,6 +68,13 @@ SECURE_SSL_REDIRECT = False
 SESSION_COOKIE_SECURE = False
 CSRF_COOKIE_SECURE = False
 
+# Additional CSRF settings for local development
+CSRF_COOKIE_HTTPONLY = False
+CSRF_USE_SESSIONS = False
+CSRF_COOKIE_SAMESITE = 'Lax'
+CSRF_COOKIE_SECURE = False  # Allow non-HTTPS for local development
+CSRF_FAILURE_VIEW = 'app.views.csrf_failure'  # Custom CSRF failure view for debugging
+
 SECURE_HSTS_SECONDS = 0
 SECURE_HSTS_INCLUDE_SUBDOMAINS = False
 SECURE_HSTS_PRELOAD = False
@@ -89,6 +101,18 @@ LOGGING = {
             'class': 'logging.FileHandler',
             'filename': os.path.join(BASE_DIR, 'logs/django-error.log'),
             'formatter': 'verbose',
+        },
+        'console': {
+            'level': 'DEBUG',
+            'class': 'logging.StreamHandler',
+            'formatter': 'verbose',
+        },
+    },
+    'loggers': {
+        'django.security.csrf': {
+            'handlers': ['file', 'console'],
+            'level': 'DEBUG',
+            'propagate': True,
         },
     },
     'root': {

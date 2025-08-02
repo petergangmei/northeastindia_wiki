@@ -18,26 +18,27 @@ class InfoBoxDataWidget(forms.Widget):
         Convert the value from database into format suitable for widget rendering
         """
         # Handle None or empty values
-        if value is None or value == '':
+        if value is None or value == '' or value == {}:
             return []
         
-        # Handle empty dict - should show one empty field for editing
-        if isinstance(value, dict) and len(value) == 0:
-            return []
-        
-        # Handle dict (most common case from JSONField)
+        # Handle dict (most common case from JSONField and form re-rendering)
         if isinstance(value, dict):
+            # Don't try to JSON parse if it's already a dict
+            if len(value) == 0:
+                return []
             return [{'label': k, 'value': v} for k, v in value.items()]
         
-        # Handle string that might be JSON
+        # Handle string that might be JSON (from initial form load)
         if isinstance(value, str):
             try:
                 parsed_value = json.loads(value)
                 if isinstance(parsed_value, dict):
+                    if len(parsed_value) == 0:
+                        return []
                     return [{'label': k, 'value': v} for k, v in parsed_value.items()]
             except (json.JSONDecodeError, TypeError):
                 # If it's not valid JSON, treat as empty
-                pass
+                return []
         
         # Handle list format (in case it's already formatted)
         if isinstance(value, list):
@@ -148,10 +149,45 @@ class InfoBoxDataWidget(forms.Widget):
         css = {'all': ('css/info_box_widget.css',)}
 
 
+class InfoBoxDataField(forms.JSONField):
+    """
+    Custom JSONField that properly handles empty values and dict data
+    """
+    def __init__(self, *args, **kwargs):
+        kwargs.setdefault('required', False)
+        super().__init__(*args, **kwargs)
+        self.widget = InfoBoxDataWidget()
+    
+    def bound_data(self, data, initial):
+        """
+        Override bound_data to prevent JSON parsing of dict data
+        """
+        if isinstance(data, dict):
+            # If it's already a dict, don't try to parse it
+            return data
+        # For string data, use the parent's bound_data method
+        return super().bound_data(data, initial)
+    
+    def to_python(self, value):
+        if value is None or value == '' or value == {}:
+            return {}
+        if isinstance(value, dict):
+            return value
+        return super().to_python(value)
+    
+    def validate(self, value):
+        # Allow empty dict
+        if value == {} or value is None:
+            return
+        super().validate(value)
+
+
 class ArticleForm(forms.ModelForm):
     """
     Form for creating and editing articles
     """
+    info_box_data = InfoBoxDataField()
+    
     content = forms.CharField(widget=TinyMCE(attrs={
         'cols': 80, 
         'rows': 30,
@@ -307,7 +343,6 @@ class ArticleForm(forms.ModelForm):
                 'class': 'form-control',
                 'accept': 'image/*'
             }),
-            'info_box_data': InfoBoxDataWidget(),
         }
     
     def clean_title(self):
