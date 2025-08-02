@@ -195,7 +195,7 @@ class ArticleForm(forms.ModelForm):
     }, mce_attrs={
         'theme': 'silver',
         'height': 500,
-        'menubar': True,
+        'menubar': 'file edit view insert format tools table help',
         'plugins': [
             'advlist', 'autolink', 'lists', 'link', 'image', 'charmap', 'preview',
             'anchor', 'searchreplace', 'visualblocks', 'code', 'fullscreen',
