@@ -5,171 +5,339 @@
 
 {% block extra_css %}
 <style>
-    .revision-header {
-        background: linear-gradient(135deg, #151b25, #2c3e50);
-        color: white;
-        padding: 2rem;
-        border-radius: 8px 8px 0 0;
+/* Wikipedia-style Revision Review Styles */
+.wiki-revision-page {
+    font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+    line-height: 1.6;
+    color: #000;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.wiki-page-header {
+    border-bottom: 1px solid #a2a9b1;
+    padding-bottom: 10px;
+    margin-bottom: 20px;
+}
+
+.wiki-page-title {
+    font-size: 28px;
+    font-weight: normal;
+    margin: 0 0 8px 0;
+    color: #000;
+}
+
+.wiki-subtitle {
+    font-size: 14px;
+    color: #54595d;
+    margin: 0;
+}
+
+.wiki-revision-info {
+    background: #f8f9fa;
+    border: 1px solid #a2a9b1;
+    padding: 15px;
+    margin-bottom: 20px;
+}
+
+.wiki-info-row {
+    display: flex;
+    gap: 40px;
+    flex-wrap: wrap;
+}
+
+.wiki-info-item {
+    margin-bottom: 5px;
+}
+
+.wiki-info-label {
+    font-weight: bold;
+    color: #000;
+}
+
+.wiki-status-text {
+    background: #eaecf0;
+    border: 1px solid #a2a9b1;
+    padding: 2px 8px;
+    font-size: 12px;
+    margin-left: 5px;
+}
+
+.wiki-changes-summary {
+    background: #f8f9fa;
+    border: 1px solid #a2a9b1;
+    border-left: 4px solid #0645ad;
+    padding: 15px;
+    margin-bottom: 20px;
+}
+
+.wiki-changes-title {
+    font-size: 16px;
+    font-weight: bold;
+    margin: 0 0 10px 0;
+    color: #000;
+}
+
+.wiki-changes-list {
+    margin: 0;
+    padding-left: 20px;
+}
+
+.wiki-comparison-section {
+    margin-bottom: 20px;
+}
+
+.wiki-section-title {
+    font-size: 18px;
+    font-weight: bold;
+    border-bottom: 1px solid #a2a9b1;
+    padding-bottom: 8px;
+    margin-bottom: 15px;
+}
+
+.wiki-comparison-container {
+    display: flex;
+    gap: 20px;
+    margin-bottom: 20px;
+}
+
+.wiki-comparison-panel {
+    flex: 1;
+    border: 1px solid #a2a9b1;
+    background: #fff;
+}
+
+.wiki-panel-header {
+    background: #eaecf0;
+    border-bottom: 1px solid #a2a9b1;
+    padding: 10px 15px;
+    font-weight: bold;
+    font-size: 14px;
+}
+
+.wiki-panel-content {
+    padding: 15px;
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.wiki-content-title {
+    font-size: 18px;
+    font-weight: bold;
+    margin: 0 0 10px 0;
+    color: #000;
+}
+
+.wiki-content-text {
+    line-height: 1.6;
+}
+
+.wiki-content-excerpt {
+    border-top: 1px solid #eaecf0;
+    margin-top: 15px;
+    padding-top: 15px;
+}
+
+.wiki-excerpt-title {
+    font-size: 14px;
+    font-weight: bold;
+    margin: 0 0 5px 0;
+}
+
+.wiki-review-actions {
+    background: #f8f9fa;
+    border: 1px solid #a2a9b1;
+    padding: 20px;
+}
+
+.wiki-form-group {
+    margin-bottom: 15px;
+}
+
+.wiki-form-label {
+    display: block;
+    font-weight: bold;
+    margin-bottom: 5px;
+    font-size: 14px;
+}
+
+.wiki-textarea {
+    width: 100%;
+    border: 1px solid #a2a9b1;
+    padding: 8px;
+    font-size: 14px;
+    font-family: inherit;
+    resize: vertical;
+}
+
+.wiki-actions {
+    display: flex;
+    gap: 15px;
+    justify-content: flex-end;
+    align-items: center;
+}
+
+.wiki-action-link {
+    color: #0645ad;
+    text-decoration: none;
+    font-size: 14px;
+}
+
+.wiki-action-link:hover {
+    text-decoration: underline;
+}
+
+.wiki-action-button {
+    background: #f8f9fa;
+    border: 1px solid #a2a9b1;
+    padding: 8px 16px;
+    font-size: 14px;
+    cursor: pointer;
+    text-decoration: none;
+    color: #000;
+    display: inline-block;
+}
+
+.wiki-action-button:hover {
+    background: #eaecf0;
+    text-decoration: none;
+    color: #000;
+}
+
+.wiki-action-button.approve {
+    background: #f8f9fa;
+    border-color: #a2a9b1;
+}
+
+.wiki-action-button.approve:hover {
+    background: #eaecf0;
+}
+
+.wiki-action-button.reject {
+    background: #f8f9fa;
+    border-color: #a2a9b1;
+}
+
+.wiki-action-button.reject:hover {
+    background: #eaecf0;
+}
+
+@media (max-width: 768px) {
+    .wiki-comparison-container {
+        flex-direction: column;
     }
     
-    .revision-content {
-        background: white;
-        border-radius: 0 0 8px 8px;
-        overflow: hidden;
+    .wiki-info-row {
+        flex-direction: column;
+        gap: 10px;
     }
     
-    .changes-summary {
-        background: #f8f9fa;
-        border-left: 4px solid #e10032;
-        padding: 1rem;
-        margin: 1rem 0;
+    .wiki-actions {
+        flex-direction: column;
+        align-items: stretch;
     }
-    
-    .content-comparison {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 1rem;
-        margin: 1rem 0;
-    }
-    
-    .content-panel {
-        border: 1px solid #dee2e6;
-        border-radius: 8px;
-        overflow: hidden;
-    }
-    
-    .panel-header {
-        background: #f8f9fa;
-        padding: 0.75rem 1rem;
-        font-weight: 600;
-        border-bottom: 1px solid #dee2e6;
-    }
-    
-    .panel-content {
-        padding: 1rem;
-        max-height: 400px;
-        overflow-y: auto;
-    }
-    
-    .review-actions {
-        background: #f8f9fa;
-        padding: 1.5rem;
-        border-top: 1px solid #dee2e6;
-    }
-    
-    @media (max-width: 768px) {
-        .content-comparison {
-            grid-template-columns: 1fr;
-        }
-    }
+}
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="container my-4">
-    <div class="row justify-content-center">
-        <div class="col-12 col-xl-10">
-            <div class="revision-content shadow">
-                <!-- Header -->
-                <div class="revision-header">
-                    <h2 class="text-white">Review Revision</h2>
-                    <p class="mb-0">Article: <strong>{{ revision.content.title }}</strong></p>
-                    <small>Submitted by {{ revision.editor.username }} on {{ revision.created_at|date:"M d, Y H:i" }}</small>
+<div class="wiki-revision-page">
+    <!-- Page Header -->
+    <div class="wiki-page-header">
+        <h1 class="wiki-page-title">Review Revision</h1>
+        <p class="wiki-subtitle">Article: {{ revision.content.title }} • Submitted by {{ revision.editor.username }} on {{ revision.created_at|date:"M j, Y H:i" }}</p>
+    </div>
+    
+    <!-- Revision Information -->
+    <div class="wiki-revision-info">
+        <div class="wiki-info-row">
+            <div>
+                <div class="wiki-info-item">
+                    <span class="wiki-info-label">Editor:</span> {{ revision.editor.username }}
                 </div>
-                
-                <!-- Revision Info -->
-                <div class="p-3 border-bottom">
-                    <div class="row">
-                        <div class="col-md-6">
-                            <strong>Editor:</strong> {{ revision.editor.username }}<br>
-                            <strong>Status:</strong> 
-                            <span class="badge bg-warning">{{ revision.get_status_display }}</span>
-                        </div>
-                        <div class="col-md-6">
-                            <strong>Submitted:</strong> {{ revision.created_at|date:"M d, Y H:i" }}<br>
-                            {% if revision.revision_comment %}
-                            <strong>Comment:</strong> {{ revision.revision_comment }}
-                            {% endif %}
-                        </div>
-                    </div>
+                <div class="wiki-info-item">
+                    <span class="wiki-info-label">Status:</span> 
+                    <span class="wiki-status-text">{{ revision.get_status_display }}</span>
                 </div>
-                
-                <!-- Changes Summary -->
-                {% if changes %}
-                <div class="changes-summary">
-                    <h6><i class="fas fa-list-ul me-2"></i>Changes Summary</h6>
-                    <ul class="mb-0">
-                        {% for change in changes %}
-                        <li>{{ change }}</li>
-                        {% endfor %}
-                    </ul>
+            </div>
+            <div>
+                <div class="wiki-info-item">
+                    <span class="wiki-info-label">Submitted:</span> {{ revision.created_at|date:"M j, Y H:i" }}
+                </div>
+                {% if revision.revision_comment %}
+                <div class="wiki-info-item">
+                    <span class="wiki-info-label">Comment:</span> {{ revision.revision_comment }}
                 </div>
                 {% endif %}
-                
-                <!-- Content Comparison -->
-                <div class="p-3">
-                    <h6>Content Comparison</h6>
-                    <div class="content-comparison">
-                        <!-- Original Content -->
-                        <div class="content-panel">
-                            <div class="panel-header text-danger">
-                                <i class="fas fa-file-alt me-2"></i>Current Version
-                            </div>
-                            <div class="panel-content">
-                                <h5>{{ original_content.title }}</h5>
-                                <div>{{ original_content.content|safe }}</div>
-                                {% if original_content.excerpt %}
-                                <hr>
-                                <h6>Excerpt:</h6>
-                                <p>{{ original_content.excerpt|safe }}</p>
-                                {% endif %}
-                            </div>
-                        </div>
-                        
-                        <!-- Proposed Changes -->
-                        <div class="content-panel">
-                            <div class="panel-header text-success">
-                                <i class="fas fa-edit me-2"></i>Proposed Changes
-                            </div>
-                            <div class="panel-content">
-                                <h5>{{ revision.title }}</h5>
-                                <div>{{ revision.content_text|safe }}</div>
-                                {% if revision.excerpt %}
-                                <hr>
-                                <h6>Excerpt:</h6>
-                                <p>{{ revision.excerpt|safe }}</p>
-                                {% endif %}
-                            </div>
-                        </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Changes Summary -->
+    {% if changes %}
+    <div class="wiki-changes-summary">
+        <h3 class="wiki-changes-title">Changes Summary</h3>
+        <ul class="wiki-changes-list">
+            {% for change in changes %}
+            <li>{{ change }}</li>
+            {% endfor %}
+        </ul>
+    </div>
+    {% endif %}
+    
+    <!-- Content Comparison -->
+    <div class="wiki-comparison-section">
+        <h2 class="wiki-section-title">Content Comparison</h2>
+        <div class="wiki-comparison-container">
+            <!-- Current Version -->
+            <div class="wiki-comparison-panel">
+                <div class="wiki-panel-header">Current Version</div>
+                <div class="wiki-panel-content">
+                    <h3 class="wiki-content-title">{{ original_content.title }}</h3>
+                    <div class="wiki-content-text">{{ original_content.content|safe }}</div>
+                    {% if original_content.excerpt %}
+                    <div class="wiki-content-excerpt">
+                        <div class="wiki-excerpt-title">Excerpt:</div>
+                        <div>{{ original_content.excerpt|safe }}</div>
                     </div>
+                    {% endif %}
                 </div>
-                
-                <!-- Review Actions -->
-                <div class="review-actions">
-                    <form method="post" action="{% url 'app:revision-review-action' revision_id=revision.id %}">
-                        {% csrf_token %}
-                        
-                        <div class="mb-3">
-                            <label for="review_notes" class="form-label">Review Notes</label>
-                            <textarea name="review_notes" id="review_notes" class="form-control" rows="3" 
-                                      placeholder="Add any feedback or notes about this revision..."></textarea>
-                        </div>
-                        
-                        <div class="d-flex gap-2 justify-content-end">
-                            <a href="{% url 'app:article-review-queue' %}" class="btn btn-outline-secondary">
-                                <i class="fas fa-arrow-left me-2"></i>Back to Queue
-                            </a>
-                            <button type="submit" name="action" value="reject" class="btn btn-outline-danger">
-                                <i class="fas fa-times me-2"></i>Reject
-                            </button>
-                            <button type="submit" name="action" value="approve" class="btn btn-success">
-                                <i class="fas fa-check me-2"></i>Approve & Apply
-                            </button>
-                        </div>
-                    </form>
+            </div>
+            
+            <!-- Proposed Changes -->
+            <div class="wiki-comparison-panel">
+                <div class="wiki-panel-header">Proposed Changes</div>
+                <div class="wiki-panel-content">
+                    <h3 class="wiki-content-title">{{ revision.title }}</h3>
+                    <div class="wiki-content-text">{{ revision.content_text|safe }}</div>
+                    {% if revision.excerpt %}
+                    <div class="wiki-content-excerpt">
+                        <div class="wiki-excerpt-title">Excerpt:</div>
+                        <div>{{ revision.excerpt|safe }}</div>
+                    </div>
+                    {% endif %}
                 </div>
             </div>
         </div>
+    </div>
+    
+    <!-- Review Actions -->
+    <div class="wiki-review-actions">
+        <form method="post" action="{% url 'app:revision-review-action' revision_id=revision.id %}">
+            {% csrf_token %}
+            
+            <div class="wiki-form-group">
+                <label for="review_notes" class="wiki-form-label">Review Notes</label>
+                <textarea name="review_notes" id="review_notes" class="wiki-textarea" rows="4" 
+                          placeholder="Add any feedback or notes about this revision..."></textarea>
+            </div>
+            
+            <div class="wiki-actions">
+                <a href="{% url 'app:article-review-queue' %}" class="wiki-action-link">← Back to Queue</a>
+                <button type="submit" name="action" value="reject" class="wiki-action-button reject">Reject</button>
+                <button type="submit" name="action" value="approve" class="wiki-action-button approve">Approve & Apply</button>
+            </div>
+        </form>
     </div>
 </div>
 {% endblock %}
