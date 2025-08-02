@@ -303,7 +303,9 @@ class Content(TimeStampedModel):
     
     PROTECTION_LEVELS = (
         ('unprotected', 'Unprotected'),        # Anyone with contributor+ role can edit
-        ('semi_protected', 'Semi-protected'),   # Requires minimum reputation/contributions
+        ('semi_protected', 'Semi-protected'),   # Requires autoconfirmed status
+        ('extended_confirmed', 'Extended Confirmed Protected'),  # Requires extended-confirmed status
+        ('pending_changes', 'Pending Changes'),  # Edits require review before going live
         ('protected', 'Protected'),             # Only editors and admins can edit
         ('fully_protected', 'Fully Protected'), # Only admins can edit
     )
@@ -500,23 +502,85 @@ class Content(TimeStampedModel):
             # Only editors and admins can edit protected content
             return user_role in ['editor', 'admin']
         
+        elif self.protection_level == 'extended_confirmed':
+            # Only extended-confirmed users and above can edit
+            return user_role in ['extended_confirmed', 'reviewer', 'editor', 'admin']
+        
+        elif self.protection_level == 'pending_changes':
+            # All registered users can edit, but changes need approval
+            return user_role in ['contributor', 'autoconfirmed', 'extended_confirmed', 'reviewer', 'editor', 'admin']
+        
         elif self.protection_level == 'semi_protected':
-            # Requires minimum reputation/contributions
-            if user_role in ['editor', 'admin']:
-                return True
-            if user_role == 'contributor':
-                # Check if user meets minimum requirements for semi-protected editing
-                try:
-                    # Minimum 10 approved contributions and 50 reputation points
-                    return (user_profile.contribution_count >= 10 and 
-                            user_profile.reputation_points >= 50)
-                except:
-                    return False
-            return False
+            # Requires autoconfirmed status
+            return user_role in ['autoconfirmed', 'extended_confirmed', 'reviewer', 'editor', 'admin']
         
         else:  # unprotected
             # Any contributor or higher can edit unprotected content
-            return user_role in ['contributor', 'editor', 'admin']
+            return user_role in ['contributor', 'autoconfirmed', 'extended_confirmed', 'reviewer', 'editor', 'admin']
+    
+    def needs_pending_changes_review(self, user):
+        """
+        Check if edits by this user need pending changes review
+        """
+        if self.protection_level != 'pending_changes':
+            return False
+        
+        try:
+            user_profile = user.profile
+            # Reviewers, editors, and admins don't need review
+            return user_profile.role not in ['reviewer', 'editor', 'admin']
+        except:
+            return True
+    
+    def get_public_content(self):
+        """
+        Get content that should be shown to public/non-reviewers
+        For pending changes protection, this returns the last approved version
+        """
+        if self.protection_level == 'pending_changes':
+            # Return last approved revision content
+            approved_revision = self.revisions.filter(status='approved').first()
+            if approved_revision:
+                return {
+                    'title': approved_revision.title,
+                    'content': approved_revision.content_text,
+                    'excerpt': approved_revision.excerpt,
+                    'meta_description': approved_revision.meta_description,
+                    'featured_image': approved_revision.featured_image,
+                    'info_box_data': approved_revision.info_box_data,
+                }
+        
+        # For all other protection levels, return current content
+        return {
+            'title': self.title,
+            'content': self.content,
+            'excerpt': self.excerpt,
+            'meta_description': self.meta_description,
+            'featured_image': self.featured_image,
+            'info_box_data': self.info_box_data,
+        }
+    
+    def get_live_content(self):
+        """
+        Get the live content including pending changes (for reviewers)
+        """
+        return {
+            'title': self.title,
+            'content': self.content,
+            'excerpt': self.excerpt,
+            'meta_description': self.meta_description,
+            'featured_image': self.featured_image,
+            'info_box_data': self.info_box_data,
+        }
+    
+    def has_pending_changes(self):
+        """
+        Check if there are pending changes waiting for review
+        """
+        if self.protection_level != 'pending_changes':
+            return False
+        
+        return self.revisions.filter(status='pending_review').exists()
     
     def get_seo_description(self):
         """Generate SEO-optimized meta description"""
@@ -543,6 +607,8 @@ class ContentRevision(TimeStampedModel):
         ('pending_review', 'Pending Review'),
         ('approved', 'Approved'),
         ('rejected', 'Rejected'),
+        ('sighted', 'Sighted'),  # Flagged revisions - basic review
+        ('flagged', 'Flagged'),  # Flagged revisions - quality review
     )
     
     # Link to the original content
@@ -572,6 +638,12 @@ class ContentRevision(TimeStampedModel):
     reviewed_by = models.ForeignKey(User, null=True, blank=True, on_delete=models.SET_NULL, related_name='reviewed_revisions')
     reviewed_at = models.DateTimeField(null=True, blank=True)
     review_notes = models.TextField(blank=True)
+    
+    # Flagged revisions support
+    is_stable = models.BooleanField(default=False, help_text="Is this the stable/public version?")
+    quality_level = models.IntegerField(default=0, help_text="Quality level (0=basic, 1=good, 2=featured)")
+    sighted_by = models.ForeignKey(User, null=True, blank=True, on_delete=models.SET_NULL, related_name='sighted_revisions', help_text="User who sighted this revision")
+    sighted_at = models.DateTimeField(null=True, blank=True)
     
     class Meta:
         ordering = ['-created_at']
@@ -639,3 +711,114 @@ class ContentRevision(TimeStampedModel):
             changes.append("No significant changes detected")
         
         return changes
+
+
+class DeletionRequest(TimeStampedModel):
+    """
+    Model to handle deletion requests for content (speedy, PROD, AfD)
+    """
+    DELETION_TYPES = (
+        ('speedy', 'Speedy Deletion'),
+        ('prod', 'Proposed Deletion (PROD)'),
+        ('afd', 'Articles for Deletion (AfD)'),
+    )
+    
+    DELETION_REASONS = (
+        ('spam', 'Spam or advertising'),
+        ('copyright', 'Copyright violation'),
+        ('vandalism', 'Vandalism'),
+        ('notability', 'Fails notability requirements'),
+        ('sources', 'Lacks reliable sources'),
+        ('maintenance', 'Technical maintenance'),
+        ('duplicate', 'Duplicate content'),
+        ('attack', 'Attack page or defamatory'),
+        ('other', 'Other (specify in reason)'),
+    )
+    
+    STATUS_CHOICES = (
+        ('pending', 'Pending'),
+        ('approved', 'Approved for Deletion'),
+        ('rejected', 'Rejected'),
+        ('withdrawn', 'Withdrawn'),
+        ('expired', 'Expired'),
+    )
+    
+    content = models.ForeignKey(Content, on_delete=models.CASCADE, related_name='deletion_requests')
+    requester = models.ForeignKey(User, on_delete=models.PROTECT, related_name='deletion_requests')
+    deletion_type = models.CharField(max_length=10, choices=DELETION_TYPES)
+    reason_code = models.CharField(max_length=20, choices=DELETION_REASONS)
+    reason_text = models.TextField(help_text="Detailed explanation for deletion request")
+    
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
+    reviewed_by = models.ForeignKey(User, null=True, blank=True, on_delete=models.SET_NULL, related_name='reviewed_deletions')
+    reviewed_at = models.DateTimeField(null=True, blank=True)
+    review_notes = models.TextField(blank=True)
+    
+    # For AfD discussions
+    discussion_started = models.BooleanField(default=False)
+    discussion_ends = models.DateTimeField(null=True, blank=True, help_text="When AfD discussion period ends")
+    
+    # For PROD grace period
+    grace_period_ends = models.DateTimeField(null=True, blank=True, help_text="When PROD grace period ends")
+    
+    class Meta:
+        ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['deletion_type', 'status']),
+            models.Index(fields=['status', 'created_at']),
+        ]
+    
+    def __str__(self):
+        return f"{self.get_deletion_type_display()} request for {self.content.title}"
+    
+    def can_be_reviewed_by(self, user):
+        """Check if user can review this deletion request"""
+        try:
+            profile = user.profile
+            if self.deletion_type == 'speedy':
+                # Only admins can approve speedy deletions
+                return profile.role == 'admin'
+            elif self.deletion_type in ['prod', 'afd']:
+                # Admins and editors can review PROD and AfD
+                return profile.role in ['editor', 'admin']
+        except:
+            pass
+        return False
+    
+    def get_time_remaining(self):
+        """Get time remaining for grace period or discussion"""
+        from django.utils import timezone
+        
+        if self.deletion_type == 'prod' and self.grace_period_ends:
+            if timezone.now() < self.grace_period_ends:
+                remaining = self.grace_period_ends - timezone.now()
+                return f"{remaining.days} days, {remaining.seconds // 3600} hours"
+        elif self.deletion_type == 'afd' and self.discussion_ends:
+            if timezone.now() < self.discussion_ends:
+                remaining = self.discussion_ends - timezone.now()
+                return f"{remaining.days} days, {remaining.seconds // 3600} hours"
+        return None
+
+
+class DeletionDiscussion(TimeStampedModel):
+    """
+    Model for AfD discussion comments
+    """
+    VOTE_CHOICES = (
+        ('keep', 'Keep'),
+        ('delete', 'Delete'),
+        ('merge', 'Merge'),
+        ('redirect', 'Redirect'),
+        ('comment', 'Comment only'),
+    )
+    
+    deletion_request = models.ForeignKey(DeletionRequest, on_delete=models.CASCADE, related_name='discussion_comments')
+    user = models.ForeignKey(User, on_delete=models.PROTECT, related_name='deletion_votes')
+    vote = models.CharField(max_length=10, choices=VOTE_CHOICES, default='comment')
+    comment = models.TextField()
+    
+    class Meta:
+        ordering = ['created_at']
+    
+    def __str__(self):
+        return f"{self.user.username} - {self.vote} on {self.deletion_request.content.title}"

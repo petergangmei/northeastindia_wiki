@@ -27,6 +27,7 @@ urlpatterns = [
     
     # Article Review - Place review URLs before article detail to avoid URL conflicts
     path('wiki/review-queue/', views.article_review_queue, name='article-review-queue'),
+    path('wiki/recent-changes-patrol/', views.recent_changes_patrol, name='recent-changes-patrol'),
     path('wiki/<slug:slug>/review/', views.article_review, name='article-review'),
     path('wiki/<slug:slug>/review/action/', views.article_review_action, name='article-review-action'),
     
@@ -41,6 +42,7 @@ urlpatterns = [
     path('wiki/<slug:slug>/revision/<int:revision_id>/', views.article_revision, name='article-revision'),
     path('wiki/<slug:slug>/compare/', views.article_compare, name='article-compare'),
     path('wiki/<slug:slug>/delete/', views.article_delete, name='article-delete'),
+    path('wiki/<slug:slug>/request-deletion/', views.request_deletion, name='request-deletion'),
     path('articles/<slug:slug>/toggle-watch/', views.toggle_article_watch, name='article-toggle-watch'),
     
     # Category-specific list URLs (placed BEFORE general patterns to avoid conflicts)

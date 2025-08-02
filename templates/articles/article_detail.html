@@ -79,11 +79,22 @@
                     
                     {% if article.protection_level != 'unprotected' %}
                     <div class="protection-indicator ms-2">
-                        <span class="badge bg-warning text-dark" title="{{ article.protection_reason }}">
+                        <span class="badge 
+                            {% if article.protection_level == 'fully_protected' %}bg-danger
+                            {% elif article.protection_level == 'protected' %}bg-warning text-dark
+                            {% elif article.protection_level == 'extended_confirmed' %}bg-info
+                            {% elif article.protection_level == 'pending_changes' %}bg-primary
+                            {% elif article.protection_level == 'semi_protected' %}bg-secondary
+                            {% endif %}" 
+                            title="{{ article.protection_reason }}">
                             {% if article.protection_level == 'fully_protected' %}
                                 <i class="fas fa-lock"></i> Fully Protected
                             {% elif article.protection_level == 'protected' %}
                                 <i class="fas fa-shield-alt"></i> Protected
+                            {% elif article.protection_level == 'extended_confirmed' %}
+                                <i class="fas fa-user-shield"></i> Extended Confirmed
+                            {% elif article.protection_level == 'pending_changes' %}
+                                <i class="fas fa-clock"></i> Pending Changes
                             {% elif article.protection_level == 'semi_protected' %}
                                 <i class="fas fa-shield-halved"></i> Semi-Protected
                             {% endif %}
@@ -107,6 +118,10 @@
                             {% endif %}
                             <li><a class="dropdown-item" href="#" onclick="window.print()"><i class="fas fa-print me-2"></i>Print</a></li>
                             <li><a class="dropdown-item" href="#" onclick="copyToClipboard()"><i class="fas fa-link me-2"></i>Copy link</a></li>
+                            {% if user.is_authenticated and user.profile.role in 'autoconfirmed,extended_confirmed,reviewer,editor,admin'|split:',' %}
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item text-danger" href="{% url 'app:request-deletion' slug=article.slug %}"><i class="fas fa-trash me-2"></i>Request deletion</a></li>
+                            {% endif %}
                             <li><hr class="dropdown-divider"></li>
                         </ul>
                     </div>

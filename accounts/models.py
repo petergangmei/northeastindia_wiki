@@ -10,6 +10,9 @@ class UserProfile(models.Model):
     USER_ROLES = (
         ('viewer', 'Viewer'),
         ('contributor', 'Contributor'),
+        ('autoconfirmed', 'Autoconfirmed'),
+        ('extended_confirmed', 'Extended Confirmed'),
+        ('reviewer', 'Reviewer'),
         ('editor', 'Editor'),
         ('admin', 'Administrator'),
     )
@@ -86,3 +89,107 @@ class UserProfile(models.Model):
             self.auto_approve_edits = False
         
         self.save()
+    
+    def check_and_update_role(self):
+        """
+        Check and automatically update user role based on Wikipedia criteria
+        """
+        from django.utils import timezone
+        from datetime import timedelta
+        
+        # Calculate days since user joined
+        days_since_joined = (timezone.now() - self.user.date_joined).days
+        
+        # Don't downgrade admin or manually assigned roles
+        if self.role in ['admin', 'editor', 'reviewer']:
+            return
+        
+        # Auto-promote based on Wikipedia criteria
+        if (days_since_joined >= 30 and self.approved_edit_count >= 500 and 
+            self.role not in ['extended_confirmed', 'editor', 'admin']):
+            # Extended-confirmed (30/500) status
+            old_role = self.role
+            self.role = 'extended_confirmed'
+            self._create_role_change_notification(old_role, 'extended_confirmed')
+            
+        elif (days_since_joined >= 4 and self.approved_edit_count >= 10 and 
+              self.role not in ['autoconfirmed', 'extended_confirmed', 'editor', 'admin']):
+            # Autoconfirmed status
+            old_role = self.role
+            self.role = 'autoconfirmed'
+            self._create_role_change_notification(old_role, 'autoconfirmed')
+        
+        self.save()
+    
+    def _create_role_change_notification(self, old_role, new_role):
+        """Create notification for role change"""
+        from app.models import Notification
+        
+        role_names = dict(self.USER_ROLES)
+        message = f"Congratulations! You have been automatically promoted from {role_names.get(old_role, old_role)} to {role_names.get(new_role, new_role)} based on your contributions."
+        
+        Notification.objects.create(
+            user=self.user,
+            notification_type='system',
+            message=message
+        )
+    
+    def can_review_content(self):
+        """Check if user can review content (pending changes, new pages)"""
+        return self.role in ['reviewer', 'editor', 'admin']
+    
+    def can_edit_semi_protected(self):
+        """Check if user can edit semi-protected pages"""
+        return self.role in ['autoconfirmed', 'extended_confirmed', 'reviewer', 'editor', 'admin']
+    
+    def can_edit_extended_confirmed_protected(self):
+        """Check if user can edit extended-confirmed protected pages"""
+        return self.role in ['extended_confirmed', 'reviewer', 'editor', 'admin']
+    
+    def can_move_pages(self):
+        """Check if user can move/rename pages"""
+        return self.role in ['autoconfirmed', 'extended_confirmed', 'reviewer', 'editor', 'admin']
+    
+    def get_role_progress(self):
+        """Get progress towards next role"""
+        from django.utils import timezone
+        from datetime import timedelta
+        
+        days_since_joined = (timezone.now() - self.user.date_joined).days
+        
+        if self.role in ['admin', 'editor']:
+            return {'next_role': None, 'progress': 100}
+        
+        # Progress towards extended-confirmed
+        if self.role not in ['extended_confirmed']:
+            days_needed = max(0, 30 - days_since_joined)
+            edits_needed = max(0, 500 - self.approved_edit_count)
+            
+            if days_needed == 0 and edits_needed == 0:
+                return {'next_role': 'extended_confirmed', 'progress': 100, 'ready': True}
+            else:
+                progress = ((min(30, days_since_joined) / 30) * 50) + ((min(500, self.approved_edit_count) / 500) * 50)
+                return {
+                    'next_role': 'extended_confirmed',
+                    'progress': int(progress),
+                    'days_needed': days_needed,
+                    'edits_needed': edits_needed
+                }
+        
+        # Progress towards autoconfirmed
+        if self.role == 'viewer' or self.role == 'contributor':
+            days_needed = max(0, 4 - days_since_joined)
+            edits_needed = max(0, 10 - self.approved_edit_count)
+            
+            if days_needed == 0 and edits_needed == 0:
+                return {'next_role': 'autoconfirmed', 'progress': 100, 'ready': True}
+            else:
+                progress = ((min(4, days_since_joined) / 4) * 50) + ((min(10, self.approved_edit_count) / 10) * 50)
+                return {
+                    'next_role': 'autoconfirmed',
+                    'progress': int(progress),
+                    'days_needed': days_needed,
+                    'edits_needed': edits_needed
+                }
+        
+        return {'next_role': None, 'progress': 100}

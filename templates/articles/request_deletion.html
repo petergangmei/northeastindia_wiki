@@ -1,0 +1,186 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Request Deletion: {{ article.title }} | {% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <!-- Page Header -->
+            <div class="mb-4">
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item">
+                            <a href="{% url 'app:home' %}">Home</a>
+                        </li>
+                        <li class="breadcrumb-item">
+                            <a href="{{ article.get_absolute_url }}">{{ article.title|truncatechars:30 }}</a>
+                        </li>
+                        <li class="breadcrumb-item active">Request Deletion</li>
+                    </ol>
+                </nav>
+                
+                <h1 class="h3 mb-2">Request Article Deletion</h1>
+                <p class="text-muted">
+                    <strong>Article:</strong> {{ article.title }}
+                </p>
+            </div>
+
+            <!-- Warning -->
+            <div class="alert alert-warning" role="alert">
+                <h5 class="alert-heading">
+                    <i class="fas fa-exclamation-triangle"></i> Important Notice
+                </h5>
+                <p>Deletion requests should only be made for articles that clearly violate policies or guidelines. Please ensure you have:</p>
+                <ul class="mb-0">
+                    <li>Reviewed the article thoroughly</li>
+                    <li>Considered if the issues can be fixed through editing</li>
+                    <li>Chosen the appropriate deletion type for the situation</li>
+                </ul>
+            </div>
+
+            <!-- Deletion Types Information -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Deletion Types</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <h6 class="text-danger">Speedy Deletion</h6>
+                            <p class="small text-muted">
+                                For articles that clearly violate policies (spam, copyright, vandalism). 
+                                Reviewed immediately by administrators.
+                            </p>
+                        </div>
+                        <div class="col-md-4">
+                            <h6 class="text-warning">PROD</h6>
+                            <p class="small text-muted">
+                                Proposed deletion with 7-day grace period. 
+                                Good for uncontroversial deletions where author can address issues.
+                            </p>
+                        </div>
+                        <div class="col-md-4">
+                            <h6 class="text-info">AfD</h6>
+                            <p class="small text-muted">
+                                Articles for Deletion with community discussion. 
+                                For borderline cases requiring community consensus.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Deletion Request Form -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Submit Deletion Request</h5>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <!-- Deletion Type -->
+                        <div class="mb-3">
+                            <label for="deletion_type" class="form-label">
+                                Deletion Type <span class="text-danger">*</span>
+                            </label>
+                            <select class="form-select" id="deletion_type" name="deletion_type" required>
+                                <option value="">Select deletion type...</option>
+                                {% for value, label in deletion_types %}
+                                <option value="{{ value }}">{{ label }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <!-- Reason Code -->
+                        <div class="mb-3">
+                            <label for="reason_code" class="form-label">
+                                Primary Reason <span class="text-danger">*</span>
+                            </label>
+                            <select class="form-select" id="reason_code" name="reason_code" required>
+                                <option value="">Select primary reason...</option>
+                                {% for value, label in deletion_reasons %}
+                                <option value="{{ value }}">{{ label }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <!-- Detailed Explanation -->
+                        <div class="mb-3">
+                            <label for="reason_text" class="form-label">
+                                Detailed Explanation <span class="text-danger">*</span>
+                            </label>
+                            <textarea class="form-control" id="reason_text" name="reason_text" rows="5" 
+                                      placeholder="Provide a detailed explanation for why this article should be deleted. Include specific policy violations or issues that cannot be resolved through editing."
+                                      required></textarea>
+                            <div class="form-text">
+                                Be specific and cite relevant policies or guidelines. This explanation will be visible to reviewers and the community.
+                            </div>
+                        </div>
+
+                        <!-- Guidelines -->
+                        <div class="alert alert-light border" role="alert">
+                            <h6 class="alert-heading">Guidelines for Deletion Requests</h6>
+                            <ul class="small mb-0">
+                                <li><strong>Speedy:</strong> Use only for clear policy violations that require immediate action</li>
+                                <li><strong>PROD:</strong> Use for uncontroversial deletions where the author has a chance to improve</li>
+                                <li><strong>AfD:</strong> Use for complex cases that need community discussion and consensus</li>
+                                <li>Always provide clear, specific reasons with policy citations when applicable</li>
+                                <li>Consider whether editing or improvement would be a better solution</li>
+                            </ul>
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="d-flex justify-content-between">
+                            <a href="{{ article.get_absolute_url }}" class="btn btn-outline-secondary">
+                                <i class="fas fa-arrow-left"></i> Cancel
+                            </a>
+                            <button type="submit" class="btn btn-danger">
+                                <i class="fas fa-trash"></i> Submit Deletion Request
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Additional Help -->
+            <div class="mt-4">
+                <div class="card bg-light">
+                    <div class="card-body">
+                        <h6 class="card-title">Need Help?</h6>
+                        <p class="card-text small">
+                            If you're unsure about deletion policies or need guidance, consider:
+                        </p>
+                        <ul class="small mb-0">
+                            <li>Asking for help in the community discussion areas</li>
+                            <li>Consulting with experienced editors</li>
+                            <li>Trying to improve the article first</li>
+                            <li>Reviewing our content policies and guidelines</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const deletionType = document.getElementById('deletion_type');
+    const reasonCode = document.getElementById('reason_code');
+    
+    // Update available reasons based on deletion type
+    deletionType.addEventListener('change', function() {
+        const selectedType = this.value;
+        
+        // Reset reason code
+        reasonCode.value = '';
+        
+        // You could add logic here to filter reasons based on deletion type
+        // For now, all reasons are available for all types
+    });
+});
+</script>
+{% endblock %}

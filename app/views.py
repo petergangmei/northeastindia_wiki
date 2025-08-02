@@ -18,7 +18,7 @@ from difflib import ndiff
 import bleach
 import string
 import random
-from .models import Contribution, Content, Category, Tag, State, Notification, ContentRevision
+from .models import Contribution, Content, Category, Tag, State, Notification, ContentRevision, DeletionRequest, DeletionDiscussion
 from accounts.models import UserProfile
 
 # Create alias for backward compatibility since views use Article extensively
@@ -457,11 +457,10 @@ def article_edit(request, slug):
             messages.error(request, "This article is fully protected and can only be edited by administrators.")
         elif article.protection_level == 'protected':
             messages.error(request, "This article is protected and can only be edited by editors and administrators.")
+        elif article.protection_level == 'extended_confirmed':
+            messages.error(request, "This article is extended-confirmed protected. You need extended-confirmed status (30 days + 500 edits) to edit.")
         elif article.protection_level == 'semi_protected':
-            if user_role == 'contributor':
-                messages.error(request, f"This article is semi-protected. You need at least 10 approved contributions and 50 reputation points to edit. You currently have {user_profile.contribution_count} contributions and {user_profile.reputation_points} reputation points.")
-            else:
-                messages.error(request, "This article is semi-protected. You need contributor status with sufficient reputation to edit.")
+            messages.error(request, "This article is semi-protected. You need autoconfirmed status (4 days + 10 edits) to edit.")
         elif user_role == 'viewer':
             messages.error(request, "You need contributor status or higher to edit articles. Please request contributor status.")
         else:
@@ -530,9 +529,22 @@ def article_edit(request, slug):
                     status__in=['draft', 'pending_review']
                 ).first()
                 
-                # Determine revision status based on action
+                # Determine revision status based on action and protection level
                 submit_for_review = request.POST.get('action') == 'submit_for_review'
-                revision_status = 'pending_review' if submit_for_review else 'draft'
+                
+                # Handle pending changes protection
+                if article.protection_level == 'pending_changes':
+                    # For pending changes protection, check if user needs review
+                    if article.needs_pending_changes_review(request.user):
+                        revision_status = 'pending_review'  # Always needs review
+                        submit_for_review = True  # Force submission for review
+                    else:
+                        # Reviewers, editors, and admins can edit directly
+                        revision_status = 'approved'
+                        submit_for_review = False
+                else:
+                    # Normal workflow for other protection levels
+                    revision_status = 'pending_review' if submit_for_review else 'draft'
                 
                 if existing_revision:
                     # Update existing revision
@@ -563,6 +575,19 @@ def article_edit(request, slug):
                 revision.states_data = states_ids
                 
                 revision.save()
+                
+                # Auto-apply changes for privileged users in pending changes protection
+                if revision_status == 'approved' and article.protection_level == 'pending_changes':
+                    # Apply the revision immediately
+                    revision.apply_to_content()
+                    
+                    # Update user's approved edit count
+                    try:
+                        user_profile.approved_edit_count += 1
+                        user_profile.save()
+                        user_profile.check_and_update_role()  # Check for role promotion
+                    except:
+                        pass
                 
                 # Send notifications for collaborative editing
                 if submit_for_review:
@@ -1808,6 +1833,186 @@ def state_detail(request, state_slug):
         'meta_description': f'Discover {state.name}, one of the northeastern states of India. Learn about its culture, history, festivals, and notable personalities.',
     }
     return render(request, 'states/state_detail.html', context)
+
+
+@login_required
+def recent_changes_patrol(request):
+    """
+    Recent Changes Patrol - Wikipedia-style monitoring dashboard
+    """
+    # Check if user can review content
+    try:
+        user_profile = request.user.profile
+        if not user_profile.can_review_content():
+            messages.error(request, "You need reviewer status or higher to access the patrol dashboard.")
+            return redirect('app:home')
+    except:
+        messages.error(request, "You need reviewer status or higher to access the patrol dashboard.")
+        return redirect('app:home')
+    
+    from datetime import timedelta
+    from django.utils import timezone
+    
+    # Get recent revisions in the last 24 hours
+    time_threshold = timezone.now() - timedelta(hours=24)
+    
+    # Get all recent revisions
+    recent_revisions = ContentRevision.objects.filter(
+        created_at__gte=time_threshold
+    ).select_related('content', 'editor', 'reviewed_by').order_by('-created_at')
+    
+    # Get unreviewed revisions (pending changes)
+    pending_revisions = ContentRevision.objects.filter(
+        status='pending_review'
+    ).select_related('content', 'editor').order_by('-created_at')
+    
+    # Get recently created content
+    new_content = Content.objects.filter(
+        created_at__gte=time_threshold,
+        content_type='article'
+    ).select_related('author').order_by('-created_at')
+    
+    # Get content needing patrol (new and unreviewed)
+    patrol_queue = []
+    
+    # Add pending revisions to patrol queue
+    for revision in pending_revisions:
+        patrol_queue.append({
+            'type': 'revision',
+            'item': revision,
+            'content': revision.content,
+            'user': revision.editor,
+            'timestamp': revision.created_at,
+            'action': 'edit_pending'
+        })
+    
+    # Add new content to patrol queue
+    for content in new_content:
+        if content.review_status == 'pending':
+            patrol_queue.append({
+                'type': 'content',
+                'item': content,
+                'content': content,
+                'user': content.author,
+                'timestamp': content.created_at,
+                'action': 'new_content'
+            })
+    
+    # Sort patrol queue by timestamp (newest first)
+    patrol_queue.sort(key=lambda x: x['timestamp'], reverse=True)
+    
+    # Pagination
+    paginator = Paginator(patrol_queue, 50)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    
+    context = {
+        'recent_revisions': recent_revisions[:10],  # Last 10 for overview
+        'pending_count': pending_revisions.count(),
+        'new_content_count': new_content.filter(review_status='pending').count(),
+        'patrol_queue': page_obj,
+        'total_items': len(patrol_queue),
+    }
+    
+    return render(request, 'articles/recent_changes_patrol.html', context)
+
+
+@login_required
+def request_deletion(request, slug):
+    """
+    Request deletion of an article (speedy, PROD, or AfD)
+    """
+    article = get_object_or_404(Content, slug=slug, content_type='article')
+    
+    # Check if user has permission to request deletion
+    try:
+        user_profile = request.user.profile
+        if user_profile.role not in ['autoconfirmed', 'extended_confirmed', 'reviewer', 'editor', 'admin']:
+            messages.error(request, "You need autoconfirmed status or higher to request article deletion.")
+            return redirect('app:article-detail', slug=article.slug)
+    except:
+        messages.error(request, "You need autoconfirmed status or higher to request article deletion.")
+        return redirect('app:article-detail', slug=article.slug)
+    
+    # Check if there's already a pending deletion request
+    existing_request = DeletionRequest.objects.filter(
+        content=article,
+        status='pending'
+    ).first()
+    
+    if existing_request:
+        messages.warning(request, "There is already a pending deletion request for this article.")
+        return redirect('app:article-detail', slug=article.slug)
+    
+    if request.method == 'POST':
+        deletion_type = request.POST.get('deletion_type')
+        reason_code = request.POST.get('reason_code')
+        reason_text = request.POST.get('reason_text', '').strip()
+        
+        if not all([deletion_type, reason_code, reason_text]):
+            messages.error(request, "All fields are required.")
+        else:
+            # Create deletion request
+            deletion_request = DeletionRequest.objects.create(
+                content=article,
+                requester=request.user,
+                deletion_type=deletion_type,
+                reason_code=reason_code,
+                reason_text=reason_text
+            )
+            
+            # Set up timing based on deletion type
+            from django.utils import timezone
+            from datetime import timedelta
+            
+            if deletion_type == 'prod':
+                # PROD has 7-day grace period
+                deletion_request.grace_period_ends = timezone.now() + timedelta(days=7)
+                deletion_request.save()
+                
+                # Notify article author
+                if article.author != request.user:
+                    create_notification(
+                        article.author,
+                        'system',
+                        f'Your article "{article.title}" has been proposed for deletion. You have 7 days to address the concerns.',
+                        'article',
+                        article.id
+                    )
+                
+                messages.success(request, f"PROD deletion request submitted. The article will be deleted after 7 days unless concerns are addressed.")
+                
+            elif deletion_type == 'afd':
+                # AfD has 7-day discussion period
+                deletion_request.discussion_ends = timezone.now() + timedelta(days=7)
+                deletion_request.discussion_started = True
+                deletion_request.save()
+                
+                messages.success(request, f"AfD deletion request submitted. Community discussion will last 7 days.")
+                
+            else:  # speedy
+                messages.success(request, f"Speedy deletion request submitted for administrator review.")
+            
+            # Notify reviewers
+            reviewers = UserProfile.objects.filter(role__in=['editor', 'admin'])
+            for reviewer_profile in reviewers:
+                create_notification(
+                    reviewer_profile.user,
+                    'system',
+                    f'New {deletion_request.get_deletion_type_display()} request for "{article.title}"',
+                    'article',
+                    article.id
+                )
+            
+            return redirect('app:article-detail', slug=article.slug)
+    
+    context = {
+        'article': article,
+        'deletion_types': DeletionRequest.DELETION_TYPES,
+        'deletion_reasons': DeletionRequest.DELETION_REASONS,
+    }
+    
+    return render(request, 'articles/request_deletion.html', context)
 
 
 def northeast_overview(request):
