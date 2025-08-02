@@ -194,7 +194,7 @@ class ArticleForm(forms.ModelForm):
         'class': 'form-control'
     }, mce_attrs={
         'theme': 'silver',
-        'height': 500,
+        'height': '200vh',
         'menubar': 'file edit view insert format tools table help',
         'plugins': [
             'advlist', 'autolink', 'lists', 'link', 'image', 'charmap', 'preview',
