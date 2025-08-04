@@ -22,6 +22,7 @@ INSTALLED_APPS = [
     'django.contrib.sitemaps',
     
     # Third-party apps
+    'import_export',
     'tinymce',
     'mptt',
     'taggit',

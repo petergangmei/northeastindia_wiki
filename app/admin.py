@@ -1,12 +1,44 @@
 from django.contrib import admin
 from django.utils.html import format_html
 from django import forms
+from import_export import resources
+from import_export.admin import ImportExportModelAdmin
+from import_export.widgets import ForeignKeyWidget
 from .models import (
     Category, Tag, State, MediaItem, Comment, Contribution, Notification, Content,ContentRevision
 )
 
 
 admin.site.register(ContentRevision)
+
+
+# Import/Export Resources
+class CategoryResource(resources.ModelResource):
+    parent = resources.Field(
+        column_name='parent',
+        attribute='parent',
+        widget=ForeignKeyWidget(Category, field='name')
+    )
+    
+    class Meta:
+        model = Category
+        fields = ('id', 'name', 'slug', 'description', 'parent')
+        export_order = ('id', 'name', 'slug', 'description', 'parent')
+
+
+class StateResource(resources.ModelResource):
+    class Meta:
+        model = State
+        fields = ('id', 'name', 'slug', 'description', 'capital', 'formation_date', 'population', 'area', 'languages')
+        export_order = ('id', 'name', 'slug', 'description', 'capital', 'formation_date', 'population', 'area', 'languages')
+
+
+class TagResource(resources.ModelResource):
+    class Meta:
+        model = Tag
+        fields = ('id', 'name', 'slug')
+        export_order = ('id', 'name', 'slug')
+
 
 class TimeStampedModelAdmin(admin.ModelAdmin):
     """Base admin class for models inheriting from TimeStampedModel"""
@@ -15,21 +47,24 @@ class TimeStampedModelAdmin(admin.ModelAdmin):
 
 
 @admin.register(Category)
-class CategoryAdmin(TimeStampedModelAdmin):
+class CategoryAdmin(ImportExportModelAdmin, TimeStampedModelAdmin):
+    resource_classes = [CategoryResource]
     list_display = ('name', 'parent', 'created_at')
     search_fields = ('name', 'description')
     prepopulated_fields = {'slug': ('name',)}
 
 
 @admin.register(Tag)
-class TagAdmin(TimeStampedModelAdmin):
+class TagAdmin(ImportExportModelAdmin, TimeStampedModelAdmin):
+    resource_classes = [TagResource]
     list_display = ('name', 'created_at')
     search_fields = ('name',)
     prepopulated_fields = {'slug': ('name',)}
 
 
 @admin.register(State)
-class StateAdmin(TimeStampedModelAdmin):
+class StateAdmin(ImportExportModelAdmin, TimeStampedModelAdmin):
+    resource_classes = [StateResource]
     list_display = ('name', 'capital', 'formation_date', 'population')
     search_fields = ('name', 'description', 'capital')
     prepopulated_fields = {'slug': ('name',)}

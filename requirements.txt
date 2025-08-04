@@ -2,6 +2,7 @@ asgiref==3.9.1
 bleach==6.2.0
 dj-database-url==3.0.1
 Django==5.2.4
+django-import-export
 django-js-asset==3.1.2
 django-mptt==0.17.0
 django-taggit==6.1.0
