@@ -454,3 +454,315 @@ Traceback (most recent call last):
     raise TypeError(f'the JSON object must be str, bytes or bytearray, '
                     f'not {s.__class__.__name__}')
 TypeError: the JSON object must be str, bytes or bytearray, not dict
+ERROR 2025-08-04 16:27:20,595 log Internal Server Error: /wiki/test-article-exploring-the-natural-beauty-of-teresaville-1/edit/
+Traceback (most recent call last):
+  File "/Users/petergangmei/Developer/Crossplatform/django/northeastindia_wiki/venv/lib/python3.13/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/Users/petergangmei/Developer/Crossplatform/django/northeastindia_wiki/venv/lib/python3.13/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/Users/petergangmei/Developer/Crossplatform/django/northeastindia_wiki/venv/lib/python3.13/site-packages/django/contrib/auth/decorators.py", line 59, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "/Users/petergangmei/Developer/Crossplatform/django/northeastindia_wiki/app/views.py", line 706, in article_edit
+    return render(request, 'articles/article_form.html', context)
+  File "/Users/petergangmei/Developer/Crossplatform/django/northeastindia_wiki/venv/lib/python3.13/site-packages/django/shortcuts.py", line 25, in render
+    content = loader.render_to_string(template_name, context, request, using=using)
+  File "/Users/petergangmei/Developer/Crossplatform/django/northeastindia_wiki/venv/lib/python3.13/site-packages/django/template/loader.py", line 62, in render_to_string
+    return template.render(context, request)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "/Users/petergangmei/Developer/Crossplatform/django/northeastindia_wiki/venv/lib/python3.13/site-packages/django/template/backends/django.py", line 107, in render
+    return self.template.render(context)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/Users/petergangmei/Developer/Crossplatform/django/northeastindia_wiki/venv/lib/python3.13/site-packages/django/template/base.py", line 171, in render
+    return self._render(context)
+           ~~~~~~~~~~~~^^^^^^^^^
+  File "/Users/petergangmei/Developer/Crossplatform/django/northeastindia_wiki/venv/lib/python3.13/site-packages/django/template/base.py", line 163, in _render
+    return self.nodelist.render(context)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/Users/petergangmei/Developer/Crossplatform/django/northeastindia_wiki/venv/lib/python3.13/site-packages/django/template/base.py", line 1016, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+                               ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/Users/petergangmei/Developer/Crossplatform/django/northeastindia_wiki/venv/lib/python3.13/site-packages/django/template/base.py", line 977, in render_annotated
+    return self.render(context)
+           ~~~~~~~~~~~^^^^^^^^^
+  File "/Users/petergangmei/Developer/Crossplatform/django/northeastindia_wiki/venv/lib/python3.13/site-packages/django/template/loader_tags.py", line 159, in render
+    return compiled_parent._render(context)
+           ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/Users/petergangmei/Developer/Crossplatform/django/northeastindia_wiki/venv/lib/python3.13/site-packages/django/template/base.py", line 163, in _render
+    return self.nodelist.render(context)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/Users/petergangmei/Developer/Crossplatform/django/northeastindia_wiki/venv/lib/python3.13/site-packages/django/template/base.py", line 1016, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+                               ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/Users/petergangmei/Developer/Crossplatform/django/northeastindia_wiki/venv/lib/python3.13/site-packages/django/template/base.py", line 977, in render_annotated
+    return self.render(context)
+           ~~~~~~~~~~~^^^^^^^^^
+  File "/Users/petergangmei/Developer/Crossplatform/django/northeastindia_wiki/venv/lib/python3.13/site-packages/django/template/loader_tags.py", line 65, in render
+    result = block.nodelist.render(context)
+  File "/Users/petergangmei/Developer/Crossplatform/django/northeastindia_wiki/venv/lib/python3.13/site-packages/django/template/base.py", line 1016, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+                               ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/Users/petergangmei/Developer/Crossplatform/django/northeastindia_wiki/venv/lib/python3.13/site-packages/django/template/base.py", line 977, in render_annotated
+    return self.render(context)
+           ~~~~~~~~~~~^^^^^^^^^
+  File "/Users/petergangmei/Developer/Crossplatform/django/northeastindia_wiki/venv/lib/python3.13/site-packages/django/template/base.py", line 1081, in render
+    return render_value_in_context(output, context)
+  File "/Users/petergangmei/Developer/Crossplatform/django/northeastindia_wiki/venv/lib/python3.13/site-packages/django/template/base.py", line 1058, in render_value_in_context
+    value = str(value)
+  File "/Users/petergangmei/Developer/Crossplatform/django/northeastindia_wiki/venv/lib/python3.13/site-packages/django/forms/utils.py", line 79, in __str__
+    return self.as_widget()
+           ~~~~~~~~~~~~~~^^
+  File "/Users/petergangmei/Developer/Crossplatform/django/northeastindia_wiki/venv/lib/python3.13/site-packages/django/forms/boundfield.py", line 108, in as_widget
+    return widget.render(
+           ~~~~~~~~~~~~~^
+        name=self.html_initial_name if only_initial else self.html_name,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<2 lines>...
+        renderer=self.form.renderer,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/petergangmei/Developer/Crossplatform/django/northeastindia_wiki/venv/lib/python3.13/site-packages/django/forms/widgets.py", line 329, in render
+    context = self.get_context(name, value, attrs)
+  File "/Users/petergangmei/Developer/Crossplatform/django/northeastindia_wiki/venv/lib/python3.13/site-packages/django/forms/widgets.py", line 830, in get_context
+    context = super().get_context(name, value, attrs)
+  File "/Users/petergangmei/Developer/Crossplatform/django/northeastindia_wiki/venv/lib/python3.13/site-packages/django/forms/widgets.py", line 781, in get_context
+    context["widget"]["optgroups"] = self.optgroups(
+                                     ~~~~~~~~~~~~~~^
+        name, context["widget"]["value"], attrs
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/petergangmei/Developer/Crossplatform/django/northeastindia_wiki/venv/lib/python3.13/site-packages/django/forms/widgets.py", line 721, in optgroups
+    for index, (option_value, option_label) in enumerate(self.choices):
+                                               ~~~~~~~~~^^^^^^^^^^^^^^
+  File "/Users/petergangmei/Developer/Crossplatform/django/northeastindia_wiki/venv/lib/python3.13/site-packages/django/forms/models.py", line 1424, in __iter__
+    for obj in queryset:
+               ^^^^^^^^
+  File "/Users/petergangmei/Developer/Crossplatform/django/northeastindia_wiki/venv/lib/python3.13/site-packages/django/db/models/query.py", line 502, in _iterator
+    yield from iterable
+  File "/Users/petergangmei/Developer/Crossplatform/django/northeastindia_wiki/venv/lib/python3.13/site-packages/django/db/models/query.py", line 123, in __iter__
+    for row in compiler.results_iter(results):
+               ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/Users/petergangmei/Developer/Crossplatform/django/northeastindia_wiki/venv/lib/python3.13/site-packages/django/db/models/sql/compiler.py", line 2174, in cursor_iter
+    cursor.close()
+    ~~~~~~~~~~~~^^
+psycopg2.errors.InvalidCursorName: cursor "_django_curs_6163542016_sync_1" does not exist
+
+ERROR 2025-08-04 16:27:38,568 log Internal Server Error: /wiki/test-article-exploring-the-natural-beauty-of-teresaville-1/edit/
+Traceback (most recent call last):
+  File "/Users/petergangmei/Developer/Crossplatform/django/northeastindia_wiki/venv/lib/python3.13/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/Users/petergangmei/Developer/Crossplatform/django/northeastindia_wiki/venv/lib/python3.13/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/Users/petergangmei/Developer/Crossplatform/django/northeastindia_wiki/venv/lib/python3.13/site-packages/django/contrib/auth/decorators.py", line 59, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "/Users/petergangmei/Developer/Crossplatform/django/northeastindia_wiki/app/views.py", line 706, in article_edit
+    return render(request, 'articles/article_form.html', context)
+  File "/Users/petergangmei/Developer/Crossplatform/django/northeastindia_wiki/venv/lib/python3.13/site-packages/django/shortcuts.py", line 25, in render
+    content = loader.render_to_string(template_name, context, request, using=using)
+  File "/Users/petergangmei/Developer/Crossplatform/django/northeastindia_wiki/venv/lib/python3.13/site-packages/django/template/loader.py", line 62, in render_to_string
+    return template.render(context, request)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "/Users/petergangmei/Developer/Crossplatform/django/northeastindia_wiki/venv/lib/python3.13/site-packages/django/template/backends/django.py", line 107, in render
+    return self.template.render(context)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/Users/petergangmei/Developer/Crossplatform/django/northeastindia_wiki/venv/lib/python3.13/site-packages/django/template/base.py", line 171, in render
+    return self._render(context)
+           ~~~~~~~~~~~~^^^^^^^^^
+  File "/Users/petergangmei/Developer/Crossplatform/django/northeastindia_wiki/venv/lib/python3.13/site-packages/django/template/base.py", line 163, in _render
+    return self.nodelist.render(context)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/Users/petergangmei/Developer/Crossplatform/django/northeastindia_wiki/venv/lib/python3.13/site-packages/django/template/base.py", line 1016, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+                               ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/Users/petergangmei/Developer/Crossplatform/django/northeastindia_wiki/venv/lib/python3.13/site-packages/django/template/base.py", line 977, in render_annotated
+    return self.render(context)
+           ~~~~~~~~~~~^^^^^^^^^
+  File "/Users/petergangmei/Developer/Crossplatform/django/northeastindia_wiki/venv/lib/python3.13/site-packages/django/template/loader_tags.py", line 159, in render
+    return compiled_parent._render(context)
+           ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/Users/petergangmei/Developer/Crossplatform/django/northeastindia_wiki/venv/lib/python3.13/site-packages/django/template/base.py", line 163, in _render
+    return self.nodelist.render(context)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/Users/petergangmei/Developer/Crossplatform/django/northeastindia_wiki/venv/lib/python3.13/site-packages/django/template/base.py", line 1016, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+                               ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/Users/petergangmei/Developer/Crossplatform/django/northeastindia_wiki/venv/lib/python3.13/site-packages/django/template/base.py", line 977, in render_annotated
+    return self.render(context)
+           ~~~~~~~~~~~^^^^^^^^^
+  File "/Users/petergangmei/Developer/Crossplatform/django/northeastindia_wiki/venv/lib/python3.13/site-packages/django/template/loader_tags.py", line 65, in render
+    result = block.nodelist.render(context)
+  File "/Users/petergangmei/Developer/Crossplatform/django/northeastindia_wiki/venv/lib/python3.13/site-packages/django/template/base.py", line 1016, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+                               ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/Users/petergangmei/Developer/Crossplatform/django/northeastindia_wiki/venv/lib/python3.13/site-packages/django/template/base.py", line 977, in render_annotated
+    return self.render(context)
+           ~~~~~~~~~~~^^^^^^^^^
+  File "/Users/petergangmei/Developer/Crossplatform/django/northeastindia_wiki/venv/lib/python3.13/site-packages/django/template/base.py", line 1081, in render
+    return render_value_in_context(output, context)
+  File "/Users/petergangmei/Developer/Crossplatform/django/northeastindia_wiki/venv/lib/python3.13/site-packages/django/template/base.py", line 1058, in render_value_in_context
+    value = str(value)
+  File "/Users/petergangmei/Developer/Crossplatform/django/northeastindia_wiki/venv/lib/python3.13/site-packages/django/forms/utils.py", line 79, in __str__
+    return self.as_widget()
+           ~~~~~~~~~~~~~~^^
+  File "/Users/petergangmei/Developer/Crossplatform/django/northeastindia_wiki/venv/lib/python3.13/site-packages/django/forms/boundfield.py", line 108, in as_widget
+    return widget.render(
+           ~~~~~~~~~~~~~^
+        name=self.html_initial_name if only_initial else self.html_name,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<2 lines>...
+        renderer=self.form.renderer,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/petergangmei/Developer/Crossplatform/django/northeastindia_wiki/venv/lib/python3.13/site-packages/django/forms/widgets.py", line 329, in render
+    context = self.get_context(name, value, attrs)
+  File "/Users/petergangmei/Developer/Crossplatform/django/northeastindia_wiki/venv/lib/python3.13/site-packages/django/forms/widgets.py", line 830, in get_context
+    context = super().get_context(name, value, attrs)
+  File "/Users/petergangmei/Developer/Crossplatform/django/northeastindia_wiki/venv/lib/python3.13/site-packages/django/forms/widgets.py", line 781, in get_context
+    context["widget"]["optgroups"] = self.optgroups(
+                                     ~~~~~~~~~~~~~~^
+        name, context["widget"]["value"], attrs
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/petergangmei/Developer/Crossplatform/django/northeastindia_wiki/venv/lib/python3.13/site-packages/django/forms/widgets.py", line 721, in optgroups
+    for index, (option_value, option_label) in enumerate(self.choices):
+                                               ~~~~~~~~~^^^^^^^^^^^^^^
+  File "/Users/petergangmei/Developer/Crossplatform/django/northeastindia_wiki/venv/lib/python3.13/site-packages/django/forms/models.py", line 1424, in __iter__
+    for obj in queryset:
+               ^^^^^^^^
+  File "/Users/petergangmei/Developer/Crossplatform/django/northeastindia_wiki/venv/lib/python3.13/site-packages/django/db/models/query.py", line 502, in _iterator
+    yield from iterable
+  File "/Users/petergangmei/Developer/Crossplatform/django/northeastindia_wiki/venv/lib/python3.13/site-packages/django/db/models/query.py", line 123, in __iter__
+    for row in compiler.results_iter(results):
+               ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/Users/petergangmei/Developer/Crossplatform/django/northeastindia_wiki/venv/lib/python3.13/site-packages/django/db/models/sql/compiler.py", line 2174, in cursor_iter
+    cursor.close()
+    ~~~~~~~~~~~~^^
+psycopg2.errors.InvalidCursorName: cursor "_django_curs_6163542016_sync_2" does not exist
+
+ERROR 2025-08-04 16:29:35,428 log Internal Server Error: /wiki/test-article-the-historical-significance-of-new-christopherview-in-northeast-india/edit/
+Traceback (most recent call last):
+  File "/Users/petergangmei/Developer/Crossplatform/django/northeastindia_wiki/venv/lib/python3.13/site-packages/django/db/backends/utils.py", line 105, in _execute
+    return self.cursor.execute(sql, params)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+psycopg2.errors.DuplicateCursor: cursor "_django_curs_6163542016_sync_1" already exists
+
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/Users/petergangmei/Developer/Crossplatform/django/northeastindia_wiki/venv/lib/python3.13/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/Users/petergangmei/Developer/Crossplatform/django/northeastindia_wiki/venv/lib/python3.13/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/Users/petergangmei/Developer/Crossplatform/django/northeastindia_wiki/venv/lib/python3.13/site-packages/django/contrib/auth/decorators.py", line 59, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "/Users/petergangmei/Developer/Crossplatform/django/northeastindia_wiki/app/views.py", line 706, in article_edit
+    return render(request, 'articles/article_form.html', context)
+  File "/Users/petergangmei/Developer/Crossplatform/django/northeastindia_wiki/venv/lib/python3.13/site-packages/django/shortcuts.py", line 25, in render
+    content = loader.render_to_string(template_name, context, request, using=using)
+  File "/Users/petergangmei/Developer/Crossplatform/django/northeastindia_wiki/venv/lib/python3.13/site-packages/django/template/loader.py", line 62, in render_to_string
+    return template.render(context, request)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "/Users/petergangmei/Developer/Crossplatform/django/northeastindia_wiki/venv/lib/python3.13/site-packages/django/template/backends/django.py", line 107, in render
+    return self.template.render(context)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/Users/petergangmei/Developer/Crossplatform/django/northeastindia_wiki/venv/lib/python3.13/site-packages/django/template/base.py", line 171, in render
+    return self._render(context)
+           ~~~~~~~~~~~~^^^^^^^^^
+  File "/Users/petergangmei/Developer/Crossplatform/django/northeastindia_wiki/venv/lib/python3.13/site-packages/django/template/base.py", line 163, in _render
+    return self.nodelist.render(context)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/Users/petergangmei/Developer/Crossplatform/django/northeastindia_wiki/venv/lib/python3.13/site-packages/django/template/base.py", line 1016, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+                               ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/Users/petergangmei/Developer/Crossplatform/django/northeastindia_wiki/venv/lib/python3.13/site-packages/django/template/base.py", line 977, in render_annotated
+    return self.render(context)
+           ~~~~~~~~~~~^^^^^^^^^
+  File "/Users/petergangmei/Developer/Crossplatform/django/northeastindia_wiki/venv/lib/python3.13/site-packages/django/template/loader_tags.py", line 159, in render
+    return compiled_parent._render(context)
+           ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/Users/petergangmei/Developer/Crossplatform/django/northeastindia_wiki/venv/lib/python3.13/site-packages/django/template/base.py", line 163, in _render
+    return self.nodelist.render(context)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/Users/petergangmei/Developer/Crossplatform/django/northeastindia_wiki/venv/lib/python3.13/site-packages/django/template/base.py", line 1016, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+                               ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/Users/petergangmei/Developer/Crossplatform/django/northeastindia_wiki/venv/lib/python3.13/site-packages/django/template/base.py", line 977, in render_annotated
+    return self.render(context)
+           ~~~~~~~~~~~^^^^^^^^^
+  File "/Users/petergangmei/Developer/Crossplatform/django/northeastindia_wiki/venv/lib/python3.13/site-packages/django/template/loader_tags.py", line 65, in render
+    result = block.nodelist.render(context)
+  File "/Users/petergangmei/Developer/Crossplatform/django/northeastindia_wiki/venv/lib/python3.13/site-packages/django/template/base.py", line 1016, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+                               ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/Users/petergangmei/Developer/Crossplatform/django/northeastindia_wiki/venv/lib/python3.13/site-packages/django/template/base.py", line 977, in render_annotated
+    return self.render(context)
+           ~~~~~~~~~~~^^^^^^^^^
+  File "/Users/petergangmei/Developer/Crossplatform/django/northeastindia_wiki/venv/lib/python3.13/site-packages/django/template/base.py", line 1081, in render
+    return render_value_in_context(output, context)
+  File "/Users/petergangmei/Developer/Crossplatform/django/northeastindia_wiki/venv/lib/python3.13/site-packages/django/template/base.py", line 1058, in render_value_in_context
+    value = str(value)
+  File "/Users/petergangmei/Developer/Crossplatform/django/northeastindia_wiki/venv/lib/python3.13/site-packages/django/forms/utils.py", line 79, in __str__
+    return self.as_widget()
+           ~~~~~~~~~~~~~~^^
+  File "/Users/petergangmei/Developer/Crossplatform/django/northeastindia_wiki/venv/lib/python3.13/site-packages/django/forms/boundfield.py", line 108, in as_widget
+    return widget.render(
+           ~~~~~~~~~~~~~^
+        name=self.html_initial_name if only_initial else self.html_name,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<2 lines>...
+        renderer=self.form.renderer,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/petergangmei/Developer/Crossplatform/django/northeastindia_wiki/venv/lib/python3.13/site-packages/django/forms/widgets.py", line 329, in render
+    context = self.get_context(name, value, attrs)
+  File "/Users/petergangmei/Developer/Crossplatform/django/northeastindia_wiki/venv/lib/python3.13/site-packages/django/forms/widgets.py", line 830, in get_context
+    context = super().get_context(name, value, attrs)
+  File "/Users/petergangmei/Developer/Crossplatform/django/northeastindia_wiki/venv/lib/python3.13/site-packages/django/forms/widgets.py", line 781, in get_context
+    context["widget"]["optgroups"] = self.optgroups(
+                                     ~~~~~~~~~~~~~~^
+        name, context["widget"]["value"], attrs
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/petergangmei/Developer/Crossplatform/django/northeastindia_wiki/venv/lib/python3.13/site-packages/django/forms/widgets.py", line 721, in optgroups
+    for index, (option_value, option_label) in enumerate(self.choices):
+                                               ~~~~~~~~~^^^^^^^^^^^^^^
+  File "/Users/petergangmei/Developer/Crossplatform/django/northeastindia_wiki/venv/lib/python3.13/site-packages/django/forms/models.py", line 1424, in __iter__
+    for obj in queryset:
+               ^^^^^^^^
+  File "/Users/petergangmei/Developer/Crossplatform/django/northeastindia_wiki/venv/lib/python3.13/site-packages/django/db/models/query.py", line 502, in _iterator
+    yield from iterable
+  File "/Users/petergangmei/Developer/Crossplatform/django/northeastindia_wiki/venv/lib/python3.13/site-packages/django/db/models/query.py", line 91, in __iter__
+    results = compiler.execute_sql(
+        chunked_fetch=self.chunked_fetch, chunk_size=self.chunk_size
+    )
+  File "/Users/petergangmei/Developer/Crossplatform/django/northeastindia_wiki/venv/lib/python3.13/site-packages/django/db/models/sql/compiler.py", line 1623, in execute_sql
+    cursor.execute(sql, params)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "/Users/petergangmei/Developer/Crossplatform/django/northeastindia_wiki/venv/lib/python3.13/site-packages/django/db/backends/utils.py", line 122, in execute
+    return super().execute(sql, params)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "/Users/petergangmei/Developer/Crossplatform/django/northeastindia_wiki/venv/lib/python3.13/site-packages/django/db/backends/utils.py", line 79, in execute
+    return self._execute_with_wrappers(
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        sql, params, many=False, executor=self._execute
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/Users/petergangmei/Developer/Crossplatform/django/northeastindia_wiki/venv/lib/python3.13/site-packages/django/db/backends/utils.py", line 92, in _execute_with_wrappers
+    return executor(sql, params, many, context)
+  File "/Users/petergangmei/Developer/Crossplatform/django/northeastindia_wiki/venv/lib/python3.13/site-packages/django/db/backends/utils.py", line 100, in _execute
+    with self.db.wrap_database_errors:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/petergangmei/Developer/Crossplatform/django/northeastindia_wiki/venv/lib/python3.13/site-packages/django/db/utils.py", line 91, in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+  File "/Users/petergangmei/Developer/Crossplatform/django/northeastindia_wiki/venv/lib/python3.13/site-packages/django/db/backends/utils.py", line 105, in _execute
+    return self.cursor.execute(sql, params)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+django.db.utils.ProgrammingError: cursor "_django_curs_6163542016_sync_1" already exists
+
