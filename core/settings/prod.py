@@ -8,7 +8,7 @@ import os
 import dj_database_url
 from dotenv import load_dotenv
 from .common import *
-
+from dotenv import load_dotenv
 # Load environment variables from .env file
 load_dotenv()
 
@@ -42,6 +42,7 @@ CSRF_TRUSTED_ORIGINS = TRUSTED_ORIGINS
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 # In production, use PostgreSQL via DATABASE_URL_PROD or fallback to individual env vars
 database_url = os.environ.get('DATABASE_URL_PROD')
+print('database_url--->',database_url)
 if database_url:
     DATABASES = {
         'default': dj_database_url.parse(database_url)

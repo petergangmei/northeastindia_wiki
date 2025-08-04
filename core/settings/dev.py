@@ -7,6 +7,10 @@ These settings should be used during development only.
 import os
 import dj_database_url
 from .common import *
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = 'django-insecure-b32dg98-gay)$=yk$!1z&1*ibvlyer%d5h9p22cmbgx)u8e5(g'
@@ -21,6 +25,7 @@ ALLOWED_HOSTS = ['127.0.0.1', 'localhost']
 
 # Use DATABASE_URL_STAGE if available, otherwise fallback to SQLite
 database_url = os.environ.get('DATABASE_URL_STAGE')
+print('database_url--->',database_url)
 if database_url:
     DATABASES = {
         'default': dj_database_url.parse(database_url)
