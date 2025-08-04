@@ -48,40 +48,14 @@ def create_notification(user, notification_type, message, content_type='', objec
 
 def home(request):
     """
-    Enhanced home page view with Wikipedia-style content
+    Optimized home page view - only queries data actually displayed in the UI
     """
-    # Get Article of the Day (Featured Article) - only articles with featured images
-    article_of_the_day = Article.objects.filter(
-        content_type='article',
-        published=True, 
-        review_status='approved',
-        featured_image__isnull=False
-    ).exclude(featured_image='').order_by('?').first()
-    
-    # Get latest articles (Recent additions)
+    # Get latest articles (Recent additions) - optimized with select_related
     latest_articles = Article.objects.filter(
         content_type='article',
         published=True, 
         review_status='approved'
-    ).order_by('-published_at')[:4]
-    
-    # Get categories with article counts
-    categories = Category.objects.all()
-    
-    # Prepare categories with article counts
-    categories_with_counts = []
-    for category in categories[:8]:  # Increased to 8 for better display
-        article_count = Article.objects.filter(
-            content_type='article',
-            categories=category,
-            published=True,
-            review_status='approved'
-        ).count()
-        
-        categories_with_counts.append({
-            'category': category,
-            'count': article_count
-        })
+    ).select_related('author').order_by('-published_at')[:4]
     
     # Get statistics for the site
     total_articles = Article.objects.filter(
@@ -90,35 +64,19 @@ def home(request):
         review_status='approved'
     ).count()
     
-    total_categories = Category.objects.count()
+    # Simplified contributor count (users with profiles)
     total_contributors = User.objects.filter(profile__isnull=False).count()
     
-    # Get recent contributors (last 30 days)
-    from datetime import datetime, timedelta
+    # Simple recent contributors (optimize with select_related for profile)
     recent_contributors = User.objects.filter(
-        contributions__created_at__gte=timezone.now() - timedelta(days=30)
-    ).distinct()[:5]
-    
-    # Did you know facts (random approved articles for interesting facts)
-    did_you_know_articles = Article.objects.filter(
-        content_type='article',
-        published=True,
-        review_status='approved'
-    ).exclude(id=article_of_the_day.id if article_of_the_day else None).order_by('?')[:3]
-    
-    # Get states for state-wise browsing
-    states = State.objects.all()[:8]
+        profile__isnull=False
+    ).select_related('profile').order_by('-date_joined')[:5]
     
     context = {
-        'article_of_the_day': article_of_the_day,
         'latest_articles': latest_articles,
-        'categories_with_counts': categories_with_counts,
         'total_articles': total_articles,
-        'total_categories': total_categories,
         'total_contributors': total_contributors,
         'recent_contributors': recent_contributors,
-        'did_you_know_articles': did_you_know_articles,
-        'states': states,
     }
     
     return render(request, 'home.html', context)
