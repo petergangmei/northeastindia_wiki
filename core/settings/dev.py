@@ -4,6 +4,8 @@ Django development settings for northeastindia.wiki project.
 These settings should be used during development only.
 """
 
+import os
+import dj_database_url
 from .common import *
 
 # SECURITY WARNING: keep the secret key used in production secret!
@@ -17,12 +19,19 @@ ALLOWED_HOSTS = ['127.0.0.1', 'localhost']
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+# Use DATABASE_URL_STAGE if available, otherwise fallback to SQLite
+database_url = os.environ.get('DATABASE_URL_STAGE')
+if database_url:
+    DATABASES = {
+        'default': dj_database_url.parse(database_url)
     }
-}
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
+    }
 
 # Additional development apps
 INSTALLED_APPS += [

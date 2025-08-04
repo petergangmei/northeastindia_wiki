@@ -5,6 +5,7 @@ These settings should be used in production only.
 """
 
 import os
+import dj_database_url
 from dotenv import load_dotenv
 from .common import *
 
@@ -39,17 +40,24 @@ CSRF_TRUSTED_ORIGINS = TRUSTED_ORIGINS
 
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
-# In production, use PostgreSQL instead of SQLite
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': os.environ.get('DB_NAME', ''),
-        'USER': os.environ.get('DB_USER', ''),
-        'PASSWORD': os.environ.get('DB_PASSWORD', ''),
-        'HOST': os.environ.get('DB_HOST', 'localhost'),
-        'PORT': os.environ.get('DB_PORT', '5432'),
+# In production, use PostgreSQL via DATABASE_URL_PROD or fallback to individual env vars
+database_url = os.environ.get('DATABASE_URL_PROD')
+if database_url:
+    DATABASES = {
+        'default': dj_database_url.parse(database_url)
     }
-}
+else:
+    # Fallback to individual environment variables for backward compatibility
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': os.environ.get('DB_NAME', ''),
+            'USER': os.environ.get('DB_USER', ''),
+            'PASSWORD': os.environ.get('DB_PASSWORD', ''),
+            'HOST': os.environ.get('DB_HOST', 'localhost'),
+            'PORT': os.environ.get('DB_PORT', '5432'),
+        }
+    }
 
 # Security settings for production
 # SECURE_HSTS_SECONDS = 31536000  # 1 year
