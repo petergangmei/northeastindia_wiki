@@ -243,7 +243,12 @@ def article_detail(request, slug, state_slug=None):
     Display a single article
     Handles both old and new SEO-optimized URL structures
     """
-    article = get_object_or_404(Article, slug=slug)
+    # Optimize main query with select_related and prefetch_related
+    article = get_object_or_404(
+        Article.objects.select_related('author')
+                      .prefetch_related('states', 'categories', 'tags'),
+        slug=slug
+    )
     
     # If state_slug is provided, verify the article belongs to that state
     if state_slug:
@@ -259,10 +264,9 @@ def article_detail(request, slug, state_slug=None):
     user_profile = None
     
     if request.user.is_authenticated:
-        try:
+        # Optimize user profile access
+        if hasattr(request.user, 'profile'):
             user_profile = request.user.profile
-        except UserProfile.DoesNotExist:
-            user_profile = None
         
         is_author = article.author == request.user
         is_editor_or_admin = (user_profile and user_profile.role in ['editor', 'admin']) or request.user.is_staff
@@ -279,25 +283,14 @@ def article_detail(request, slug, state_slug=None):
     if not is_visible_to_user:
         raise Http404("Article not found or not published.")
     
-    # Get sophisticated related articles using multiple strategies
-    from .utils import get_enhanced_related_articles, get_contextual_links_data
-    related_articles = get_enhanced_related_articles(article, limit=6)
+    # Check if there's a pending edit for this article (optimized)
+    has_pending_edit = hasattr(article, 'pending_edit')
     
-    # Get contextual linking data for widgets
-    contextual_data = get_contextual_links_data(article)
-    
-    # Check if there's a pending edit for this article
-    has_pending_edit = False
-    try:
-        pending_edit = article.pending_edit
-        has_pending_edit = True
-    except:
-        pending_edit = None
-    
-    # Generate coordinates for articles with states (if needed)
+    # Generate coordinates for articles with states (optimized with prefetched data)
     coordinates = None
-    if article.states.exists():
-        state = article.states.first()
+    article_states = list(article.states.all())  # Use prefetched data
+    if article_states:
+        state = article_states[0]  # Get first state from prefetched data
         # Add coordinates if available (example coordinates for Nagaland)
         if state.name == 'Nagaland':
             coordinates = {
@@ -309,11 +302,9 @@ def article_detail(request, slug, state_slug=None):
     
     context = {
         'article': article,
-        'related_articles': related_articles,
         'has_edit_permission': has_edit_permission,
         'has_review_permission': has_review_permission,
         'has_pending_edit': has_pending_edit,
-        'contextual_data': contextual_data,
         'coordinates': coordinates,
         'user_profile': user_profile,
         'json_data': article.info_box_data if article.info_box_data else {},
