@@ -130,15 +130,27 @@ LOGGING = {
     },
 }
 
-# Static files configuration for S3
-# Configure S3 storage for static files
+# Static files configuration for S3 (Private Bucket)
+# Configure S3 storage for static files with signed URLs
 AWS_ACCESS_KEY_ID = os.environ.get('AWS_ACCESS_KEY_ID')
 AWS_SECRET_ACCESS_KEY = os.environ.get('AWS_SECRET_ACCESS_KEY')
 AWS_STORAGE_BUCKET_NAME = os.environ.get('AWS_STORAGE_BUCKET_NAME')
-AWS_S3_REGION_NAME = os.environ.get('AWS_S3_REGION_NAME', 'us-east-1')
-AWS_DEFAULT_ACL = 'public-read'
+AWS_S3_REGION_NAME = os.environ.get('AWS_S3_REGION_NAME', 'ap-south-1')
+AWS_DEFAULT_ACL = 'private'  # Private bucket - requires signed URLs
 AWS_S3_FILE_OVERWRITE = False
-AWS_QUERYSTRING_AUTH = False
+AWS_QUERYSTRING_AUTH = True  # Enable signed URLs for private bucket
+AWS_QUERYSTRING_EXPIRE = int(os.environ.get('AWS_QUERYSTRING_EXPIRE', 3600))  # 1 hour default
+# AWS_S3_SIGNATURE_VERSION = 's3v4'                                            
+AWS_S3_ADDRESSING_STYLE = 'virtual'      
+
+print('AWS_ACCESS_KEY_ID--->',AWS_ACCESS_KEY_ID)
+print('AWS_SECRET_ACCESS_KEY--->',AWS_SECRET_ACCESS_KEY)
+print('AWS_STORAGE_BUCKET_NAME--->',AWS_STORAGE_BUCKET_NAME)
+print('AWS_S3_REGION_NAME--->',AWS_S3_REGION_NAME)
+print('AWS_DEFAULT_ACL--->',AWS_DEFAULT_ACL)
+print('AWS_S3_FILE_OVERWRITE--->',AWS_S3_FILE_OVERWRITE)
+print('AWS_QUERYSTRING_AUTH--->',AWS_QUERYSTRING_AUTH)
+
 
 # S3 Object parameters for static files
 AWS_S3_OBJECT_PARAMETERS = {
@@ -157,6 +169,7 @@ STORAGES = {
             "default_acl": AWS_DEFAULT_ACL,
             "file_overwrite": AWS_S3_FILE_OVERWRITE,
             "querystring_auth": AWS_QUERYSTRING_AUTH,
+            "querystring_expire": AWS_QUERYSTRING_EXPIRE,
             "object_parameters": AWS_S3_OBJECT_PARAMETERS,
         },
     },
