@@ -1,0 +1,12 @@
+[Unit]
+Description=Gunicorn daemon for Django app
+After=network.target
+
+[Service]
+Environment="DJANGO_SETTINGS_MODULE=core.settings.prod"
+User=ubuntu
+WorkingDirectory=/home/ubuntu/wiki
+ExecStart=/home/ubuntu/wiki/venv/bin/gunicorn --workers 1 --timeout 30 --bind unix:/home/ubuntu/wiki/app.sock core.wsgi:application
+
+[Install]
+WantedBy=multi-user.target
