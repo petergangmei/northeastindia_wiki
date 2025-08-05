@@ -101,32 +101,95 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 # Default primary key field type
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# TinyMCE Configuration
+# TinyMCE Configuration - Using CDN to avoid S3 signed URL issues
+TINYMCE_JS_URL = 'https://cdn.jsdelivr.net/npm/tinymce@6/tinymce.min.js'
 TINYMCE_DEFAULT_CONFIG = {
-    'height': 360,
+    'height': 400,
     'width': '100%',
-    'cleanup_on_startup': True,
-    'custom_undo_redo_levels': 20,
-    'selector': 'textarea',
     'theme': 'silver',
-    'plugins': '''
-        textcolor save link image media preview codesample contextmenu
-        table code lists fullscreen insertdatetime nonbreaking
-        contextmenu directionality searchreplace wordcount visualblocks
-        visualchars code fullscreen autolink lists charmap print hr
-        anchor pagebreak
+    'menubar': 'file edit view insert format tools table help',
+    'plugins': [
+        'advlist', 'autolink', 'lists', 'link', 'image', 'charmap', 'preview',
+        'anchor', 'searchreplace', 'visualblocks', 'code', 'fullscreen',
+        'insertdatetime', 'media', 'table', 'paste', 'code', 'help', 'wordcount'
+    ],
+    'toolbar': [
+        'undo redo | blocks | bold italic underline strikethrough | '
+        'alignleft aligncenter alignright alignjustify | '
+        'bullist numlist outdent indent | removeformat | help',
+        'link unlink anchor | image media | table | '
+        'charmap preview | searchreplace | '
+        'visualblocks code fullscreen'
+    ],
+    'block_formats': 'Paragraph=p; Heading 1=h1; Heading 2=h2; Heading 3=h3; Heading 4=h4; Heading 5=h5; Heading 6=h6; Preformatted=pre',
+    'content_style': '''
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+            font-size: 16px;
+            line-height: 1.6;
+            color: #151b25;
+            max-width: none;
+            margin: 0;
+            padding: 20px;
+        }
+        h1, h2, h3, h4, h5, h6 { 
+            font-family: 'Georgia', serif;
+            margin-top: 1.5em;
+            margin-bottom: 0.5em;
+            color: #151b25;
+            border-bottom: 1px solid #dee2e6;
+            padding-bottom: 0.3em;
+        }
+        h1 { font-size: 2em; }
+        h2 { font-size: 1.5em; }
+        h3 { font-size: 1.3em; }
+        h4 { font-size: 1.1em; }
+        p { margin-bottom: 1em; text-align: justify; }
+        blockquote { 
+            border-left: 4px solid #e10032;
+            margin: 1em 0;
+            padding: 0.5em 1em;
+            background: #f8f9fa;
+            font-style: italic;
+        }
+        code { 
+            background: #f8f9fa;
+            padding: 0.2em 0.4em;
+            border-radius: 3px;
+            font-family: 'Monaco', 'Consolas', monospace;
+        }
+        pre { 
+            background: #f8f9fa;
+            padding: 1em;
+            border-radius: 5px;
+            overflow-x: auto;
+            border-left: 4px solid #151b25;
+        }
+        a { color: #0645ad; text-decoration: none; }
+        a:hover { text-decoration: underline; }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 1em 0;
+        }
+        table, th, td {
+            border: 1px solid #dee2e6;
+        }
+        th, td {
+            padding: 0.75em;
+            text-align: left;
+        }
+        th {
+            background: #f8f9fa;
+            font-weight: 600;
+        }
     ''',
-    'toolbar1': '''
-        fullscreen preview bold italic underline | fontselect,
-        fontsizeselect | forecolor backcolor | alignleft alignright |
-        aligncenter alignjustify | indent outdent | bullist numlist table |
-        | link image media | codesample |
-    ''',
-    'toolbar2': '''
-        visualblocks visualchars |
-        charmap hr pagebreak nonbreaking anchor | code |
-    ''',
-    'contextmenu': 'formats | link image',
-    'menubar': True,
+    'paste_as_text': True,
+    'invalid_elements': 'script,style,font,center',
+    'image_advtab': True,
+    'contextmenu': 'link image table',
+    'resize': True,
     'statusbar': True,
+    'branding': False,
+    'promotion': False
 } 
