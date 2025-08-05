@@ -24,6 +24,7 @@ ALLOWED_HOSTS = [
     'www.northeastindia.wiki',
     '127.0.0.1',
     'localhost',
+    '43.205.221.237',
     # Add any other production domains here
 ]
 TRUSTED_ORIGINS = [
@@ -33,6 +34,7 @@ TRUSTED_ORIGINS = [
     'http://localhost:8000',
     'https://127.0.0.1:8000',
     'https://localhost:8000',
+    'https://43.205.221.237',
 ]
 
 # Add CSRF trusted origins specifically
