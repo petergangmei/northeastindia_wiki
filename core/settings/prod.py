@@ -130,9 +130,39 @@ LOGGING = {
     },
 }
 
-# Static files and media files might be served from a CDN in production
-# Ensure these directories exist on your production server
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+# Static files configuration for S3
+# Configure S3 storage for static files
+AWS_ACCESS_KEY_ID = os.environ.get('AWS_ACCESS_KEY_ID')
+AWS_SECRET_ACCESS_KEY = os.environ.get('AWS_SECRET_ACCESS_KEY')
+AWS_STORAGE_BUCKET_NAME = os.environ.get('AWS_STORAGE_BUCKET_NAME')
+AWS_S3_REGION_NAME = os.environ.get('AWS_S3_REGION_NAME', 'us-east-1')
+AWS_DEFAULT_ACL = 'public-read'
+AWS_S3_FILE_OVERWRITE = False
+AWS_QUERYSTRING_AUTH = False
+
+# S3 Object parameters for static files
+AWS_S3_OBJECT_PARAMETERS = {
+    'CacheControl': 'max-age=86400',
+}
+
+# Configure STORAGES setting for Django 5.2+
+STORAGES = {
+    "staticfiles": {
+        "BACKEND": "storages.backends.s3.S3Storage",
+        "OPTIONS": {
+            "access_key": AWS_ACCESS_KEY_ID,
+            "secret_key": AWS_SECRET_ACCESS_KEY,
+            "bucket_name": AWS_STORAGE_BUCKET_NAME,
+            "region_name": AWS_S3_REGION_NAME,
+            "default_acl": AWS_DEFAULT_ACL,
+            "file_overwrite": AWS_S3_FILE_OVERWRITE,
+            "querystring_auth": AWS_QUERYSTRING_AUTH,
+            "object_parameters": AWS_S3_OBJECT_PARAMETERS,
+        },
+    },
+}
+
+# Keep media files local for now
 MEDIA_ROOT = os.path.join(BASE_DIR, 'mediafiles')
 
 # Email configuration for production
