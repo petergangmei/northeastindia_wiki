@@ -18,7 +18,7 @@ SECRET_KEY = 'django-insecure-b32dg98-gay)$=yk$!1z&1*ibvlyer%d5h9p22cmbgx)u8e5(g
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['127.0.0.1', 'localhost']
+ALLOWED_HOSTS = ['127.0.0.1', 'localhost', 'stage.northeastindia.wiki']
 
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
